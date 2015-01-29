@@ -13,19 +13,60 @@
     }
 
     Codewave.prototype.onActivationKey = function() {
+      var cmd;
       console.log('activation key');
-      console.log(this.editor.getCursorPos());
-      if (this.cursorOnCommand()) {
-
+      if ((cmd = this.cursorOnCommand())) {
+        console.log(cmd);
+        return cmd.execute();
       } else {
         return this.addBrakets();
       }
     };
 
     Codewave.prototype.cursorOnCommand = function() {
-      var cpos;
+      var cpos, next, pos, prev;
       cpos = this.editor.getCursorPos();
-      return this.findNextBraket(cpos.end, [this.brakets, "\n"]) != null;
+      pos = cpos.end;
+      prev = this.findPrevBraket(this.isEndLine(pos) ? pos : pos + 1);
+      if (prev == null) {
+        return false;
+      }
+      if (prev >= pos - 2) {
+        pos = prev;
+        prev = this.findPrevBraket(pos);
+      }
+      next = this.findNextBraket(pos);
+      if (!((next != null) && this.countPrevBraket(prev) % 2 === 0)) {
+        return false;
+      }
+      return new Codewave.CmdInstance(this, prev, this.editor.textSubstr(prev, next + this.brakets.length));
+    };
+
+    Codewave.prototype.countPrevBraket = function(start) {
+      var i;
+      i = 0;
+      while (start = this.findPrevBraket(start)) {
+        i++;
+      }
+      return i;
+    };
+
+    Codewave.prototype.isEndLine = function(pos) {
+      return this.editor.textSubstr(pos, pos + 1) === "\n" || pos + 1 >= this.editor.textLen();
+    };
+
+    Codewave.prototype.findLineStart = function(pos) {
+      var p;
+      p = this.findAnyNext(pos, ["\n"], -1);
+      if (p) {
+        return p.pos + 1;
+      } else {
+        return 0;
+      }
+    };
+
+    Codewave.prototype.findPrevBraket = function(start) {
+      return this.findNextBraket(start, -1);
     };
 
     Codewave.prototype.findNextBraket = function(start, direction) {
@@ -33,7 +74,7 @@
       if (direction == null) {
         direction = 1;
       }
-      f = this.findAnyNext(start, [this.brakets, "\n"]);
+      f = this.findAnyNext(start, [this.brakets, "\n"], direction);
       if (f && f.str === this.brakets) {
         return f.pos;
       }
@@ -49,7 +90,6 @@
         if (!((0 < pos && pos < this.editor.textLen()))) {
           return false;
         }
-        pos += direction;
         for (_i = 0, _len = strings.length; _i < _len; _i++) {
           str = strings[_i];
           _ref = [pos, pos + str.length * direction], start = _ref[0], end = _ref[1];
@@ -59,10 +99,11 @@
           if (str === this.editor.textSubstr(start, end)) {
             return {
               str: str,
-              pos: pos
+              pos: direction < 0 ? pos - str.length : pos
             };
           }
         }
+        pos += direction;
       }
     };
 
@@ -74,9 +115,163 @@
       return this.editor.setCursorPos(cpos.end + this.brakets.length);
     };
 
+    Codewave.prototype.getCommentChar = function() {
+      return '<!-- %s -->';
+    };
+
     Codewave.prototype.brakets = '~~';
 
+    Codewave.prototype.deco = '~';
+
+    Codewave.prototype.closeChar = '/';
+
     return Codewave;
+
+  })();
+
+  this.Codewave.cmd = {
+    hello: "Hello,\nWorld!",
+    box: (function() {
+      function _Class(instance) {
+        this.instance = instance;
+        this.width = this.instance.params.length > 1 ? parseInt(this.instance.params[0]) : 50;
+        this.height = this.instance.params.length > 1 ? parseInt(this.instance.params[1]) : this.instance.params.length > 0 ? parseInt(this.instance.params[0]) : 3;
+        this.commentChar = this.instance.codewave.getCommentChar();
+        this.deco = this.instance.codewave.deco;
+        this.pad = 2;
+      }
+
+      _Class.prototype.execute = function() {
+        var content, x;
+        content = this.separator() + "\n" + ((function() {
+          var _i, _ref, _results;
+          _results = [];
+          for (x = _i = 1, _ref = this.height; 1 <= _ref ? _i <= _ref : _i >= _ref; x = 1 <= _ref ? ++_i : --_i) {
+            _results.push(this.line());
+          }
+          return _results;
+        }).call(this)).join("\n") + "\n" + this.separator();
+        return this.instance.replaceWith(content);
+      };
+
+      _Class.prototype.wrapComment = function(str) {
+        if (this.commentChar.indexOf('%s') > -1) {
+          return this.commentChar.replace('%s', str);
+        } else {
+          return this.commentChar + ' ' + str + ' ' + this.commentChar;
+        }
+      };
+
+      _Class.prototype.separator = function() {
+        var len;
+        len = this.width + 2 * this.pad + 2 * this.deco.length;
+        return this.wrapComment(Array(Math.ceil(len / this.deco.length) + 1).join(this.deco).substring(0, len));
+      };
+
+      _Class.prototype.padding = function() {
+        return Array(this.pad + 1).join(" ");
+      };
+
+      _Class.prototype.line = function(text) {
+        if (text == null) {
+          text = '';
+        }
+        return this.wrapComment(this.deco + this.padding() + text + Array(this.width - text.length + 1).join(" ") + this.padding() + this.deco);
+      };
+
+      return _Class;
+
+    })()
+  };
+
+  this.Codewave.CmdInstance = (function() {
+    function CmdInstance(codewave, pos, str) {
+      this.codewave = codewave;
+      this.pos = pos;
+      this.str = str;
+      this.noBracket = this._removeBracket(this.str);
+      this._splitComponents();
+      this._findClosing();
+      this.cmd = this._getCmd();
+    }
+
+    CmdInstance.prototype._splitComponents = function() {
+      var parts;
+      parts = this.noBracket.split(" ");
+      this.cmdName = parts.shift();
+      return this.params = parts;
+    };
+
+    CmdInstance.prototype._findClosing = function() {
+      var f;
+      if (f = this._findClosingPos()) {
+        this.content = this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos);
+        return this.str = this.codewave.editor.textSubstr(this.pos, f.pos + f.str.length);
+      }
+    };
+
+    CmdInstance.prototype._findClosingPos = function() {
+      var another, close, f, nested, pos;
+      close = this.codewave.brakets + this.codewave.closeChar + this.cmdName + this.codewave.brakets;
+      another = this.codewave.brakets + this.cmdName;
+      pos = this.pos + this.str.length;
+      nested = 0;
+      while (f = this.codewave.findAnyNext(pos, [close, another])) {
+        pos = f.pos + f.str.length;
+        if (f.str === close) {
+          if (nested > 0) {
+            nested--;
+          } else {
+            return f;
+          }
+        } else {
+          nested++;
+        }
+      }
+      return null;
+    };
+
+    CmdInstance.prototype._getCmd = function() {
+      var cmd;
+      cmd = Codewave.cmd[this.cmdName];
+      if (typeof cmd === "function" && (cmd.prototype.execute != null)) {
+        return new cmd(this);
+      } else {
+        return cmd;
+      }
+    };
+
+    CmdInstance.prototype._removeBracket = function(str) {
+      return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
+    };
+
+    CmdInstance.prototype.execute = function() {
+      if (this.cmd != null) {
+        if (this.cmd.execute != null) {
+          return this.cmd.execute(this);
+        } else if (this.cmd.content) {
+          return this.replaceWith(this.cmd.content);
+        } else if (typeof this.cmd === 'string') {
+          return this.replaceWith(this.cmd);
+        }
+      }
+    };
+
+    CmdInstance.prototype.getIndent = function() {
+      return this.pos - this.codewave.findLineStart(this.pos);
+    };
+
+    CmdInstance.prototype.applyIndent = function(text) {
+      return text.replace(/\n/g, "\n" + Array(this.getIndent() + 1).join(" "));
+    };
+
+    CmdInstance.prototype.replaceWith = function(text) {
+      text = this.applyIndent(text);
+      this.codewave.editor.spliceText(this.pos, this.pos + this.str.length, text);
+      return this.codewave.editor.setCursorPos(this.pos + text.length);
+    };
+
+    return CmdInstance;
 
   })();
 
@@ -108,6 +303,10 @@
 
     TextAreaEditor.prototype.insertTextAt = function(text, pos) {
       return this.obj.value = this.obj.value.substring(0, pos) + text + this.obj.value.substring(pos, this.obj.value.length);
+    };
+
+    TextAreaEditor.prototype.spliceText = function(start, end, text) {
+      return this.obj.value = this.obj.value.slice(0, start) + (text || "") + this.obj.value.slice(end);
     };
 
     TextAreaEditor.prototype.getCursorPos = function() {
