@@ -5,27 +5,37 @@
   <title>Document</title>
   <link rel="stylesheet" type="text/css" href="css/app.css" media="all" />
   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+  
   <script type="text/javascript" src="js/codewave.js"></script>
+  <script type="text/javascript" src="js/cmd_instance.js"></script>
+  <script type="text/javascript" src="js/cmds.js"></script>
+  <script type="text/javascript" src="js/text_parser.js"></script>
+  <script type="text/javascript" src="js/text_area_editor.js"></script>
+  
   <script type="text/javascript">
     (function( $ ) {
       $(function(){
-        window.dw = new Codewave('Editor');
+        window.cw = new Codewave(new Codewave.TextAreaEditor('Editor'));
       })
     })( jQuery );
   </script>
 </head>
 <body>
 <div class="test"></div>
-<textarea name="" id="Editor" class="full">sdfasdfdsfasSed magna purus, fermentum eu, tincidunt eu, varius u~~hello~~t, felis. Curabi~~box~~tur ullamcorper ultricies nisi.
+<textarea name="" id="Editor" class="full">sdfasdfdsfasSed magna purus, fermentum eu, tincidunt eu, varius ~~hello~~, felis. Curabi~~box~~tur ullamcorper ultricies nisi.
 
-Nulla consequat massa quis enim. Suspendisse non nisl sit am~~hello~~et velit hendr~~box 20 5~~erit rutrum.
+Nulla consequat massa quis enim. Suspendisse non nisl sit amet ~~hello~~ velit hendr ~~box 20 5~~erit rutrum.
 
 ~~box~~
 This should be inside a box
 ~~box~~  ~~/box~~
 and i can has many lines
-nice !
+nice ! ~~close~~
 ~~/box~~
+
+~~testparam test:test 1 2~~
+
+~~edit hello~~
 </textarea>
 
 
