@@ -9,6 +9,7 @@
       this.noBracket = this._removeBracket(this.str);
       this._splitComponents();
       this._findClosing();
+      this._checkBox();
       this.cmd = this._getCmd();
     }
 
@@ -40,25 +41,40 @@
       var parts;
       parts = this.noBracket.split(" ");
       this.cmdName = parts.shift();
-      return this._parseParams(parts);
+      return this._parseParams(parts.join(" "));
     };
 
     CmdInstance.prototype._parseParams = function(params) {
-      var key, p, parts, _i, _len, _results;
+      var chr, i, inStr, name, param, _i, _ref;
       this.params = [];
       this.named = {};
-      _results = [];
-      for (_i = 0, _len = params.length; _i < _len; _i++) {
-        p = params[_i];
-        parts = p.split(":");
-        if (parts.length > 1) {
-          key = parts.shift();
-          _results.push(this.named[key] = parts.join(":"));
+      inStr = false;
+      param = '';
+      name = false;
+      for (i = _i = 0, _ref = params.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        chr = params[i];
+        if (chr === ' ' && !inStr) {
+          if (name) {
+            this.named[name] = param;
+          } else {
+            this.params.push(param);
+          }
+          param = '';
+          name = false;
+        } else if (chr === '"' && (i === 0 || params[i - 1] !== '\\')) {
+          inStr = !inStr;
+        } else if (chr === ':' && !name && !inStr) {
+          name = param;
+          param = '';
         } else {
-          _results.push(this.params.push(p));
+          param += chr;
         }
       }
-      return _results;
+      if (name) {
+        return this.named[name] = param;
+      } else {
+        return this.params.push(param);
+      }
     };
 
     CmdInstance.prototype._findClosing = function() {
@@ -81,11 +97,38 @@
       }
     };
 
+    CmdInstance.prototype._checkBox = function() {
+      var cl, cr, endPos;
+      cl = this.codewave.wrapCommentLeft();
+      cr = this.codewave.wrapCommentRight();
+      endPos = this.getEndPos() + cr.length;
+      if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(this.getEndPos(), endPos) === cr) {
+        console.log(this.pos - cl.length);
+        this.pos = this.pos - cl.length;
+        this.str = this.codewave.editor.textSubstr(this.pos, endPos);
+        return this._removeCommentFromContent();
+      }
+    };
+
+    CmdInstance.prototype._removeCommentFromContent = function() {
+      var ecl, ecr, ed, re1, re2, re3;
+      if (this.content) {
+        ecl = Codewave.util.escapeRegExp(this.codewave.wrapCommentLeft());
+        ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
+        ed = Codewave.util.escapeRegExp(this.codewave.deco);
+        console.log("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$");
+        re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
+        re2 = new RegExp("^(?:" + ed + ")*" + ecr + "\n", "");
+        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*$", "");
+        return this.content = this.content.replace(re1, '$1').replace(re2, '').replace(re3, '');
+      }
+    };
+
     CmdInstance.prototype._getCmd = function() {
       var cmd;
-      cmd = Codewave.cmd[this.cmdName];
-      if (typeof cmd === "function" && ((cmd.prototype.execute != null) || (cmd.prototype.result != null))) {
-        return new cmd(this);
+      cmd = this.codewave.getCmd(this.cmdName);
+      if (typeof cmd === "function") {
+        return cmd = new cmd(this);
       } else {
         return cmd;
       }
@@ -130,10 +173,6 @@
         } else {
           return this.cmd.result;
         }
-      } else if (typeof this.cmd === 'string') {
-        return this.cmd;
-      } else if (typeof this.cmd === "function") {
-        return this.cmd();
       }
     };
 

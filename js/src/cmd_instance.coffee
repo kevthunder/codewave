@@ -4,6 +4,7 @@ class @Codewave.CmdInstance
     @noBracket = @_removeBracket(@str)
     @_splitComponents()
     @_findClosing()
+    @_checkBox()
     @cmd = @_getCmd()
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
@@ -11,7 +12,6 @@ class @Codewave.CmdInstance
       @closingPos = pos:@pos, str:@str
       @pos = f.pos
       @str = f.str
-      
   _findOpeningPos: ->
     cmdName = @_removeBracket(@str).substring(@codewave.closeChar.length)
     opening = @codewave.brakets + cmdName
@@ -22,17 +22,33 @@ class @Codewave.CmdInstance
   _splitComponents: ->
     parts = @noBracket.split(" ");
     @cmdName = parts.shift()
-    @_parseParams(parts)
+    @_parseParams(parts.join(" "))
   _parseParams:(params) ->
     @params = []
     @named = {}
-    for p in params
-      parts = p.split(":");
-      if parts.length > 1
-        key = parts.shift()
-        @named[key] = parts.join(":");
+    inStr = false
+    param = ''
+    name = false
+    for i in [0..params.length-1]
+      chr = params[i]
+      if chr == ' ' and !inStr
+        if(name)
+          @named[name] = param
+        else
+          @params.push(param)
+        param = ''
+        name = false
+      else if chr == '"' and (i == 0 or params[i-1] != '\\')
+        inStr = !inStr
+      else if chr == ':' and !name and !inStr
+        name = param
+        param = ''
       else
-        @params.push(p)
+        param += chr
+    if(name)
+      @named[name] = param
+    else
+      @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
       @content = @codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/^\n/m,'').replace(/\n$/m,'')
@@ -43,16 +59,35 @@ class @Codewave.CmdInstance
     opening = @codewave.brakets + @cmdName
     if f = @codewave.findMatchingPair(@pos+@str.length,opening,closing)
       @closingPos = f
+  _checkBox: ->
+    cl = @codewave.wrapCommentLeft()
+    cr = @codewave.wrapCommentRight()
+    endPos = @getEndPos() + cr.length
+    if @codewave.editor.textSubstr(@pos - cl.length,@pos) == cl and @codewave.editor.textSubstr(@getEndPos(),endPos) == cr
+      console.log(@pos - cl.length)
+      @pos = @pos - cl.length
+      @str = @codewave.editor.textSubstr(@pos,endPos)
+      @_removeCommentFromContent()
+  _removeCommentFromContent: ->
+    if @content
+      ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
+      ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
+      ed = Codewave.util.escapeRegExp(@codewave.deco)
+      console.log("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$")
+      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
+      re2 = new RegExp("^(?:#{ed})*#{ecr}\n", "")
+      re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$", "")
+      @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getCmd: ->
-    cmd = Codewave.cmd[@cmdName]
-    if typeof(cmd) == "function" and (cmd.prototype.execute? or cmd.prototype.result?)
-      new cmd(this)
-    else
+    cmd = @codewave.getCmd(@cmdName)
+    if typeof(cmd) == "function"
+      cmd = new cmd(this)
+    else 
       cmd
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
   getParam: (names, def) ->
-    names = [names] if typeof names == 'string'
+    names = [names] if (typeof names == 'string')
     for n in names
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
@@ -69,10 +104,6 @@ class @Codewave.CmdInstance
           @cmd.result()
         else
           @cmd.result
-      else if typeof @cmd == 'string'
-        @cmd
-      else if typeof(@cmd) == "function"
-        @cmd()
   getEndPos: ->
     @pos+@str.length
   getIndent: ->

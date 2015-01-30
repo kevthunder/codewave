@@ -14,7 +14,7 @@
         }
         this.width = this.instance.params.length > 1 ? parseInt(this.instance.params[0]) : this.instance.named.width != null ? this.instance.named.width : this.width;
         this.height = this.instance.params.length > 1 ? parseInt(this.instance.params[1]) : this.instance.params.length > 0 ? parseInt(this.instance.params[0]) : this.instance.named.height != null ? this.instance.named.height : this.height;
-        this.commentChar = this.instance.codewave.getCommentChar();
+        this.cmd = this.instance.getParam([0, 'cmd']);
         this.deco = this.instance.codewave.deco;
         this.pad = 2;
       }
@@ -22,28 +22,48 @@
       _Class.prototype.result = function() {
         var content, lines, x;
         lines = (this.instance.content || '').split("\n");
-        return content = this.separator() + "\n" + ((function() {
+        return content = this.startSep() + "\n" + ((function() {
           var _i, _ref, _results;
           _results = [];
           for (x = _i = 0, _ref = this.height - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
             _results.push(this.line(lines[x]));
           }
           return _results;
-        }).call(this)).join("\n") + "\n" + this.separator();
+        }).call(this)).join("\n") + "\n" + this.endSep();
       };
 
       _Class.prototype.wrapComment = function(str) {
-        if (this.commentChar.indexOf('%s') > -1) {
-          return this.commentChar.replace('%s', str);
-        } else {
-          return this.commentChar + ' ' + str + ' ' + this.commentChar;
-        }
+        return this.instance.codewave.wrapComment(str);
       };
 
       _Class.prototype.separator = function() {
         var len;
         len = this.width + 2 * this.pad + 2 * this.deco.length;
-        return this.wrapComment(Array(Math.ceil(len / this.deco.length) + 1).join(this.deco).substring(0, len));
+        return this.wrapComment(this.decoLine(len));
+      };
+
+      _Class.prototype.startSep = function() {
+        var cmd, len;
+        cmd = '';
+        if (this.cmd) {
+          cmd = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
+        }
+        len = this.width + 2 * this.pad + 2 * this.deco.length - cmd.length;
+        return this.wrapComment(cmd + this.decoLine(len));
+      };
+
+      _Class.prototype.endSep = function() {
+        var closing, len;
+        closing = '';
+        if (this.cmd) {
+          closing = this.instance.codewave.brakets + this.instance.codewave.closeChar + this.cmd.split(" ")[0] + this.instance.codewave.brakets;
+        }
+        len = this.width + 2 * this.pad + 2 * this.deco.length - closing.length;
+        return this.wrapComment(this.decoLine(len) + closing);
+      };
+
+      _Class.prototype.decoLine = function(len) {
+        return Array(Math.ceil(len / this.deco.length) + 1).join(this.deco).substring(0, len);
       };
 
       _Class.prototype.padding = function() {
@@ -74,26 +94,15 @@
     close: (function() {
       function _Class(instance) {
         this.instance = instance;
-        this.commentChar = this.instance.codewave.getCommentChar();
         this.deco = this.instance.codewave.deco;
       }
 
       _Class.prototype.startFind = function() {
-        var i;
-        if ((i = this.commentChar.indexOf('%s')) > -1) {
-          return this.commentChar.substr(0, i) + this.deco + this.deco;
-        } else {
-          return this.commentChar + ' ' + this.deco + this.deco;
-        }
+        return this.instance.codewave.wrapCommentLeft(this.deco + this.deco);
       };
 
       _Class.prototype.endFind = function() {
-        var i;
-        if ((i = this.commentChar.indexOf('%s')) > -1) {
-          return this.deco + this.deco + this.commentChar.substr(i + 2);
-        } else {
-          return this.deco + this.deco + ' ' + this.commentChar;
-        }
+        return this.instance.codewave.wrapCommentRight(this.deco + this.deco);
       };
 
       _Class.prototype.execute = function() {
@@ -117,8 +126,12 @@
     })(),
     edit: (function() {
       function _Class(instance) {
+        var _ref;
         this.instance = instance;
-        this.cmd = this.instance.getParam([0, 'cmd']);
+        this.cmdName = this.instance.getParam([0, 'cmd']);
+        this.verbalize = (_ref = this.instance.getParam([1])) === 'v' || _ref === 'verbalize';
+        this.cmd = this.instance.codewave.getCmd(this.cmdName);
+        this.editable = (this.cmd.result != null) && typeof this.cmd.result === 'string';
         this.content = this.instance.content;
       }
 
@@ -135,7 +148,15 @@
       _Class.prototype.resultWithContent = function() {};
 
       _Class.prototype.resultWithoutContent = function() {
-        return "~~box~~\n~~source~~\n~~/source~~\n~~save~~ ~~close~~\n~~/box~~";
+        var parser;
+        if (this.editable) {
+          parser = new Codewave(new Codewave.TextParser("~~box cmd:\"" + this.instance.noBracket + "\"~~\n~~source~~\n" + this.cmd.result + "\n~~/source~~\n~~save~~ ~~close~~\n~~/box~~"));
+          if (this.verbalize) {
+            return parser.getText();
+          } else {
+            return parser.parseAll();
+          }
+        }
       };
 
       return _Class;

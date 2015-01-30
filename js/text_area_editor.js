@@ -50,6 +50,9 @@
     };
 
     TextAreaEditor.prototype.getCursorPos = function() {
+      if (this.tmpCursorPos != null) {
+        return this.tmpCursorPos;
+      }
       if (this.hasFocus) {
         if (this.selectionPropExists) {
           return {
@@ -94,8 +97,13 @@
         end = start;
       }
       if (this.selectionPropExists) {
+        this.tmpCursorPos = {
+          start: start,
+          end: end
+        };
         setTimeout(((function(_this) {
           return function() {
+            _this.tmpCursorPos = null;
             _this.obj.selectionStart = start;
             return _this.obj.selectionEnd = end;
           };

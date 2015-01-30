@@ -19,6 +19,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     @obj.value = val if val?
     @obj.value
   getCursorPos: ->
+    return @tmpCursorPos if @tmpCursorPos?
     if @hasFocus
       if @selectionPropExists
         (
@@ -50,7 +51,9 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
     if @selectionPropExists
+      @tmpCursorPos = ( start: start, end: end )
       setTimeout (=>
+        @tmpCursorPos = null
         @obj.selectionStart = start
         @obj.selectionEnd = end
       ), 1

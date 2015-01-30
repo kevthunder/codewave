@@ -40,6 +40,27 @@
       return new Codewave.CmdInstance(this, prev, this.editor.textSubstr(prev, next + this.brakets.length));
     };
 
+    Codewave.prototype.nextCmd = function(start) {
+      var beginning, f, pos;
+      if (start == null) {
+        start = 0;
+      }
+      pos = start;
+      while (f = this.findAnyNext(pos, [this.brakets, "\n"])) {
+        pos = f.pos + f.str.length;
+        if (f.str === this.brakets) {
+          if (typeof beginning !== "undefined" && beginning !== null) {
+            return new Codewave.CmdInstance(this, beginning, this.editor.textSubstr(beginning, f.pos + this.brakets.length));
+          } else {
+            beginning = f.pos;
+          }
+        } else {
+          beginning = null;
+        }
+      }
+      return null;
+    };
+
     Codewave.prototype.countPrevBraket = function(start) {
       var i;
       i = 0;
@@ -101,7 +122,7 @@
       }
       pos = start;
       while (true) {
-        if (!((0 < pos && pos < this.editor.textLen()))) {
+        if (!((0 <= pos && pos < this.editor.textLen()))) {
           return false;
         }
         for (_i = 0, _len = strings.length; _i < _len; _i++) {
@@ -151,8 +172,82 @@
       return this.editor.setCursorPos(cpos.end + this.brakets.length);
     };
 
+    Codewave.prototype.parseAll = function() {
+      var cmd, pos;
+      pos = 0;
+      while (cmd = this.nextCmd(pos)) {
+        pos = cmd.getEndPos();
+        this.editor.setCursorPos(pos);
+        if (cmd.execute() != null) {
+          pos = this.editor.getCursorPos().end;
+        }
+      }
+      return this.getText();
+    };
+
+    Codewave.prototype.getText = function() {
+      return this.editor.text();
+    };
+
+    Codewave.prototype.getCmd = function(cmdName) {
+      var cmd;
+      cmd = Codewave.cmd[cmdName];
+      if (typeof cmd === "function") {
+        if ((cmd.prototype.execute != null) || (cmd.prototype.result != null)) {
+          return cmd;
+        } else {
+          return {
+            result: cmd
+          };
+        }
+      } else if (typeof cmd === 'string') {
+        return {
+          result: cmd
+        };
+      } else {
+        return cmd;
+      }
+    };
+
     Codewave.prototype.getCommentChar = function() {
       return '<!-- %s -->';
+    };
+
+    Codewave.prototype.wrapComment = function(str) {
+      var cc;
+      cc = this.getCommentChar();
+      if (cc.indexOf('%s') > -1) {
+        return cc.replace('%s', str);
+      } else {
+        return cc + ' ' + str + ' ' + cc;
+      }
+    };
+
+    Codewave.prototype.wrapCommentLeft = function(str) {
+      var cc, i;
+      if (str == null) {
+        str = '';
+      }
+      cc = this.getCommentChar();
+      console.log();
+      if ((i = cc.indexOf('%s')) > -1) {
+        return cc.substr(0, i) + str;
+      } else {
+        return cc + ' ' + str;
+      }
+    };
+
+    Codewave.prototype.wrapCommentRight = function(str) {
+      var cc, i;
+      if (str == null) {
+        str = '';
+      }
+      cc = this.getCommentChar();
+      if ((i = cc.indexOf('%s')) > -1) {
+        return str + cc.substr(i + 2);
+      } else {
+        return str + ' ' + cc;
+      }
     };
 
     Codewave.prototype.brakets = '~~';
@@ -164,6 +259,12 @@
     return Codewave;
 
   })();
+
+  this.Codewave.util = {
+    escapeRegExp: function(str) {
+      return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    }
+  };
 
 }).call(this);
 

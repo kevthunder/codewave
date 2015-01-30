@@ -32,6 +32,20 @@
       return this.text(this.text().slice(0, start) + (text || "") + this.text().slice(end));
     };
 
+    TextParser.prototype.getCursorPos = function() {
+      return this.target;
+    };
+
+    TextParser.prototype.setCursorPos = function(start, end) {
+      if (arguments.length < 2) {
+        end = start;
+      }
+      return this.target = {
+        start: end,
+        end: end
+      };
+    };
+
     return TextParser;
 
   })();

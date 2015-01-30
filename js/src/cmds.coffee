@@ -23,21 +23,32 @@
         @instance.named.height
       else
         @height
-        
-      @commentChar = @instance.codewave.getCommentChar()
+      
+      @cmd = @instance.getParam([0,'cmd'])
       @deco = @instance.codewave.deco
       @pad = 2
     result: ->
       lines = (@instance.content or '').split("\n")
-      content = @separator() + "\n" + (@line(lines[x]) for x in [0..(@height-1)]).join("\n") + "\n"+ @separator()
+      content = @startSep() + "\n" + (@line(lines[x]) for x in [0..(@height-1)]).join("\n") + "\n"+ @endSep()
     wrapComment: (str)->
-      if @commentChar.indexOf('%s') > -1
-        @commentChar.replace('%s',str)
-      else
-        @commentChar + ' ' + str + ' ' + @commentChar
+      @instance.codewave.wrapComment(str)
     separator: ->
       len = @width + 2 * @pad + 2 * @deco.length
-      @wrapComment(Array(Math.ceil(len/@deco.length)+1).join(@deco).substring(0,len))
+      @wrapComment(@decoLine(len))
+    startSep: ->
+      cmd = ''
+      if @cmd
+        cmd = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
+      len = @width + 2 * @pad + 2 * @deco.length - cmd.length
+      @wrapComment(cmd+@decoLine(len))
+    endSep: ->
+      closing = ''
+      if @cmd
+        closing = @instance.codewave.brakets+@instance.codewave.closeChar+@cmd.split(" ")[0]+@instance.codewave.brakets
+      len = @width + 2 * @pad + 2 * @deco.length - closing.length
+      @wrapComment(@decoLine(len)+closing)
+    decoLine: (len) ->
+      Array(Math.ceil(len/@deco.length)+1).join(@deco).substring(0,len)
     padding: -> 
       Array(@pad+1).join(" ")
     line: (text = '') ->
@@ -50,18 +61,11 @@
       [w,lines.length]
   close: class
     constructor: (@instance)->
-      @commentChar = @instance.codewave.getCommentChar()
       @deco = @instance.codewave.deco
     startFind: ->
-      if (i = @commentChar.indexOf('%s')) > -1
-        @commentChar.substr(0,i) + @deco + @deco
-      else
-        @commentChar + ' ' + @deco + @deco
+      @instance.codewave.wrapCommentLeft(@deco + @deco)
     endFind: ->
-      if (i = @commentChar.indexOf('%s')) > -1
-        @deco + @deco + @commentChar.substr(i+2)
-      else
-        @deco + @deco + ' ' + @commentChar
+      @instance.codewave.wrapCommentRight(@deco + @deco)
     execute: ->
       startFind = @startFind()
       endFind = @endFind()
@@ -77,7 +81,10 @@
         
   edit: class
     constructor: (@instance)->
-      @cmd = @instance.getParam([0,'cmd'])
+      @cmdName = @instance.getParam([0,'cmd'])
+      @verbalize = @instance.getParam([1]) in ['v','verbalize']
+      @cmd = @instance.codewave.getCmd(@cmdName)
+      @editable = @cmd.result? and typeof @cmd.result == 'string'
       @content = @instance.content
     result: ->
       if @cmd
@@ -87,11 +94,15 @@
           @resultWithoutContent()
     resultWithContent: ->
     resultWithoutContent: ->
-      """
-      ~~box~~
-      ~~source~~
-      ~~/source~~
-      ~~save~~ ~~close~~
-      ~~/box~~
-      """
+      if @editable
+        parser = new Codewave(new Codewave.TextParser(
+          """
+          ~~box cmd:"#{@instance.noBracket}"~~
+          ~~source~~
+          #{@cmd.result}
+          ~~/source~~
+          ~~save~~ ~~close~~
+          ~~/box~~
+          """))
+        if @verbalize then parser.getText() else parser.parseAll()
 )
