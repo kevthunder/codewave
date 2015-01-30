@@ -2,6 +2,7 @@ class @Codewave
   constructor: (@editor) ->
     @editor.onActivationKey = => @onActivationKey()
     
+    
   onActivationKey: ->
     console.log('activation key')
     if(cmd = @cursorOnCommand())
@@ -95,8 +96,14 @@ class @Codewave
     @getText()
   getText: ->
     @editor.text()
+  getNameSpaces: () ->
+    ['core'].concat(@nameSpaces)
+  addNameSpace: (name) ->
+    @nameSpaces.push(name)
+  removeNameSpace: (name) ->
+    @nameSpaces = @nameSpaces.filter (n) -> n isnt name
   getCmd: (cmdName) ->
-    cmd = Codewave.cmd[cmdName]
+    cmd = @getCmdFrom(cmdName,Codewave)
     if typeof(cmd) == "function"
       if cmd.prototype.execute? or cmd.prototype.result?
         cmd
@@ -106,6 +113,18 @@ class @Codewave
       (result:cmd)
     else
       cmd
+  getCmdFrom: (cmdName,space) ->
+    if space? and space.cmd?
+      if cmdName.indexOf(':') > -1
+        cmdNameSpc = cmdName.split(':',1)[0]
+      for nspc in @getNameSpaces()
+        if cmd = @getCmdFrom(cmdName,space.cmd[nspc])
+          return cmd
+      if cmdNameSpc? 
+        if cmd = @getCmdFrom(cmdName,space.cmd[cmdNameSpc])
+          return cmd
+      else
+        space.cmd[cmdName]
   getCommentChar: ->
     '<!-- %s -->'
   wrapComment: (str) ->
@@ -130,6 +149,7 @@ class @Codewave
   brakets: '~~'
   deco: '~'
   closeChar: '/'
+  nameSpaces: []
   
   
 @Codewave.util = ( 

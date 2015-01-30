@@ -1,6 +1,4 @@
-@Codewave.cmd = (
-  hello: "Hello, World!",
-)
+@Codewave.cmd.core = (
   box: class
     constructor: (@instance)->
       if @instance.content

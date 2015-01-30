@@ -189,9 +189,23 @@
       return this.editor.text();
     };
 
+    Codewave.prototype.getNameSpaces = function() {
+      return ['core'].concat(this.nameSpaces);
+    };
+
+    Codewave.prototype.addNameSpace = function(name) {
+      return this.nameSpaces.push(name);
+    };
+
+    Codewave.prototype.removeNameSpace = function(name) {
+      return this.nameSpaces = this.nameSpaces.filter(function(n) {
+        return n !== name;
+      });
+    };
+
     Codewave.prototype.getCmd = function(cmdName) {
       var cmd;
-      cmd = Codewave.cmd[cmdName];
+      cmd = this.getCmdFrom(cmdName, Codewave);
       if (typeof cmd === "function") {
         if ((cmd.prototype.execute != null) || (cmd.prototype.result != null)) {
           return cmd;
@@ -206,6 +220,29 @@
         };
       } else {
         return cmd;
+      }
+    };
+
+    Codewave.prototype.getCmdFrom = function(cmdName, space) {
+      var cmd, cmdNameSpc, nspc, _i, _len, _ref;
+      if ((space != null) && (space.cmd != null)) {
+        if (cmdName.indexOf(':') > -1) {
+          cmdNameSpc = cmdName.split(':', 1)[0];
+        }
+        _ref = this.getNameSpaces();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          nspc = _ref[_i];
+          if (cmd = this.getCmdFrom(cmdName, space.cmd[nspc])) {
+            return cmd;
+          }
+        }
+        if (cmdNameSpc != null) {
+          if (cmd = this.getCmdFrom(cmdName, space.cmd[cmdNameSpc])) {
+            return cmd;
+          }
+        } else {
+          return space.cmd[cmdName];
+        }
       }
     };
 
@@ -255,6 +292,8 @@
     Codewave.prototype.deco = '~';
 
     Codewave.prototype.closeChar = '/';
+
+    Codewave.prototype.nameSpaces = [];
 
     return Codewave;
 

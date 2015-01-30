@@ -26,29 +26,31 @@ class @Codewave.CmdInstance
   _parseParams:(params) ->
     @params = []
     @named = {}
-    inStr = false
-    param = ''
-    name = false
-    for i in [0..params.length-1]
-      chr = params[i]
-      if chr == ' ' and !inStr
+    if params.length
+      inStr = false
+      param = ''
+      name = false
+      for i in [0..(params.length-1)]
+        chr = params[i]
+        if chr == ' ' and !inStr
+          if(name)
+            @named[name] = param
+          else
+            @params.push(param)
+          param = ''
+          name = false
+        else if chr == '"' and (i == 0 or params[i-1] != '\\')
+          inStr = !inStr
+        else if chr == ':' and !name and !inStr
+          name = param
+          param = ''
+        else
+          param += chr
+      if param.length
         if(name)
           @named[name] = param
         else
           @params.push(param)
-        param = ''
-        name = false
-      else if chr == '"' and (i == 0 or params[i-1] != '\\')
-        inStr = !inStr
-      else if chr == ':' and !name and !inStr
-        name = param
-        param = ''
-      else
-        param += chr
-    if(name)
-      @named[name] = param
-    else
-      @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
       @content = @codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/^\n/m,'').replace(/\n$/m,'')
@@ -86,12 +88,12 @@ class @Codewave.CmdInstance
       cmd
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
-  getParam: (names, def) ->
+  getParam: (names, defVal = null) ->
     names = [names] if (typeof names == 'string')
     for n in names
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
-    def
+    defVal
   execute: ->
     if @cmd?
       if @cmd.execute?

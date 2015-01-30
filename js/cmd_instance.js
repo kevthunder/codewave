@@ -48,32 +48,36 @@
       var chr, i, inStr, name, param, _i, _ref;
       this.params = [];
       this.named = {};
-      inStr = false;
-      param = '';
-      name = false;
-      for (i = _i = 0, _ref = params.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        chr = params[i];
-        if (chr === ' ' && !inStr) {
-          if (name) {
-            this.named[name] = param;
+      if (params.length) {
+        inStr = false;
+        param = '';
+        name = false;
+        for (i = _i = 0, _ref = params.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+          chr = params[i];
+          if (chr === ' ' && !inStr) {
+            if (name) {
+              this.named[name] = param;
+            } else {
+              this.params.push(param);
+            }
+            param = '';
+            name = false;
+          } else if (chr === '"' && (i === 0 || params[i - 1] !== '\\')) {
+            inStr = !inStr;
+          } else if (chr === ':' && !name && !inStr) {
+            name = param;
+            param = '';
           } else {
-            this.params.push(param);
+            param += chr;
           }
-          param = '';
-          name = false;
-        } else if (chr === '"' && (i === 0 || params[i - 1] !== '\\')) {
-          inStr = !inStr;
-        } else if (chr === ':' && !name && !inStr) {
-          name = param;
-          param = '';
-        } else {
-          param += chr;
         }
-      }
-      if (name) {
-        return this.named[name] = param;
-      } else {
-        return this.params.push(param);
+        if (param.length) {
+          if (name) {
+            return this.named[name] = param;
+          } else {
+            return this.params.push(param);
+          }
+        }
       }
     };
 
@@ -138,8 +142,11 @@
       return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
     };
 
-    CmdInstance.prototype.getParam = function(names, def) {
+    CmdInstance.prototype.getParam = function(names, defVal) {
       var n, _i, _len;
+      if (defVal == null) {
+        defVal = null;
+      }
       if (typeof names === 'string') {
         names = [names];
       }
@@ -152,7 +159,7 @@
           return this.params[n];
         }
       }
-      return def;
+      return defVal;
     };
 
     CmdInstance.prototype.execute = function() {
