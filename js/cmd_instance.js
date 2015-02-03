@@ -6,12 +6,19 @@
       this.pos = pos;
       this.str = str;
       this._checkCloser();
+      this.opening = this.str;
       this.noBracket = this._removeBracket(this.str);
       this._splitComponents();
       this._findClosing();
+      this._checkElongated();
       this._checkBox();
-      this.cmd = this._getCmd();
     }
+
+    CmdInstance.prototype.init = function() {
+      this._getParentCmds();
+      this._getCmd();
+      return this;
+    };
 
     CmdInstance.prototype._checkCloser = function() {
       var f, noBracket;
@@ -101,13 +108,23 @@
       }
     };
 
+    CmdInstance.prototype._checkElongated = function() {
+      var endPos, _ref;
+      endPos = this.getEndPos();
+      while (this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length) === this.codewave.deco) {
+        endPos += this.codewave.deco.length;
+      }
+      if ((_ref = this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length)) === ' ' || _ref === "\n") {
+        return this.str = this.codewave.editor.textSubstr(this.pos, endPos);
+      }
+    };
+
     CmdInstance.prototype._checkBox = function() {
       var cl, cr, endPos;
       cl = this.codewave.wrapCommentLeft();
       cr = this.codewave.wrapCommentRight();
       endPos = this.getEndPos() + cr.length;
-      if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(this.getEndPos(), endPos) === cr) {
-        console.log(this.pos - cl.length);
+      if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(endPos - cr.length, endPos) === cr) {
         this.pos = this.pos - cl.length;
         this.str = this.codewave.editor.textSubstr(this.pos, endPos);
         return this._removeCommentFromContent();
@@ -120,7 +137,6 @@
         ecl = Codewave.util.escapeRegExp(this.codewave.wrapCommentLeft());
         ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
         ed = Codewave.util.escapeRegExp(this.codewave.deco);
-        console.log("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$");
         re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
         re2 = new RegExp("^(?:" + ed + ")*" + ecr + "\n", "");
         re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*$", "");
@@ -128,14 +144,19 @@
       }
     };
 
+    CmdInstance.prototype._getParentCmds = function() {
+      return this.parent = this.codewave.getEnclosingCmd(this.getEndPos());
+    };
+
     CmdInstance.prototype._getCmd = function() {
-      var cmd;
-      cmd = this.codewave.getCmd(this.cmdName);
-      if (typeof cmd === "function") {
-        return cmd = new cmd(this);
+      var _ref;
+      if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
+        this.cmd = Codewave.cmd.core.cmd.no_execute;
       } else {
-        return cmd;
+        this.cmd = this.codewave.getCmd(this.cmdName);
       }
+      this.cmdObj = ((_ref = this.cmd) != null ? _ref.cls : void 0) != null ? new this.cmd.cls(this) : this.cmd;
+      return this.cmd;
     };
 
     CmdInstance.prototype._removeBracket = function(str) {
@@ -164,9 +185,9 @@
 
     CmdInstance.prototype.execute = function() {
       var r;
-      if (this.cmd != null) {
-        if (this.cmd.execute != null) {
-          return this.cmd.execute(this);
+      if (this.cmdObj != null) {
+        if (this.cmdObj.execute != null) {
+          return this.cmdObj.execute(this);
         } else if ((r = this.result()) != null) {
           return this.replaceWith(r);
         }
@@ -174,11 +195,12 @@
     };
 
     CmdInstance.prototype.result = function() {
-      if (this.cmd.result != null) {
-        if (typeof this.cmd.result === "function") {
-          return this.cmd.result();
+      var _ref;
+      if (((_ref = this.cmdObj) != null ? _ref.result : void 0) != null) {
+        if (typeof this.cmdObj.result === "function") {
+          return this.cmdObj.result(this);
         } else {
-          return this.cmd.result;
+          return this.cmdObj.result;
         }
       }
     };
@@ -196,9 +218,15 @@
     };
 
     CmdInstance.prototype.replaceWith = function(text) {
+      var cursorPos, p;
       text = this.applyIndent(text);
+      if (this.codewave.checkCarret) {
+        cursorPos = (p = text.indexOf(this.codewave.carretChar)) > -1 ? (text = this.codewave.removeCarret(text), this.pos + p) : this.pos + text.length;
+      }
       this.codewave.editor.spliceText(this.pos, this.getEndPos(), text);
-      return this.codewave.editor.setCursorPos(this.pos + text.length);
+      this.codewave.editor.setCursorPos(cursorPos);
+      this.replaceStart = this.pos;
+      return this.replaceEnd = this.pos + text.length;
     };
 
     return CmdInstance;

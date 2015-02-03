@@ -1,26 +1,32 @@
 class @Codewave
   constructor: (@editor) ->
+    @brakets = '~~'
+    @deco = '~'
+    @closeChar = '/'
+    @noExecuteChar = '!'
+    @carretChar = '|'
+    @nameSpaces = []
+    @checkCarret = yes
+    @vars = {}
     @editor.onActivationKey = => @onActivationKey()
-    
-    
   onActivationKey: ->
     console.log('activation key')
-    if(cmd = @cursorOnCommand())
+    if(cmd = @commandOnCursorPos()?.init())
       console.log(cmd)
       cmd.execute()
     else
       @addBrakets()
-  
-  cursorOnCommand: ->
+  commandOnCursorPos: ->
     cpos = @editor.getCursorPos()
-    pos = cpos.end
+    @commandOnPos(cpos.end)
+  commandOnPos: (pos) ->
     prev = @findPrevBraket(if @isEndLine(pos) then pos else pos+1)
-    return false unless prev?
+    return null unless prev?
     if prev >= pos-2
       pos = prev
       prev = @findPrevBraket(pos)
     next = @findNextBraket(pos)
-    return false unless next? and @countPrevBraket(prev) % 2 == 0
+    return null unless next? and @countPrevBraket(prev) % 2 == 0
     new Codewave.CmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
   nextCmd: (start = 0) ->
     pos = start
@@ -33,6 +39,17 @@ class @Codewave
           beginning = f.pos
       else
         beginning = null
+    null
+  getEnclosingCmd: (pos = 0) ->
+    cpos = pos
+    closingPrefix = @brakets + @closeChar
+    while (p = @findNext(cpos,closingPrefix))?
+      if cmd = @commandOnPos(p+closingPrefix.length)
+        cpos = cmd.getEndPos()
+        if cmd.pos < pos
+          return cmd
+      else
+        cpos = p+closingPrefix.length
     null
   countPrevBraket: (start) -> 
     i = 0
@@ -53,12 +70,11 @@ class @Codewave
     @findNext(start,string,-1)
   findNext: (start,string,direction = 1) -> 
     f = @findAnyNext(start ,[string], direction)
-    console.log(f)
     f.pos if f
   findAnyNext: (start,strings,direction = 1) -> 
     pos = start
     while true  
-      return false unless 0 <= pos < @editor.textLen()
+      return null unless 0 <= pos < @editor.textLen()
       for str in strings
         [start, end] = [pos, pos + str.length * direction]
         [start, end] = [end, start] if end < start
@@ -86,13 +102,19 @@ class @Codewave
     @editor.insertTextAt(@brakets,cpos.end)
     @editor.insertTextAt(@brakets,cpos.start)
     @editor.setCursorPos(cpos.end+@brakets.length)
-  parseAll: ->
+  parseAll: (recursive = true) ->
     pos = 0
     while cmd = @nextCmd(pos)
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
-      if cmd.execute()?
-        pos = @editor.getCursorPos().end
+      if recursive && cmd.content? 
+        parser = new Codewave(new Codewave.TextParser(cmd.content))
+        cmd.content = parser.parseAll()
+      if cmd.init().execute()?
+        if(cmd.replaceEnd?)
+          pos = cmd.replaceEnd
+        else
+          pos = @editor.getCursorPos().end
     @getText()
   getText: ->
     @editor.text()
@@ -103,28 +125,36 @@ class @Codewave
   removeNameSpace: (name) ->
     @nameSpaces = @nameSpaces.filter (n) -> n isnt name
   getCmd: (cmdName) ->
-    cmd = @getCmdFrom(cmdName,Codewave)
+    @getCmdFrom(cmdName,Codewave)
+  uniformizeCmd: (cmd) ->
     if typeof(cmd) == "function"
-      if cmd.prototype.execute? or cmd.prototype.result?
-        cmd
-      else
+        if cmd.prototype.execute? or cmd.prototype.result?
+          (cls:cmd)
+        else
+          (result:cmd)
+      else if typeof cmd == 'string'
         (result:cmd)
-    else if typeof cmd == 'string'
-      (result:cmd)
-    else
+      else
+        cmd
+  prepCmd: (cmd,path=[]) ->
+    if(cmd?)
+      cmd = @uniformizeCmd(cmd)
+      cmd.fullname = path.join(':')
       cmd
-  getCmdFrom: (cmdName,space) ->
+  getCmdFrom: (cmdName,space,path = []) ->
     if space? and space.cmd?
-      if cmdName.indexOf(':') > -1
-        cmdNameSpc = cmdName.split(':',1)[0]
+      if (p = cmdName.indexOf(':')) > -1
+        cmdNameSpc = cmdName.substring(0,p)
+        cmdNameAfter = cmdName.substring(p+1)
       for nspc in @getNameSpaces()
-        if cmd = @getCmdFrom(cmdName,space.cmd[nspc])
+        spc = Codewave.getNameSpace(nspc,space)
+        if cmd = @getCmdFrom(cmdName,spc,path.concat([nspc]))
           return cmd
       if cmdNameSpc? 
-        if cmd = @getCmdFrom(cmdName,space.cmd[cmdNameSpc])
+        if cmd = @getCmdFrom(cmdNameAfter,space.cmd[cmdNameSpc],path.concat([cmdNameSpc]))
           return cmd
-      else
-        space.cmd[cmdName]
+      else if space.cmd[cmdName]?
+        @prepCmd(space.cmd[cmdName],path.concat([cmdName]))
   getCommentChar: ->
     '<!-- %s -->'
   wrapComment: (str) ->
@@ -146,11 +176,33 @@ class @Codewave
       str + cc.substr(i+2)
     else
       str + ' ' + cc
-  brakets: '~~'
-  deco: '~'
-  closeChar: '/'
-  nameSpaces: []
-  
+  removeCarret: (str) ->
+    re = new RegExp(Codewave.util.escapeRegExp(@carretChar), "g")
+    str.replace(re,'')
+
+@Codewave.getNameSpace = (nspc,startSpace = Codewave) ->
+    parts = nspc.split(':')
+    spc = startSpace
+    for pt in parts
+      return null unless spc.cmd?[pt]?
+      spc = spc.cmd[pt]
+    spc
+    
+@Codewave.setCmd = (fullname,data,save = yes) ->
+  parts = fullname.split(':')
+  name = parts.pop()
+  spc = Codewave
+  for pt in parts
+    spc.cmd[pt] = {} unless spc.cmd[pt]?
+    spc = spc.cmd[pt]
+    spc.cmd = {} unless spc.cmd?
+  spc.cmd[name] = data
+  if save
+    saved = Codewave.storage.load('saved')
+    saved = {} unless saved?
+    saved[fullname] = data
+    Codewave.storage.save('saved',saved)
+  data
   
 @Codewave.util = ( 
   escapeRegExp: (str) ->

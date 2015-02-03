@@ -3,6 +3,14 @@
   this.Codewave = (function() {
     function Codewave(editor) {
       this.editor = editor;
+      this.brakets = '~~';
+      this.deco = '~';
+      this.closeChar = '/';
+      this.noExecuteChar = '!';
+      this.carretChar = '|';
+      this.nameSpaces = [];
+      this.checkCarret = true;
+      this.vars = {};
       this.editor.onActivationKey = (function(_this) {
         return function() {
           return _this.onActivationKey();
@@ -11,9 +19,9 @@
     }
 
     Codewave.prototype.onActivationKey = function() {
-      var cmd;
+      var cmd, _ref;
       console.log('activation key');
-      if ((cmd = this.cursorOnCommand())) {
+      if ((cmd = (_ref = this.commandOnCursorPos()) != null ? _ref.init() : void 0)) {
         console.log(cmd);
         return cmd.execute();
       } else {
@@ -21,13 +29,17 @@
       }
     };
 
-    Codewave.prototype.cursorOnCommand = function() {
-      var cpos, next, pos, prev;
+    Codewave.prototype.commandOnCursorPos = function() {
+      var cpos;
       cpos = this.editor.getCursorPos();
-      pos = cpos.end;
+      return this.commandOnPos(cpos.end);
+    };
+
+    Codewave.prototype.commandOnPos = function(pos) {
+      var next, prev;
       prev = this.findPrevBraket(this.isEndLine(pos) ? pos : pos + 1);
       if (prev == null) {
-        return false;
+        return null;
       }
       if (prev >= pos - 2) {
         pos = prev;
@@ -35,7 +47,7 @@
       }
       next = this.findNextBraket(pos);
       if (!((next != null) && this.countPrevBraket(prev) % 2 === 0)) {
-        return false;
+        return null;
       }
       return new Codewave.CmdInstance(this, prev, this.editor.textSubstr(prev, next + this.brakets.length));
     };
@@ -56,6 +68,26 @@
           }
         } else {
           beginning = null;
+        }
+      }
+      return null;
+    };
+
+    Codewave.prototype.getEnclosingCmd = function(pos) {
+      var closingPrefix, cmd, cpos, p;
+      if (pos == null) {
+        pos = 0;
+      }
+      cpos = pos;
+      closingPrefix = this.brakets + this.closeChar;
+      while ((p = this.findNext(cpos, closingPrefix)) != null) {
+        if (cmd = this.commandOnPos(p + closingPrefix.length)) {
+          cpos = cmd.getEndPos();
+          if (cmd.pos < pos) {
+            return cmd;
+          }
+        } else {
+          cpos = p + closingPrefix.length;
         }
       }
       return null;
@@ -109,7 +141,6 @@
         direction = 1;
       }
       f = this.findAnyNext(start, [string], direction);
-      console.log(f);
       if (f) {
         return f.pos;
       }
@@ -123,7 +154,7 @@
       pos = start;
       while (true) {
         if (!((0 <= pos && pos < this.editor.textLen()))) {
-          return false;
+          return null;
         }
         for (_i = 0, _len = strings.length; _i < _len; _i++) {
           str = strings[_i];
@@ -172,14 +203,25 @@
       return this.editor.setCursorPos(cpos.end + this.brakets.length);
     };
 
-    Codewave.prototype.parseAll = function() {
-      var cmd, pos;
+    Codewave.prototype.parseAll = function(recursive) {
+      var cmd, parser, pos;
+      if (recursive == null) {
+        recursive = true;
+      }
       pos = 0;
       while (cmd = this.nextCmd(pos)) {
         pos = cmd.getEndPos();
         this.editor.setCursorPos(pos);
-        if (cmd.execute() != null) {
-          pos = this.editor.getCursorPos().end;
+        if (recursive && (cmd.content != null)) {
+          parser = new Codewave(new Codewave.TextParser(cmd.content));
+          cmd.content = parser.parseAll();
+        }
+        if (cmd.init().execute() != null) {
+          if ((cmd.replaceEnd != null)) {
+            pos = cmd.replaceEnd;
+          } else {
+            pos = this.editor.getCursorPos().end;
+          }
         }
       }
       return this.getText();
@@ -204,11 +246,15 @@
     };
 
     Codewave.prototype.getCmd = function(cmdName) {
-      var cmd;
-      cmd = this.getCmdFrom(cmdName, Codewave);
+      return this.getCmdFrom(cmdName, Codewave);
+    };
+
+    Codewave.prototype.uniformizeCmd = function(cmd) {
       if (typeof cmd === "function") {
         if ((cmd.prototype.execute != null) || (cmd.prototype.result != null)) {
-          return cmd;
+          return {
+            cls: cmd
+          };
         } else {
           return {
             result: cmd
@@ -223,25 +269,41 @@
       }
     };
 
-    Codewave.prototype.getCmdFrom = function(cmdName, space) {
-      var cmd, cmdNameSpc, nspc, _i, _len, _ref;
+    Codewave.prototype.prepCmd = function(cmd, path) {
+      if (path == null) {
+        path = [];
+      }
+      if ((cmd != null)) {
+        cmd = this.uniformizeCmd(cmd);
+        cmd.fullname = path.join(':');
+        return cmd;
+      }
+    };
+
+    Codewave.prototype.getCmdFrom = function(cmdName, space, path) {
+      var cmd, cmdNameAfter, cmdNameSpc, nspc, p, spc, _i, _len, _ref;
+      if (path == null) {
+        path = [];
+      }
       if ((space != null) && (space.cmd != null)) {
-        if (cmdName.indexOf(':') > -1) {
-          cmdNameSpc = cmdName.split(':', 1)[0];
+        if ((p = cmdName.indexOf(':')) > -1) {
+          cmdNameSpc = cmdName.substring(0, p);
+          cmdNameAfter = cmdName.substring(p + 1);
         }
         _ref = this.getNameSpaces();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           nspc = _ref[_i];
-          if (cmd = this.getCmdFrom(cmdName, space.cmd[nspc])) {
+          spc = Codewave.getNameSpace(nspc, space);
+          if (cmd = this.getCmdFrom(cmdName, spc, path.concat([nspc]))) {
             return cmd;
           }
         }
         if (cmdNameSpc != null) {
-          if (cmd = this.getCmdFrom(cmdName, space.cmd[cmdNameSpc])) {
+          if (cmd = this.getCmdFrom(cmdNameAfter, space.cmd[cmdNameSpc], path.concat([cmdNameSpc]))) {
             return cmd;
           }
-        } else {
-          return space.cmd[cmdName];
+        } else if (space.cmd[cmdName] != null) {
+          return this.prepCmd(space.cmd[cmdName], path.concat([cmdName]));
         }
       }
     };
@@ -287,17 +349,62 @@
       }
     };
 
-    Codewave.prototype.brakets = '~~';
-
-    Codewave.prototype.deco = '~';
-
-    Codewave.prototype.closeChar = '/';
-
-    Codewave.prototype.nameSpaces = [];
+    Codewave.prototype.removeCarret = function(str) {
+      var re;
+      re = new RegExp(Codewave.util.escapeRegExp(this.carretChar), "g");
+      return str.replace(re, '');
+    };
 
     return Codewave;
 
   })();
+
+  this.Codewave.getNameSpace = function(nspc, startSpace) {
+    var parts, pt, spc, _i, _len, _ref;
+    if (startSpace == null) {
+      startSpace = Codewave;
+    }
+    parts = nspc.split(':');
+    spc = startSpace;
+    for (_i = 0, _len = parts.length; _i < _len; _i++) {
+      pt = parts[_i];
+      if (((_ref = spc.cmd) != null ? _ref[pt] : void 0) == null) {
+        return null;
+      }
+      spc = spc.cmd[pt];
+    }
+    return spc;
+  };
+
+  this.Codewave.setCmd = function(fullname, data, save) {
+    var name, parts, pt, saved, spc, _i, _len;
+    if (save == null) {
+      save = true;
+    }
+    parts = fullname.split(':');
+    name = parts.pop();
+    spc = Codewave;
+    for (_i = 0, _len = parts.length; _i < _len; _i++) {
+      pt = parts[_i];
+      if (spc.cmd[pt] == null) {
+        spc.cmd[pt] = {};
+      }
+      spc = spc.cmd[pt];
+      if (spc.cmd == null) {
+        spc.cmd = {};
+      }
+    }
+    spc.cmd[name] = data;
+    if (save) {
+      saved = Codewave.storage.load('saved');
+      if (saved == null) {
+        saved = {};
+      }
+      saved[fullname] = data;
+      Codewave.storage.save('saved', saved);
+    }
+    return data;
+  };
 
   this.Codewave.util = {
     escapeRegExp: function(str) {

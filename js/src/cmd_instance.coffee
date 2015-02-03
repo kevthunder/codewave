@@ -1,11 +1,16 @@
 class @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
     @_checkCloser()
+    @opening = @str
     @noBracket = @_removeBracket(@str)
     @_splitComponents()
     @_findClosing()
+    @_checkElongated()
     @_checkBox()
-    @cmd = @_getCmd()
+  init: ->
+    @_getParentCmds()
+    @_getCmd()
+    this
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
     if noBracket.substring(0,@codewave.closeChar.length) == @codewave.closeChar and f = @_findOpeningPos()
@@ -61,12 +66,17 @@ class @Codewave.CmdInstance
     opening = @codewave.brakets + @cmdName
     if f = @codewave.findMatchingPair(@pos+@str.length,opening,closing)
       @closingPos = f
+  _checkElongated: ->
+    endPos = @getEndPos()
+    while @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) == @codewave.deco
+      endPos+=@codewave.deco.length
+    if @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) in [' ',"\n"]
+      @str = @codewave.editor.textSubstr(@pos,endPos)
   _checkBox: ->
     cl = @codewave.wrapCommentLeft()
     cr = @codewave.wrapCommentRight()
     endPos = @getEndPos() + cr.length
-    if @codewave.editor.textSubstr(@pos - cl.length,@pos) == cl and @codewave.editor.textSubstr(@getEndPos(),endPos) == cr
-      console.log(@pos - cl.length)
+    if @codewave.editor.textSubstr(@pos - cl.length,@pos) == cl and @codewave.editor.textSubstr(endPos - cr.length,endPos) == cr
       @pos = @pos - cl.length
       @str = @codewave.editor.textSubstr(@pos,endPos)
       @_removeCommentFromContent()
@@ -75,17 +85,19 @@ class @Codewave.CmdInstance
       ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
       ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@codewave.deco)
-      console.log("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$")
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
       re2 = new RegExp("^(?:#{ed})*#{ecr}\n", "")
       re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$", "")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
+  _getParentCmds: () ->
+    @parent = @codewave.getEnclosingCmd(@getEndPos())
   _getCmd: ->
-    cmd = @codewave.getCmd(@cmdName)
-    if typeof(cmd) == "function"
-      cmd = new cmd(this)
-    else 
-      cmd
+    if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
+      @cmd = Codewave.cmd.core.cmd.no_execute
+    else
+      @cmd = @codewave.getCmd(@cmdName)
+    @cmdObj = if @cmd?.cls? then new @cmd.cls(this) else @cmd
+    @cmd
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
   getParam: (names, defVal = null) ->
@@ -95,17 +107,17 @@ class @Codewave.CmdInstance
       return @params[n] if @params[n]?
     defVal
   execute: ->
-    if @cmd?
-      if @cmd.execute?
-        @cmd.execute(this)
+    if @cmdObj?
+      if @cmdObj.execute?
+        @cmdObj.execute(this)
       else if (r = @result())?
         @replaceWith(r)
   result: -> 
-      if @cmd.result?
-        if typeof(@cmd.result) == "function"
-          @cmd.result()
+      if @cmdObj?.result?
+        if typeof(@cmdObj.result) == "function"
+          @cmdObj.result(this)
         else
-          @cmd.result
+          @cmdObj.result
   getEndPos: ->
     @pos+@str.length
   getIndent: ->
@@ -115,5 +127,15 @@ class @Codewave.CmdInstance
   replaceWith: (text) ->
     text = @applyIndent(text)
     
+    if @codewave.checkCarret
+      cursorPos = if (p = text.indexOf(@codewave.carretChar)) > -1
+        text = @codewave.removeCarret(text)
+        @pos+p
+      else
+        @pos+text.length
+      
+      
     @codewave.editor.spliceText(@pos,@getEndPos(),text)
-    @codewave.editor.setCursorPos(@pos+text.length)
+    @codewave.editor.setCursorPos(cursorPos)
+    @replaceStart = @pos
+    @replaceEnd = @pos+text.length
