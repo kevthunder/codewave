@@ -4,8 +4,7 @@
     function _Class() {}
 
     _Class.prototype.save = function(key, val) {
-      console.log(JSON.stringify(val));
-      return console.log(localStorage.setItem(this.fullKey(key), JSON.stringify(val)));
+      return localStorage.setItem(this.fullKey(key), JSON.stringify(val));
     };
 
     _Class.prototype.load = function(key) {

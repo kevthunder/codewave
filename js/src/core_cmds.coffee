@@ -14,6 +14,9 @@ setVarCmd = (name) ->
       result: (instance) ->
         re = new RegExp("^"+Codewave.util.escapeRegExp(instance.codewave.brakets) + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar), "")
         instance.str.replace(re,instance.codewave.brakets)
+    exec_parent:
+      execute: (instance) ->
+        instance.parent?.execute()
     box: class
       constructor: (@instance)->
         if @instance.content
@@ -94,6 +97,8 @@ setVarCmd = (name) ->
     edit: 
       cmd: 
         source: setVarCmd('source')
+        save:
+          aliasOf: 'core:exec_parent'
       cls: class
         constructor: (@instance)->
           @cmdName = @instance.getParam([0,'cmd'])

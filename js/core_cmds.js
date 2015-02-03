@@ -23,6 +23,12 @@
           return instance.str.replace(re, instance.codewave.brakets);
         }
       },
+      exec_parent: {
+        execute: function(instance) {
+          var _ref;
+          return (_ref = instance.parent) != null ? _ref.execute() : void 0;
+        }
+      },
       box: (function() {
         function _Class(instance) {
           var _ref;
@@ -145,7 +151,10 @@
       })(),
       edit: {
         cmd: {
-          source: setVarCmd('source')
+          source: setVarCmd('source'),
+          save: {
+            aliasOf: 'core:exec_parent'
+          }
         },
         cls: (function() {
           function _Class(instance) {

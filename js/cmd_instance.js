@@ -145,7 +145,8 @@
     };
 
     CmdInstance.prototype._getParentCmds = function() {
-      return this.parent = this.codewave.getEnclosingCmd(this.getEndPos());
+      var _ref;
+      return this.parent = (_ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? _ref.init() : void 0;
     };
 
     CmdInstance.prototype._getCmd = function() {
@@ -153,10 +154,23 @@
       if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
         this.cmd = Codewave.cmd.core.cmd.no_execute;
       } else {
-        this.cmd = this.codewave.getCmd(this.cmdName);
+        this.cmd = this.codewave.getCmd(this.cmdName, this._getParentNamespaces());
       }
       this.cmdObj = ((_ref = this.cmd) != null ? _ref.cls : void 0) != null ? new this.cmd.cls(this) : this.cmd;
       return this.cmd;
+    };
+
+    CmdInstance.prototype._getParentNamespaces = function() {
+      var nspcs, obj;
+      nspcs = [];
+      obj = this;
+      while (obj.parent) {
+        obj = obj.parent;
+        if (obj.cmd != null) {
+          nspcs.push(obj.cmd.fullname);
+        }
+      }
+      return nspcs;
     };
 
     CmdInstance.prototype._removeBracket = function(str) {

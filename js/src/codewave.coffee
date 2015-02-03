@@ -124,8 +124,8 @@ class @Codewave
     @nameSpaces.push(name)
   removeNameSpace: (name) ->
     @nameSpaces = @nameSpaces.filter (n) -> n isnt name
-  getCmd: (cmdName) ->
-    @getCmdFrom(cmdName,Codewave)
+  getCmd: (cmdName,nameSpaces = []) ->
+    @getCmdFrom(cmdName,Codewave,@getNameSpaces().concat(nameSpaces))
   uniformizeCmd: (cmd) ->
     if typeof(cmd) == "function"
         if cmd.prototype.execute? or cmd.prototype.result?
@@ -140,18 +140,21 @@ class @Codewave
     if(cmd?)
       cmd = @uniformizeCmd(cmd)
       cmd.fullname = path.join(':')
+      if cmd.aliasOf? && (aliassed = @getCmd(cmd.aliasOf))?
+        cmd = Codewave.util.merge(cmd,aliassed)
+        cmd.aliassed = aliassed 
       cmd
-  getCmdFrom: (cmdName,space,path = []) ->
+  getCmdFrom: (cmdName,space,nameSpaces,path = []) ->
     if space? and space.cmd?
       if (p = cmdName.indexOf(':')) > -1
         cmdNameSpc = cmdName.substring(0,p)
         cmdNameAfter = cmdName.substring(p+1)
-      for nspc in @getNameSpaces()
+      for nspc in nameSpaces.reverse()
         spc = Codewave.getNameSpace(nspc,space)
-        if cmd = @getCmdFrom(cmdName,spc,path.concat([nspc]))
+        if cmd = @getCmdFrom(cmdName,spc,nameSpaces,path.concat([nspc]))
           return cmd
       if cmdNameSpc? 
-        if cmd = @getCmdFrom(cmdNameAfter,space.cmd[cmdNameSpc],path.concat([cmdNameSpc]))
+        if cmd = @getCmdFrom(cmdNameAfter,space.cmd[cmdNameSpc],nameSpaces,path.concat([cmdNameSpc]))
           return cmd
       else if space.cmd[cmdName]?
         @prepCmd(space.cmd[cmdName],path.concat([cmdName]))
@@ -207,4 +210,12 @@ class @Codewave
 @Codewave.util = ( 
   escapeRegExp: (str) ->
     str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+    
+  merge: (xs...) ->
+    if xs?.length > 0
+      Codewave.util.tap {}, (m) -> m[k] = v for k, v of x for x in xs
+ 
+  tap: (o, fn) -> 
+    fn(o)
+    o
 )

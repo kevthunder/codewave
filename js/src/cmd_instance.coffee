@@ -90,14 +90,21 @@ class @Codewave.CmdInstance
       re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$", "")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getParentCmds: () ->
-    @parent = @codewave.getEnclosingCmd(@getEndPos())
+    @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
   _getCmd: ->
     if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
       @cmd = Codewave.cmd.core.cmd.no_execute
     else
-      @cmd = @codewave.getCmd(@cmdName)
+      @cmd = @codewave.getCmd(@cmdName,@_getParentNamespaces())
     @cmdObj = if @cmd?.cls? then new @cmd.cls(this) else @cmd
     @cmd
+  _getParentNamespaces: ->
+    nspcs = []
+    obj = this
+    while obj.parent
+      obj = obj.parent
+      nspcs.push(obj.cmd.fullname) if obj.cmd?
+    nspcs
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
   getParam: (names, defVal = null) ->
