@@ -7,13 +7,27 @@
     function DomKeyListener() {}
 
     DomKeyListener.prototype.startListening = function(target) {
-      return target.onkeydown = (function(_this) {
+      target.onkeydown = (function(_this) {
         return function(e) {
           if (e.keyCode === 69 && e.ctrlKey) {
             e.preventDefault();
             if (_this.onActivationKey != null) {
               return _this.onActivationKey();
             }
+          }
+        };
+      })(this);
+      target.onkeyup = (function(_this) {
+        return function(e) {
+          if (_this.onAnyChange != null) {
+            return _this.onAnyChange(e);
+          }
+        };
+      })(this);
+      return target.onkeypress = (function(_this) {
+        return function(e) {
+          if (_this.onAnyChange != null) {
+            return _this.onAnyChange(e);
           }
         };
       })(this);
@@ -101,6 +115,8 @@
           start: start,
           end: end
         };
+        this.obj.selectionStart = start;
+        this.obj.selectionEnd = end;
         setTimeout(((function(_this) {
           return function() {
             _this.tmpCursorPos = null;

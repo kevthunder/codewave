@@ -15,17 +15,25 @@ class @Codewave
       console.log(cmd)
       cmd.execute()
     else
-      @addBrakets()
+      cpos = @editor.getCursorPos()
+      if cpos.start == cpos.end
+        @addBrakets(cpos.start,cpos.end)
+      else
+        @promptClosingCmd(cpos.start,cpos.end)
   commandOnCursorPos: ->
     cpos = @editor.getCursorPos()
     @commandOnPos(cpos.end)
   commandOnPos: (pos) ->
-    prev = @findPrevBraket(if @isEndLine(pos) then pos else pos+1)
+    prev = if @editor.textSubstr(pos-@brakets.length,pos) == @brakets
+      pos-@brakets.length
+    else
+      @findPrevBraket(if @isEndLine(pos) then pos else pos+1)
     return null unless prev?
-    if prev >= pos-2
+    if prev > pos-@brakets.length
       pos = prev
       prev = @findPrevBraket(pos)
     next = @findNextBraket(pos)
+    console.log(next);
     return null unless next? and @countPrevBraket(prev) % 2 == 0
     new Codewave.CmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
   nextCmd: (start = 0) ->
@@ -97,11 +105,13 @@ class @Codewave
       else
         nested++
     null
-  addBrakets: ->
-    cpos = @editor.getCursorPos()
-    @editor.insertTextAt(@brakets,cpos.end)
-    @editor.insertTextAt(@brakets,cpos.start)
-    @editor.setCursorPos(cpos.end+@brakets.length)
+  addBrakets: (start, end) ->
+    @editor.insertTextAt(@brakets,end)
+    @editor.insertTextAt(@brakets,start)
+    @editor.setCursorPos(end+@brakets.length)
+  promptClosingCmd: (start, end) ->
+    @closingPromp.stop() if @closingPromp?
+    @closingPromp = new Codewave.ClosingPromp(this,start, end)
   parseAll: (recursive = true) ->
     pos = 0
     while cmd = @nextCmd(pos)

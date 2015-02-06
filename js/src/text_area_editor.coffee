@@ -5,6 +5,12 @@ class @Codewave.DomKeyListener
         e.preventDefault()
         if @onActivationKey?
           @onActivationKey()
+    target.onkeyup = (e) => 
+      if @onAnyChange?
+        @onAnyChange(e)
+    target.onkeypress = (e) => 
+      if @onAnyChange?
+        @onAnyChange(e)
 
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
@@ -52,6 +58,8 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     end = start if arguments.length < 2
     if @selectionPropExists
       @tmpCursorPos = ( start: start, end: end )
+      @obj.selectionStart = start
+      @obj.selectionEnd = end
       setTimeout (=>
         @tmpCursorPos = null
         @obj.selectionStart = start

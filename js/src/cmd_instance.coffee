@@ -1,15 +1,17 @@
 class @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
-    @_checkCloser()
-    @opening = @str
-    @noBracket = @_removeBracket(@str)
-    @_splitComponents()
-    @_findClosing()
-    @_checkElongated()
-    @_checkBox()
+    unless @isEmpty()
+      @_checkCloser()
+      @opening = @str
+      @noBracket = @_removeBracket(@str)
+      @_splitComponents()
+      @_findClosing()
+      @_checkElongated()
+      @_checkBox()
   init: ->
-    @_getParentCmds()
-    @_getCmd()
+    unless @isEmpty()
+      @_getParentCmds()
+      @_getCmd()
     this
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
@@ -107,6 +109,8 @@ class @Codewave.CmdInstance
     nspcs
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
+  isEmpty: ->
+    @str == @codewave.brakets + @codewave.closeChar + @codewave.brakets or @str == @codewave.brakets + @codewave.brakets
   getParam: (names, defVal = null) ->
     names = [names] if (typeof names == 'string')
     for n in names
@@ -114,7 +118,12 @@ class @Codewave.CmdInstance
       return @params[n] if @params[n]?
     defVal
   execute: ->
-    if @cmdObj?
+    if @isEmpty()
+      if @codewave.closingPromp? && @codewave.closingPromp.whithinOpenBounds(@pos+@codewave.brakets.length)?
+        @codewave.closingPromp.cancel()
+      else
+        @replaceWith('')
+    else if @cmdObj?
       if @cmdObj.execute?
         @cmdObj.execute(this)
       else if (r = @result())?

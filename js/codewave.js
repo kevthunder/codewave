@@ -21,13 +21,18 @@
     }
 
     Codewave.prototype.onActivationKey = function() {
-      var cmd, _ref;
+      var cmd, cpos, _ref;
       console.log('activation key');
       if ((cmd = (_ref = this.commandOnCursorPos()) != null ? _ref.init() : void 0)) {
         console.log(cmd);
         return cmd.execute();
       } else {
-        return this.addBrakets();
+        cpos = this.editor.getCursorPos();
+        if (cpos.start === cpos.end) {
+          return this.addBrakets(cpos.start, cpos.end);
+        } else {
+          return this.promptClosingCmd(cpos.start, cpos.end);
+        }
       }
     };
 
@@ -39,15 +44,16 @@
 
     Codewave.prototype.commandOnPos = function(pos) {
       var next, prev;
-      prev = this.findPrevBraket(this.isEndLine(pos) ? pos : pos + 1);
+      prev = this.editor.textSubstr(pos - this.brakets.length, pos) === this.brakets ? pos - this.brakets.length : this.findPrevBraket(this.isEndLine(pos) ? pos : pos + 1);
       if (prev == null) {
         return null;
       }
-      if (prev >= pos - 2) {
+      if (prev > pos - this.brakets.length) {
         pos = prev;
         prev = this.findPrevBraket(pos);
       }
       next = this.findNextBraket(pos);
+      console.log(next);
       if (!((next != null) && this.countPrevBraket(prev) % 2 === 0)) {
         return null;
       }
@@ -197,12 +203,17 @@
       return null;
     };
 
-    Codewave.prototype.addBrakets = function() {
-      var cpos;
-      cpos = this.editor.getCursorPos();
-      this.editor.insertTextAt(this.brakets, cpos.end);
-      this.editor.insertTextAt(this.brakets, cpos.start);
-      return this.editor.setCursorPos(cpos.end + this.brakets.length);
+    Codewave.prototype.addBrakets = function(start, end) {
+      this.editor.insertTextAt(this.brakets, end);
+      this.editor.insertTextAt(this.brakets, start);
+      return this.editor.setCursorPos(end + this.brakets.length);
+    };
+
+    Codewave.prototype.promptClosingCmd = function(start, end) {
+      if (this.closingPromp != null) {
+        this.closingPromp.stop();
+      }
+      return this.closingPromp = new Codewave.ClosingPromp(this, start, end);
     };
 
     Codewave.prototype.parseAll = function(recursive) {

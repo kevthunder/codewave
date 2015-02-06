@@ -5,18 +5,22 @@
       this.codewave = codewave;
       this.pos = pos;
       this.str = str;
-      this._checkCloser();
-      this.opening = this.str;
-      this.noBracket = this._removeBracket(this.str);
-      this._splitComponents();
-      this._findClosing();
-      this._checkElongated();
-      this._checkBox();
+      if (!this.isEmpty()) {
+        this._checkCloser();
+        this.opening = this.str;
+        this.noBracket = this._removeBracket(this.str);
+        this._splitComponents();
+        this._findClosing();
+        this._checkElongated();
+        this._checkBox();
+      }
     }
 
     CmdInstance.prototype.init = function() {
-      this._getParentCmds();
-      this._getCmd();
+      if (!this.isEmpty()) {
+        this._getParentCmds();
+        this._getCmd();
+      }
       return this;
     };
 
@@ -177,6 +181,10 @@
       return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
     };
 
+    CmdInstance.prototype.isEmpty = function() {
+      return this.str === this.codewave.brakets + this.codewave.closeChar + this.codewave.brakets || this.str === this.codewave.brakets + this.codewave.brakets;
+    };
+
     CmdInstance.prototype.getParam = function(names, defVal) {
       var n, _i, _len;
       if (defVal == null) {
@@ -199,7 +207,13 @@
 
     CmdInstance.prototype.execute = function() {
       var r;
-      if (this.cmdObj != null) {
+      if (this.isEmpty()) {
+        if ((this.codewave.closingPromp != null) && (this.codewave.closingPromp.whithinOpenBounds(this.pos + this.codewave.brakets.length) != null)) {
+          return this.codewave.closingPromp.cancel();
+        } else {
+          return this.replaceWith('');
+        }
+      } else if (this.cmdObj != null) {
         if (this.cmdObj.execute != null) {
           return this.cmdObj.execute(this);
         } else if ((r = this.result()) != null) {
