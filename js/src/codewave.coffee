@@ -1,5 +1,9 @@
+
+
+
 class @Codewave
   constructor: (@editor) ->
+    
     @brakets = '~~'
     @deco = '~'
     @closeChar = '/'
@@ -11,6 +15,7 @@ class @Codewave
     @editor.onActivationKey = => @onActivationKey()
   onActivationKey: ->
     console.log('activation key')
+    
     if(cmd = @commandOnCursorPos()?.init())
       console.log(cmd)
       cmd.execute()
@@ -28,12 +33,16 @@ class @Codewave
       pos-@brakets.length
     else
       @findPrevBraket(if @isEndLine(pos) then pos else pos+1)
+      
+      
+      
     return null unless prev?
     if prev > pos-@brakets.length
       pos = prev
       prev = @findPrevBraket(pos)
     next = @findNextBraket(pos)
     console.log(next);
+    
     return null unless next? and @countPrevBraket(prev) % 2 == 0
     new Codewave.CmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
   nextCmd: (start = 0) ->
@@ -73,6 +82,7 @@ class @Codewave
     @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
     f = @findAnyNext(start ,[@brakets,"\n"], direction)
+    
     f.pos if f and f.str == @brakets
   findPrev: (start,string) -> 
     @findNext(start,string,-1)
@@ -82,9 +92,11 @@ class @Codewave
   findAnyNext: (start,strings,direction = 1) -> 
     pos = start
     while true  
+    
       return null unless 0 <= pos < @editor.textLen()
       for str in strings
         [start, end] = [pos, pos + str.length * direction]
+        
         [start, end] = [end, start] if end < start
         if str == @editor.textSubstr(start,end)
           return (
@@ -106,8 +118,11 @@ class @Codewave
         nested++
     null
   addBrakets: (start, end) ->
-    @editor.insertTextAt(@brakets,end)
-    @editor.insertTextAt(@brakets,start)
+    if start == end
+      @editor.insertTextAt(@brakets+@brakets,start)
+    else
+      @editor.insertTextAt(@brakets,end)
+      @editor.insertTextAt(@brakets,start)
     @editor.setCursorPos(end+@brakets.length)
   promptClosingCmd: (start, end) ->
     @closingPromp.stop() if @closingPromp?

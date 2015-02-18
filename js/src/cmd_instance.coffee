@@ -1,5 +1,6 @@
 class @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
+  
     unless @isEmpty()
       @_checkCloser()
       @opening = @str
