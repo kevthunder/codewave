@@ -1,0 +1,44 @@
+folder:
+  - source: js/src
+    target: 
+      python: codewave_py
+syntax:
+  coffee:
+    comment: '#'
+    translations:
+      python:
+        group:
+          - struct.string.1 /'/ skip:/\\'/  /'/
+          - struct.string.2 /"/ skip:/\\"/  /"/
+          - struct.parentheses ( skip:struct.string )
+          - struct.brackets /[/ skip:struct.string /]/
+          - struct.curly { skip:struct.string }
+        replace:
+          - word true True
+          - word false False
+          - word null None
+          - ++ +=1
+          - /@(\w)/                                   'self.$1'
+          - |
+            /\s([^\s]+): ->/                          ' def $1\(self\):'
+          - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1\(self,$2\):'
+          - /^(\s*(?:#\s)?(?:if|while|for)\W.*[^:])$/ '$1:'
+          - /^(\s*(?:#\s)?)unless(\W.*[^:])$/         '$1if not$2:'
+          - /^(\s*(?:#\s)?)else if(\W.*[^:]):?$/      '$1elif$2:'
+          - /^(\s*(?:#\s)?else)$/                     '$1:'
+          - /\[([^]]*)\.\.([^]]*)\]/                  'range\($1,$2\)'
+          - /([\w.]*)\.length/                        'len\($1\)'
+          - /\.shift\(/                               '.pop\(0'
+          - /\.push\(/                                '.append\('
+          - /([\w.]*)\.join\(([^)]+)\)/               '$2.join\($1\)'
+          - /#\{([\w.]+)\}/                           "'+$1+'"
+        replace_parts:
+          - | 
+            .substring( [ 
+            skip:struct 
+            , :
+            skip:struct 
+            ) ]
+  python:
+    comment: '#'
+    ext: py
