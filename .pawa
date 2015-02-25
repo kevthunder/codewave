@@ -18,19 +18,21 @@ syntax:
           - word false False
           - word null None
           - ++ +=1
+          - /class (@[\w\.]+\.)?(\w+)(\(\))?$/        'class $2():'
           - /@(\w)/                                   'self.$1'
-          - |
-            /\s([^\s]+): ->/                          ' def $1\(self\):'
-          - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1\(self,$2\):'
+          - /\sconstructor:\s*->/                     ' def __init__(self):'
+          - /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,$1):'
+          - /\s([^\s]+):\s*->/                        ' def $1(self):'
+          - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1(self,$2):'
           - /^(\s*(?:#\s)?(?:if|while|for)\W.*[^:])$/ '$1:'
           - /^(\s*(?:#\s)?)unless(\W.*[^:])$/         '$1if not$2:'
           - /^(\s*(?:#\s)?)else if(\W.*[^:]):?$/      '$1elif$2:'
           - /^(\s*(?:#\s)?else)$/                     '$1:'
-          - /\[([^]]*)\.\.([^]]*)\]/                  'range\($1,$2\)'
-          - /([\w.]*)\.length/                        'len\($1\)'
-          - /\.shift\(/                               '.pop\(0'
-          - /\.push\(/                                '.append\('
-          - /([\w.]*)\.join\(([^)]+)\)/               '$2.join\($1\)'
+          - /\[([^\]]*)\.\.([^\]]*)\]/                'range($1,$2\)'
+          - /([\w.]*)\.length/                        'len($1)'
+          - /\.shift\(/                               '.pop(0'
+          - /\.push\(/                                '.append('
+          - /([\w.]*)\.join\(([^)]+)\)/               '$2.join($1)'
           - /#\{([\w.]+)\}/                           "'+$1+'"
         replace_parts:
           - | 
