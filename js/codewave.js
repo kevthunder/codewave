@@ -204,8 +204,12 @@
     };
 
     Codewave.prototype.addBrakets = function(start, end) {
-      this.editor.insertTextAt(this.brakets, end);
-      this.editor.insertTextAt(this.brakets, start);
+      if (start === end) {
+        this.editor.insertTextAt(this.brakets + this.brakets, start);
+      } else {
+        this.editor.insertTextAt(this.brakets, end);
+        this.editor.insertTextAt(this.brakets, start);
+      }
       return this.editor.setCursorPos(end + this.brakets.length);
     };
 
