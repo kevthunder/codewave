@@ -2,6 +2,9 @@ folder:
   - source: js/src
     target: 
       python: codewave_py
+  - source: codewave_py
+    target: 
+      coffee: js/src
 syntax:
   coffee:
     comment: '#'
@@ -14,9 +17,9 @@ syntax:
           - struct.brackets /[/ skip:struct.string /]/
           - struct.curly { skip:struct.string }
         replace:
-          - word true True
+          - word true  True
           - word false False
-          - word null None
+          - word null  None
           - ++ +=1
           - /class (@[\w\.]+\.)?(\w+)(\(\))?$/        'class $2():'
           - /@(\w)/                                   'self.$1'
@@ -44,3 +47,23 @@ syntax:
   python:
     comment: '#'
     ext: py
+    translations:
+      coffee:
+        replace:
+          - |
+            ' is not None'    ?
+          - word True  true
+          - word False false
+          - word None  null
+          - word elif  'else if'
+          - self. @
+          - word self this
+          - |
+            /def (\w+)\(self,\s*([^)]*)\):/      '$1: ($2) ->'
+          - |
+            /def (\w+)\(self\):/    '$1: ->'
+          - /(\W(?:if|while|else|for|elif)(\W.*)?):$/ $1
+          - /(for\W.*\Win\W.*)\.items\(\)/       $1
+          - /setattr\((.*),(.*),(.*)\)$/         '$1[$2] = $3'
+          - /\.append\(/                         '.push('
+          - /if\s(.*)\sis\sNone$/                'unless $1?'
