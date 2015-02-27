@@ -52,32 +52,31 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         name = _ref[_i];
         _ref1 = Codewave.util.splitFirstNamespace(name), space = _ref1[0], rest = _ref1[1];
-      }
-      if ((space != null) && (_ref2 = !space, __indexOf.call(this.namespaces, _ref2) >= 0)) {
-        if (__indexOf.call(paths, space) < 0) {
-          paths[space] = [];
+        if ((space != null) && (_ref2 = !space, __indexOf.call(this.namespaces, _ref2) >= 0)) {
+          if (__indexOf.call(paths, space) < 0) {
+            paths[space] = [];
+          }
+          paths[space].push(rest);
         }
-        paths[space].push(rest);
       }
       return paths;
     };
 
     CmdFinder.prototype.applySpaceOnNames = function(space) {
       var rest, _ref;
-      return _ref = Codewave.util.splitFirstNamespace(name), space = _ref[0], rest = _ref[1], _ref;
+      _ref = Codewave.util.splitFirstNamespace(name), space = _ref[0], rest = _ref[1];
+      return this.names.map(function(name) {
+        var cur_rest, cur_space, _ref1;
+        _ref1 = Codewave.util.splitFirstNamespace(name), cur_space = _ref1[0], cur_rest = _ref1[1];
+        if ((cur_space != null) && cur_space === space) {
+          name = cur_rest;
+        }
+        if (space != null) {
+          name = rest + ':' + name;
+        }
+        return name;
+      });
     };
-
-    CmdFinder.names.map(function(name) {
-      var cur_rest, cur_space, _ref;
-      _ref = Codewave.util.splitFirstNamespace(name), cur_space = _ref[0], cur_rest = _ref[1];
-      if ((cur_space != null) && cur_space === space) {
-        name = cur_rest;
-      }
-      if (typeof space !== "undefined" && space !== null) {
-        name = rest + ':' + name;
-      }
-      return name;
-    });
 
     CmdFinder.prototype.getDirectNames = function() {
       var n;
