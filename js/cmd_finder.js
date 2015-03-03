@@ -5,7 +5,7 @@
   this.Codewave.CmdFinder = (function() {
     function CmdFinder(names, options) {
       var defaults, key, val;
-      if (typeof spaces === 'string') {
+      if (typeof names === 'string') {
         names = [names];
       }
       defaults = {
@@ -22,12 +22,12 @@
       this.parent = options['parent'];
       for (key in defaults) {
         val = defaults[key];
-        if (__indexOf.call(options, key) >= 0) {
+        if (key in options) {
           this[key] = options[key];
-        } else if ((typeof parent !== "undefined" && parent !== null) && key !== 'parent') {
-          this[key] = parent[key];
+        } else if ((this.parent != null) && key !== 'parent') {
+          this[key] = this.parent[key];
         } else {
-          self[key] = val;
+          this[key] = val;
         }
       }
     }
@@ -46,14 +46,14 @@
     };
 
     CmdFinder.prototype.getNamesWithPaths = function() {
-      var name, paths, rest, space, _i, _len, _ref, _ref1, _ref2;
+      var name, paths, rest, space, _i, _len, _ref, _ref1;
       paths = {};
       _ref = this.names;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         name = _ref[_i];
         _ref1 = Codewave.util.splitFirstNamespace(name), space = _ref1[0], rest = _ref1[1];
-        if ((space != null) && (_ref2 = !space, __indexOf.call(this.namespaces, _ref2) >= 0)) {
-          if (__indexOf.call(paths, space) < 0) {
+        if ((space != null) && !(__indexOf.call(this.namespaces, space) >= 0)) {
+          if (!(space in paths)) {
             paths[space] = [];
           }
           paths[space].push(rest);
@@ -62,16 +62,16 @@
       return paths;
     };
 
-    CmdFinder.prototype.applySpaceOnNames = function(space) {
-      var rest, _ref;
-      _ref = Codewave.util.splitFirstNamespace(name), space = _ref[0], rest = _ref[1];
+    CmdFinder.prototype.applySpaceOnNames = function(namespace) {
+      var rest, space, _ref;
+      _ref = Codewave.util.splitFirstNamespace(namespace, true), space = _ref[0], rest = _ref[1];
       return this.names.map(function(name) {
         var cur_rest, cur_space, _ref1;
         _ref1 = Codewave.util.splitFirstNamespace(name), cur_space = _ref1[0], cur_rest = _ref1[1];
         if ((cur_space != null) && cur_space === space) {
           name = cur_rest;
         }
-        if (space != null) {
+        if (rest != null) {
           name = rest + ':' + name;
         }
         return name;
@@ -156,39 +156,38 @@
     };
 
     CmdFinder.prototype.findPosibilities = function() {
-      var direct, fallback, name, names, next, nspc, nspcName, nspcPath, posibilities, space, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+      var direct, fallback, name, names, next, nspc, nspcName, posibilities, rest, space, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
       if (this.root == null) {
         return [];
       }
       this.root.init();
       posibilities = [];
       _ref = this.getNamesWithPaths();
-      for (names = _i = 0, _len = _ref.length; _i < _len; names = ++_i) {
-        space = _ref[names];
+      for (space in _ref) {
+        names = _ref[space];
         next = this.root.getCmd(space);
         if (next != null) {
-          posibilities = Codewave.util.merge(posibilities, new Codewave.CmdFinder(names, {
+          posibilities = posibilities.concat(new Codewave.CmdFinder(names, {
             parent: this,
             root: next
           }).findPosibilities());
         }
       }
       _ref1 = this.namespaces;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        nspc = _ref1[_j];
-        nspcPath = nspc.split(":");
-        nspcName = nspcPath.pop(0);
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        nspc = _ref1[_i];
+        _ref2 = Codewave.util.splitFirstNamespace(nspc, true), nspcName = _ref2[0], rest = _ref2[1];
         next = this.root.getCmd(nspcName);
         if (next != null) {
-          posibilities = Codewave.util.merge(posibilities, new Codewave.CmdFinder(this.applySpaceOnNames(nspc), {
+          posibilities = posibilities.concat(new Codewave.CmdFinder(this.applySpaceOnNames(nspc), {
             parent: this,
             root: next
           }).findPosibilities());
         }
       }
-      _ref2 = this.getDirectNames();
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        name = _ref2[_k];
+      _ref3 = this.getDirectNames();
+      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+        name = _ref3[_j];
         direct = this.root.getCmd(name);
         if (this.cmdIsValid(direct)) {
           posibilities.push(direct);

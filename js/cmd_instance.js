@@ -59,7 +59,7 @@
       this.params = [];
       this.named = {};
       if (this.cmd != null) {
-        this.named.update(this.cmd.getDefaults(this));
+        this.named = Codewave.util.merge(this.named, this.cmd.getDefaults(this));
         nameToParam = this.cmd.getOption('nameToParam', this);
         if (nameToParam != null) {
           this.named[nameToParam] = this.cmdName;
@@ -162,7 +162,7 @@
 
     CmdInstance.prototype._getCmd = function() {
       if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
-        this.cmd = command.cmds.getCmd('core:no_execute');
+        this.cmd = Codewave.Command.cmds.getCmd('core:no_execute');
       } else {
         this.finder = this.codewave.getFinder(this.cmdName, this._getParentNamespaces());
         this.finder.instance = this;
@@ -184,7 +184,7 @@
       while (obj.parent != null) {
         obj = obj.parent;
         if ((obj.cmd != null) && (obj.cmd.fullName != null)) {
-          nspcs.push(obj.cmd.fullname);
+          nspcs.push(obj.cmd.fullName);
         }
       }
       return nspcs;
@@ -250,7 +250,7 @@
 
     CmdInstance.prototype.getParserForText = function(txt) {
       var parser;
-      parser = new Codewave(text_parser.TextParser(txt));
+      parser = new Codewave(new Codewave.TextParser(txt));
       parser.context = this;
       parser.checkCarret = false;
       return parser;

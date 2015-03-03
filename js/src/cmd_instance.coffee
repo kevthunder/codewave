@@ -37,7 +37,7 @@ class @Codewave.CmdInstance
     @params = []
     @named = {}
     if @cmd?
-      @named.update(@cmd.getDefaults(this))
+      @named = Codewave.util.merge(@named,@cmd.getDefaults(this))
       nameToParam = @cmd.getOption('nameToParam',this)
       if nameToParam? 
         @named[nameToParam] = @cmdName
@@ -104,7 +104,7 @@ class @Codewave.CmdInstance
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
   _getCmd: ->
     if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
-      @cmd = command.cmds.getCmd('core:no_execute')
+      @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
     else
       @finder = @codewave.getFinder(@cmdName,@_getParentNamespaces())
       @finder.instance = this
@@ -118,7 +118,7 @@ class @Codewave.CmdInstance
     obj = this
     while obj.parent?
       obj = obj.parent
-      nspcs.push(obj.cmd.fullname) if obj.cmd? and obj.cmd.fullName?
+      nspcs.push(obj.cmd.fullName) if obj.cmd? and obj.cmd.fullName?
     nspcs
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
@@ -150,7 +150,7 @@ class @Codewave.CmdInstance
     if @cmd.resultIsAvailable()
       @cmd.result(this)
   getParserForText: (txt) ->
-    parser = new Codewave(text_parser.TextParser(txt))
+    parser = new Codewave(new Codewave.TextParser(txt))
     parser.context = this
     parser.checkCarret = false
     return parser

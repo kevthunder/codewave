@@ -7,7 +7,7 @@
   initCmds = function() {
     var core, html;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
-    core.addDetector(Codewave.LangDetector());
+    core.addDetector(new Codewave.LangDetector());
     core.addCmds({
       'help': {
         'result': "~~box~~\n~~quote_carret~~\n  ___         _   __      __\n / __|___  __| |__\ \    / /_ ___ ______\n/ /__/ _ \/ _` / -_\ \/\/ / _` \ V / -_/\n\____\___/\__,_\___|\_/\_/\__,_|\_/\___|\nThe text editor helper\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
@@ -162,7 +162,7 @@
     };
 
     BoxCmd.prototype.padding = function() {
-      return util.repeatToLength(" ", this.pad);
+      return Codewave.util.repeatToLength(" ", this.pad);
     };
 
     BoxCmd.prototype.lines = function(text) {
@@ -172,16 +172,14 @@
       }
       text = text || '';
       lines = text.replace(/\r/g, '').split("\n");
-      return [
-        (function() {
-          var _i, _ref, _results;
-          _results = [];
-          for (x = _i = 0, _ref = this.height; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
-            _results.push(this.line(lines[x] || ''));
-          }
-          return _results;
-        }).call(this)
-      ].join("\n");
+      return ((function() {
+        var _i, _ref, _results;
+        _results = [];
+        for (x = _i = 0, _ref = this.height; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
+          _results.push(this.line(lines[x] || ''));
+        }
+        return _results;
+      }).call(this)).join('\n');
     };
 
     BoxCmd.prototype.line = function(text) {

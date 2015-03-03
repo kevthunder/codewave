@@ -2,7 +2,7 @@
 
 initCmds = ->
   core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'))
-  core.addDetector(Codewave.LangDetector())
+  core.addDetector(new Codewave.LangDetector())
   
   core.addCmds({
     'help':{
@@ -136,11 +136,11 @@ class BoxCmd extends @Codewave.BaseCommand
   decoLine: (len) ->
     Array(Math.ceil(len/@deco.length)+1).join(@deco).substring(0,len)
   padding: -> 
-    return util.repeatToLength(" ", @pad)
+    return Codewave.util.repeatToLength(" ", @pad)
   lines: (text = '') ->
     text = text or ''
     lines = text.replace(/\r/g,'').split("\n")
-    return [@line(lines[x] or '') for x in [0..@height] ].join("\n") 
+    return (@line(lines[x] or '') for x in [0..@height]).join('\n') 
   line: (text = '') ->
     @wrapComment(
       @deco +

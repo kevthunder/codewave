@@ -1,9 +1,9 @@
 class @Codewave.CmdFinder
   constructor: (names, options) ->
-    if typeof spaces == 'string'
+    if typeof names == 'string'
       names = [names]
     defaults = {
-      parent : null
+      parent: null
       namespaces: []
       root: Codewave.Command.cmds
       mustExecute: true
@@ -15,12 +15,12 @@ class @Codewave.CmdFinder
     @names = names
     @parent = options['parent']
     for key, val of defaults
-      if key in options
+      if key of options
         this[key] = options[key]
-      else if parent? and key != 'parent'
-        this[key] = parent[key]
+      else if @parent? and key != 'parent'
+        this[key] = @parent[key]
       else
-        self[key] = val
+        this[key] = val
   find: ->
     @triggerDetectors()
     @cmd = @findIn(@root)
@@ -33,18 +33,18 @@ class @Codewave.CmdFinder
     paths = {}
     for name in @names 
       [space,rest] = Codewave.util.splitFirstNamespace(name)
-      if space? and !space in @namespaces
-        unless space in paths 
+      if space? and !(space in @namespaces)
+        unless space of paths 
           paths[space] = []
         paths[space].push(rest)
     return paths
-  applySpaceOnNames: (space) ->
-    [space,rest] = Codewave.util.splitFirstNamespace(name)
+  applySpaceOnNames: (namespace) ->
+    [space,rest] = Codewave.util.splitFirstNamespace(namespace,true)
     @names.map( (name) ->
       [cur_space,cur_rest] = Codewave.util.splitFirstNamespace(name)
       if cur_space? and cur_space == space
         name = cur_rest
-      if space?
+      if rest?
         name = rest + ':' + name
       return name
     )
@@ -76,16 +76,15 @@ class @Codewave.CmdFinder
       return []
     @root.init()
     posibilities = []
-    for space, names in @getNamesWithPaths()
+    for space, names of @getNamesWithPaths()
       next = @root.getCmd(space)
       if next? 
-        posibilities = Codewave.util.merge(posibilities,new Codewave.CmdFinder(names, {parent: this, root: next}).findPosibilities())
+        posibilities = posibilities.concat(new Codewave.CmdFinder(names, {parent: this, root: next}).findPosibilities())
     for nspc in @namespaces
-      nspcPath = nspc.split(":");
-      nspcName = nspcPath.pop(0)
+      [nspcName,rest] = Codewave.util.splitFirstNamespace(nspc,true)
       next = @root.getCmd(nspcName)
       if next? 
-        posibilities = Codewave.util.merge(posibilities,new Codewave.CmdFinder(@applySpaceOnNames(nspc), {parent: this, root: next}).findPosibilities())
+        posibilities = posibilities.concat(new Codewave.CmdFinder(@applySpaceOnNames(nspc), {parent: this, root: next}).findPosibilities())
     for name in @getDirectNames()
       direct = @root.getCmd(name)
       if @cmdIsValid(direct)

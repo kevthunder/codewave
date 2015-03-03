@@ -1,4 +1,4 @@
-class @Codewave.TextParser
+class @Codewave.TextParser extends @Codewave.Editor
   constructor: (@_text) ->
   text: (val) ->
     @_text = val if val?

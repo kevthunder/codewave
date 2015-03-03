@@ -24,21 +24,21 @@ class Size
 		#
 
 @Codewave.util = ( 
-  splitFirstNamespace: (fullname) ->
-    if s.indexOf(":") == -1
+  splitFirstNamespace: (fullname,isSpace = false) ->
+    if fullname.indexOf(":") == -1 and !isSpace
       return [null,fullname]
     parts = fullname.split(':')
-    [parts.shift(),parts.join(':')]
+    [parts.shift(),parts.join(':') || null]
 
   splitNamespace: (fullname) ->
-    if s.indexOf(":") == -1
+    if fullname.indexOf(":") == -1
       return [null,fullname]
     parts = fullname.split(':')
     name = parts.pop()
     [parts.join(':'),name]
 
   trimEmptyLine: (txt) ->
-    return txt.replace(/^\r?\n/, '').sub(/\r?\n$/, '')
+    return txt.replace(/^\r?\n/, '').replace(/\r?\n$/, '')
 
   escapeRegExp: (str) ->
     str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
@@ -51,7 +51,7 @@ class Size
     w = 0
     for l in lines
       w = Math.max(w,l.length)
-    return new Size(w,lines.length)
+    return new Size(w,lines.length-1)
 
   StrPos: StrPos
   Pos: Pos

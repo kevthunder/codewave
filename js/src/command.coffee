@@ -1,7 +1,7 @@
 
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
-  if key in dict then dict[key] else defVal
+  if key of dict then dict[key] else defVal
 
 
 class @Codewave.Command
@@ -38,7 +38,7 @@ class @Codewave.Command
         else 0
       )
   init: ->
-    if not @_inited
+    if !@_inited
       @_inited = true
       @parseData(@data)
     this
@@ -60,10 +60,10 @@ class @Codewave.Command
     res = {}
     aliased = @getAliased(instance)
     if aliased?
-      res.update(aliased.getDefaults(instance))
-    res.update(@defaults)
+      res = Codewave.util.merge(res,aliased.getDefaults(instance))
+    res = Codewave.util.merge(res,@defaults)
     if instance? and instance.cmdObj?
-      res.update(instance.cmdObj.getDefaults())
+      res = Codewave.util.merge(res,instance.cmdObj.getDefaults())
     res
   result: (instance) ->
     if instance.cmdObj?
@@ -86,7 +86,7 @@ class @Codewave.Command
   getExecutableObj: (instance) ->
     @init()
     if @cls?
-      return @cls(instance)
+      return new @cls(instance)
     aliased = @getAliased(instance)
     if aliased?
       return aliased.getExecutableObj(instance)
@@ -95,41 +95,41 @@ class @Codewave.Command
       return instance.aliasedCmd or null
     if @aliasOf?
       if instance?
-        codewave = codewave_core.codewave.Codewave()
-      else :
         codewave = instance.codewave
+      else
+        codewave = new Codewave()
       aliased = codewave.getCmd(@aliasOf)
       if instance?
         instance.aliasedCmd = aliased or false
       return aliased
   setOptions: (data) ->
-    for key, val in data
-      if key in @defaultOptions
+    for key, val of data
+      if key of @defaultOptions
         @options[key] = val
   getOptions: (instance = null) ->
     if instance? and instance.cmdOptions?
       return instance.cmdOptions
     opt = {}
-    opt.update(@defaultOptions)
+    opt = Codewave.util.merge(opt,@defaultOptions)
     aliased = @getAliased(instance)
     if aliased?
-      opt.update(aliased.getOptions(instance))
-    opt.update(@options)
+      opt = Codewave.util.merge(opt,aliased.getOptions(instance))
+    opt = Codewave.util.merge(opt,@options)
     if instance? and instance.cmdObj?
-      opt.update(instance.cmdObj.getOptions())
+      opt = Codewave.util.merge(opt,instance.cmdObj.getOptions())
     if instance?
       instance.cmdOptions = opt
     return opt
   getOption: (key,instance = null) ->
     options = @getOptions(instance)
-    if key in options
+    if key of options
       return options[key]
   parseData: (data) ->
     @data = data
     if typeof data == 'string'
       @resultStr = data
       return true
-    else
+    else if data?
       return @parseDictData(data)
     return false
   parseDictData: (data) ->
@@ -148,15 +148,16 @@ class @Codewave.Command
     
     @setOptions(data)
     
-    if 'help' in data
+    if 'help' of data
       @addCmd(this,new Command('help',data['help'],this))
-    if 'fallback' in data
+    if 'fallback' of data
       @addCmd(this,new Command('fallback',data['fallback'],this))
-    if 'cmds' in data
+      
+    if 'cmds' of data
       @addCmds(data['cmds'])
     return true
   addCmds: (cmds) ->
-    for name, data in cmds
+    for name, data of cmds
       @addCmd(new Command(name,data,this))
   addCmd: (cmd) ->
     exists = @getCmd(cmd.name)
@@ -171,18 +172,16 @@ class @Codewave.Command
     return cmd
   getCmd: (fullname) ->
     @init()
-    parts = fullname.split(':',1)
-    name = parts.pop()
-    if parts.length > 0
-      return @getCmd(parts[0]).getCmd(name)
+    [space,name] = Codewave.util.splitFirstNamespace(fullname)
+    if space?
+      return @getCmd(space).getCmd(name)
     for cmd in @cmds
       if cmd.name == name
         return cmd
   setCmd: (fullname,cmd) ->
-    parts = fullname.split(':',1)
-    name = parts.pop()
-    if parts.length > 0
-      next = @getCmd(parts[0])
+    [space,name] = Codewave.util.splitFirstNamespace(fullname)
+    if space?
+      next = @getCmd(space)
       if next?
         next = @addCmd(new Command(parts[0]))
       return next.setCmd(name,cmd)
@@ -195,29 +194,29 @@ class @Codewave.Command
 @Codewave.Command.cmdInitialisers = []
 
 @Codewave.Command.initCmds = ->
-	Codewave.Command.cmds = new Codewave.Command(null,{
-		'cmds':{
-			'hello':'Hello, World!'
-		}
-	})
-	for initialiser in Codewave.Command.cmdInitialisers
-		initialiser()
+  Codewave.Command.cmds = new Codewave.Command(null,{
+    'cmds':{
+      'hello':'Hello, World!'
+    }
+  })
+  for initialiser in Codewave.Command.cmdInitialisers
+    initialiser()
 
 @Codewave.Command.saveCmd = (fullname,data) ->
-	Codewave.Command.cmds.setCmd(fullname,new Command(fullname.split(':').pop(),data))
-	savedCmds = Codewave.storage.load('cmds')
-	if savedCmds is null 
-		savedCmds = {}
-	savedCmds[fullname] = data
-	Codewave.storage.save('cmds',savedCmds)
+  Codewave.Command.cmds.setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
+  savedCmds = Codewave.storage.load('cmds')
+  unless savedCmds?
+    savedCmds = {}
+  savedCmds[fullname] = data
+  Codewave.storage.save('cmds',savedCmds)
 
 @Codewave.Command.loadCmds = ->
-	savedCmds = Codewave.storage.load('cmds')
-	if savedCmds? 
-		for fullname, data in savedCmds
-			Codewave.Command.cmds.setCmd(fullname,Command(fullname.split(':').pop(),data))
+  savedCmds = Codewave.storage.load('cmds')
+  if savedCmds? 
+    for fullname, data of savedCmds
+      Codewave.Command.cmds.setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
 
-	
+  
 
 
 class @Codewave.BaseCommand

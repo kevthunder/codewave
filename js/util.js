@@ -70,17 +70,20 @@
   })();
 
   this.Codewave.util = {
-    splitFirstNamespace: function(fullname) {
+    splitFirstNamespace: function(fullname, isSpace) {
       var parts;
-      if (s.indexOf(":") === -1) {
+      if (isSpace == null) {
+        isSpace = false;
+      }
+      if (fullname.indexOf(":") === -1 && !isSpace) {
         return [null, fullname];
       }
       parts = fullname.split(':');
-      return [parts.shift(), parts.join(':')];
+      return [parts.shift(), parts.join(':') || null];
     },
     splitNamespace: function(fullname) {
       var name, parts;
-      if (s.indexOf(":") === -1) {
+      if (fullname.indexOf(":") === -1) {
         return [null, fullname];
       }
       parts = fullname.split(':');
@@ -88,7 +91,7 @@
       return [parts.join(':'), name];
     },
     trimEmptyLine: function(txt) {
-      return txt.replace(/^\r?\n/, '').sub(/\r?\n$/, '');
+      return txt.replace(/^\r?\n/, '').replace(/\r?\n$/, '');
     },
     escapeRegExp: function(str) {
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -104,7 +107,7 @@
         l = lines[_i];
         w = Math.max(w, l.length);
       }
-      return new Size(w, lines.length);
+      return new Size(w, lines.length - 1);
     },
     StrPos: StrPos,
     Pos: Pos,

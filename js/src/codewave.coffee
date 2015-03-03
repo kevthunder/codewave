@@ -18,13 +18,13 @@ class @Codewave
     }
     
     for key, val of defaults
-      if key in options
+      if key of options
         this[key] = options[key]
       else if @parent? 
         this[key] = @parent[key]
       else
         this[key] = val
-    @editor.bindedTo(this)
+    @editor.bindedTo(this) if @editor?
   onActivationKey: ->
     Codewave.logger.log('activation key')
     
@@ -209,7 +209,7 @@ class @Codewave
     txt.replace(reQuoted,tmp).replace(reCarret,'').replace(reTmp, @carretChar)
   getCarretPos: (txt) ->
     txt = txt.replace(@carretChar+@carretChar, ' ')
-    if (i = cc.indexOf(@carretChar)) > -1
+    if (i = txt.indexOf(@carretChar)) > -1
       return i
 
 @Codewave.init = ->
