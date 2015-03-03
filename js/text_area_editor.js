@@ -64,9 +64,39 @@
 
     TextAreaEditor.prototype.text = function(val) {
       if (val != null) {
-        this.obj.value = val;
+        if (!this.textEventChange(val)) {
+          this.obj.value = val;
+        }
       }
       return this.obj.value;
+    };
+
+    TextAreaEditor.prototype.spliceText = function(start, end, text) {
+      return this.textEventChange(text, start, end) || TextAreaEditor.__super__.spliceText.call(this, start, end, text);
+    };
+
+    TextAreaEditor.prototype.textEventChange = function(text, start, end) {
+      var event;
+      if (start == null) {
+        start = 0;
+      }
+      if (end == null) {
+        end = null;
+      }
+      if (document.createEvent != null) {
+        event = document.createEvent('TextEvent');
+      }
+      if ((event != null) && (event.initTextEvent != null)) {
+        if (end == null) {
+          end = this.textLen();
+        }
+        event.initTextEvent('textInput', true, true, null, text || "\0", 9);
+        this.setCursorPos(start, end);
+        this.obj.dispatchEvent(event);
+        return true;
+      } else {
+        return false;
+      }
     };
 
     TextAreaEditor.prototype.getCursorPos = function() {

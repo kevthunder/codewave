@@ -24,8 +24,22 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
   hasFocus: -> 
     document.activeElement is @obj
   text: (val) ->
-    @obj.value = val if val?
+    if val?
+      unless @textEventChange(val)
+        @obj.value = val
     @obj.value
+  spliceText: (start, end, text) ->
+    @textEventChange(text, start, end) or super(start, end, text)
+  textEventChange: (text, start = 0, end = null) ->
+    event = document.createEvent('TextEvent') if document.createEvent?
+    if event? and event.initTextEvent?
+      end = @textLen() unless end?
+      event.initTextEvent('textInput', true, true, null, text || "\0", 9)
+      @setCursorPos(start,end)
+      @obj.dispatchEvent(event)
+      true
+    else 
+      false
   getCursorPos: ->
     return @tmpCursorPos if @tmpCursorPos?
     if @hasFocus
