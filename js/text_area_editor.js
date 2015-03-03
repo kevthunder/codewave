@@ -43,8 +43,14 @@
     function TextAreaEditor(target) {
       this.target = target;
       this.obj = document.getElementById(this.target);
-      this.startListening(document);
     }
+
+    TextAreaEditor.prototype.bindedTo = function(codewave) {
+      this.onActivationKey = function() {
+        return codewave.onActivationKey();
+      };
+      return this.startListening(document);
+    };
 
     TextAreaEditor.prototype.startListening = Codewave.DomKeyListener.prototype.startListening;
 

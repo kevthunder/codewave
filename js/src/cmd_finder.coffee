@@ -5,7 +5,7 @@ class @Codewave.CmdFinder
     defaults = {
       parent : null
       namespaces: []
-      root: command.cmds
+      root: Codewave.Command.cmds
       mustExecute: true
       useDetectors: true
       useFallbacks: true
@@ -14,7 +14,7 @@ class @Codewave.CmdFinder
     }
     @names = names
     @parent = options['parent']
-    for key, val in defaults
+    for key, val of defaults
       if key in options
         this[key] = options[key]
       else if parent? and key != 'parent'
@@ -101,7 +101,7 @@ class @Codewave.CmdFinder
     cmd.init()
     return !@mustExecute or cmd.isExecutable()
   bestInPosibilities: (poss) ->
-    if len(poss) > 0
+    if poss.length > 0
       best = null
       bestScore = null
       for p in poss

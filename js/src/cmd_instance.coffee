@@ -13,11 +13,13 @@ class @Codewave.CmdInstance
     unless @isEmpty()
       @_getParentCmds()
       @_getCmd()
+      @_parseParams(@rawParams)
+      @_getCmdObj()
     this
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
     if noBracket.substring(0,@codewave.closeChar.length) == @codewave.closeChar and f = @_findOpeningPos()
-      @closingPos = pos:@pos, str:@str
+      @closingPos = new Codewave.util.StrPos(@pos, @str)
       @pos = f.pos
       @str = f.str
   _findOpeningPos: ->
@@ -30,10 +32,15 @@ class @Codewave.CmdInstance
   _splitComponents: ->
     parts = @noBracket.split(" ");
     @cmdName = parts.shift()
-    @_parseParams(parts.join(" "))
+    @rawParams = parts.join(" ")
   _parseParams:(params) ->
     @params = []
     @named = {}
+    if @cmd?
+      @named.update(@cmd.getDefaults(this))
+      nameToParam = @cmd.getOption('nameToParam',this)
+      if nameToParam? 
+        @named[nameToParam] = @cmdName
     if params.length
       inStr = false
       param = ''
@@ -61,7 +68,7 @@ class @Codewave.CmdInstance
           @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
-      @content = @codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/^\n/m,'').replace(/\n$/m,'')
+      @content = Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
       @str = @codewave.editor.textSubstr(@pos,f.pos+f.str.length)
   _findClosingPos: ->
     return @closingPos if @closingPos?
@@ -71,9 +78,10 @@ class @Codewave.CmdInstance
       @closingPos = f
   _checkElongated: ->
     endPos = @getEndPos()
-    while @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) == @codewave.deco
+    max = @codewave.editor.textLen()
+    while endPos < max and @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) == @codewave.deco
       endPos+=@codewave.deco.length
-    if @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) in [' ',"\n"]
+    if endPos >= max or @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) in [' ',"\n","\r"]
       @str = @codewave.editor.textSubstr(@pos,endPos)
   _checkBox: ->
     cl = @codewave.wrapCommentLeft()
@@ -96,17 +104,21 @@ class @Codewave.CmdInstance
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
   _getCmd: ->
     if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
-      @cmd = Codewave.cmd.core.cmd.no_execute
+      @cmd = command.cmds.getCmd('core:no_execute')
     else
-      @cmd = @codewave.getCmd(@cmdName,@_getParentNamespaces())
-    @cmdObj = if @cmd?.cls? then new @cmd.cls(this) else @cmd
+      @finder = @codewave.getFinder(@cmdName,@_getParentNamespaces())
+      @finder.instance = this
+      @cmd = @finder.find()
     @cmd
+  _getCmdObj: ->
+    if @cmd?
+      @cmdObj = @cmd.getExecutableObj(this)
   _getParentNamespaces: ->
     nspcs = []
     obj = this
-    while obj.parent
+    while obj.parent?
       obj = obj.parent
-      nspcs.push(obj.cmd.fullname) if obj.cmd?
+      nspcs.push(obj.cmd.fullname) if obj.cmd? and obj.cmd.fullName?
     nspcs
   _removeBracket: (str)->
     str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
@@ -124,32 +136,39 @@ class @Codewave.CmdInstance
         @codewave.closingPromp.cancel()
       else
         @replaceWith('')
-    else if @cmdObj?
-      if @cmdObj.execute?
-        @cmdObj.execute(this)
-      else if (r = @result())?
-        @replaceWith(r)
+    else if @cmd?
+      if @cmd.resultIsAvailable(this)
+        if (res = @cmd.result(this))?
+          if @cmd.getOption('parse',this) 
+            parser = @getParserForText(res)
+            res = parser.parseAll()
+          @replaceWith(res)
+          return true
+      else
+          return @cmd.execute(this)
   result: -> 
-      if @cmdObj?.result?
-        if typeof(@cmdObj.result) == "function"
-          @cmdObj.result(this)
-        else
-          @cmdObj.result
+    if @cmd.resultIsAvailable()
+      @cmd.result(this)
+  getParserForText: (txt) ->
+    parser = new Codewave(text_parser.TextParser(txt))
+    parser.context = this
+    parser.checkCarret = false
+    return parser
   getEndPos: ->
     @pos+@str.length
   getIndent: ->
     @pos - @codewave.findLineStart(@pos)
   applyIndent: (text) ->
-    text.replace(/\n/g,"\n"+Array(@getIndent()+1).join(" "))
+    reg = /\n/g
+    text.replace(reg,"\n"+Codewave.util.repeatToLength(" ",@getIndent()))
   replaceWith: (text) ->
     text = @applyIndent(text)
     
-    if @codewave.checkCarret
-      cursorPos = if (p = text.indexOf(@codewave.carretChar)) > -1
-        text = @codewave.removeCarret(text)
-        @pos+p
-      else
-        @pos+text.length
+    cursorPos = @pos+text.length
+    if @cmd? and @codewave.checkCarret and @cmd.getOption('checkCarret',this)
+      if (p = @codewave.getCarretPos(text))? 
+        cursorPos = @pos+p
+      text = @codewave.removeCarret(text)
       
       
     @codewave.editor.spliceText(@pos,@getEndPos(),text)

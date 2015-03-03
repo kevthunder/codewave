@@ -1,4 +1,3 @@
-saved = Codewave.storage.load('saved')
-if saved?
-  for fullname, data of saved
-    Codewave.setCmd(fullname, data, false)
+@Codewave.init()
+@Codewave.detect = (target) ->
+  new Codewave(new Codewave.TextAreaEditor(target));

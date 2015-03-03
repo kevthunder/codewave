@@ -15,6 +15,8 @@ class @Codewave.DomKeyListener
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
     @obj = document.getElementById(@target)
+  bindedTo: (codewave) ->
+    @onActivationKey = -> codewave.onActivationKey()
     @startListening(document)
   startListening: Codewave.DomKeyListener.prototype.startListening
   selectionPropExists: ->

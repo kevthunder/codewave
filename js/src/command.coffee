@@ -1,5 +1,5 @@
 
-_optKey: (key,dict,defVal = null) ->
+_optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
   if key in dict then dict[key] else defVal
 
@@ -18,7 +18,7 @@ class @Codewave.Command
     
     @defaultOptions = {
       nameToParam: null,
-      checkCarret: True,
+      checkCarret: true,
       parse: false,
     }
     @options = {}
@@ -126,10 +126,10 @@ class @Codewave.Command
       return options[key]
   parseData: (data) ->
     @data = data
-    if isinstance(data, str)
+    if typeof data == 'string'
       @resultStr = data
       return true
-    else if isinstance(data,dict)
+    else
       return @parseDictData(data)
     return false
   parseDictData: (data) ->
@@ -192,7 +192,34 @@ class @Codewave.Command
   addDetector: (detector) ->
     @detectors.push(detector)
     
-    
+@Codewave.Command.cmdInitialisers = []
+
+@Codewave.Command.initCmds = ->
+	Codewave.Command.cmds = new Codewave.Command(null,{
+		'cmds':{
+			'hello':'Hello, World!'
+		}
+	})
+	for initialiser in Codewave.Command.cmdInitialisers
+		initialiser()
+
+@Codewave.Command.saveCmd = (fullname,data) ->
+	Codewave.Command.cmds.setCmd(fullname,new Command(fullname.split(':').pop(),data))
+	savedCmds = Codewave.storage.load('cmds')
+	if savedCmds is null 
+		savedCmds = {}
+	savedCmds[fullname] = data
+	Codewave.storage.save('cmds',savedCmds)
+
+@Codewave.Command.loadCmds = ->
+	savedCmds = Codewave.storage.load('cmds')
+	if savedCmds? 
+		for fullname, data in savedCmds
+			Codewave.Command.cmds.setCmd(fullname,Command(fullname.split(':').pop(),data))
+
+	
+
+
 class @Codewave.BaseCommand
   constructor: (@instance) ->
     #

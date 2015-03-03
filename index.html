@@ -9,17 +9,22 @@
   <script type="text/javascript" src="js/codewave.js"></script>
   <script type="text/javascript" src="js/closing_promp.js"></script>
   <script type="text/javascript" src="js/cmd_instance.js"></script>
-  <script type="text/javascript" src="js/cmds.js"></script>
+  <script type="text/javascript" src="js/cmd_finder.js"></script>
+  <script type="text/javascript" src="js/command.js"></script>
   <script type="text/javascript" src="js/core_cmds.js"></script>
+  <script type="text/javascript" src="js/detector.js"></script>
+  <script type="text/javascript" src="js/editor.js"></script>
+  <script type="text/javascript" src="js/logger.js"></script>
+  <script type="text/javascript" src="js/storage.js"></script>
+  <script type="text/javascript" src="js/util.js"></script>
   <script type="text/javascript" src="js/text_parser.js"></script>
   <script type="text/javascript" src="js/text_area_editor.js"></script>
-  <script type="text/javascript" src="js/storage.js"></script>
   <script type="text/javascript" src="js/init.js"></script>
   
   <script type="text/javascript">
     (function( $ ) {
       $(function(){
-        window.cw = new Codewave(new Codewave.TextAreaEditor('Editor'));
+        window.cw = Codewave.detect('Editor');
       })
     })( jQuery );
   </script>

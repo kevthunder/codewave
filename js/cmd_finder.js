@@ -4,14 +4,14 @@
 
   this.Codewave.CmdFinder = (function() {
     function CmdFinder(names, options) {
-      var defaults, key, val, _i, _len;
+      var defaults, key, val;
       if (typeof spaces === 'string') {
         names = [names];
       }
       defaults = {
         parent: null,
         namespaces: [],
-        root: command.cmds,
+        root: Codewave.Command.cmds,
         mustExecute: true,
         useDetectors: true,
         useFallbacks: true,
@@ -20,8 +20,8 @@
       };
       this.names = names;
       this.parent = options['parent'];
-      for (val = _i = 0, _len = defaults.length; _i < _len; val = ++_i) {
-        key = defaults[val];
+      for (key in defaults) {
+        val = defaults[key];
         if (__indexOf.call(options, key) >= 0) {
           this[key] = options[key];
         } else if ((typeof parent !== "undefined" && parent !== null) && key !== 'parent') {
@@ -213,7 +213,7 @@
 
     CmdFinder.prototype.bestInPosibilities = function(poss) {
       var best, bestScore, p, score, _i, _len;
-      if (len(poss) > 0) {
+      if (poss.length > 0) {
         best = null;
         bestScore = null;
         for (_i = 0, _len = poss.length; _i < _len; _i++) {

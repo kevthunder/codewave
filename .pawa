@@ -57,13 +57,21 @@ syntax:
           - word None  null
           - word elif  'else if'
           - self. @
+          - __init__ constructor
           - word self this
           - |
-            /def (\w+)\(self,\s*([^)]*)\):/      '$1: ($2) ->'
+            /def (\w+)\(self,\s*([^)]*)\)\s*:/   '$1: ($2) ->'
           - |
-            /def (\w+)\(self\):/    '$1: ->'
+            /def (\w+)\(self\)\s*:/              '$1: ->'
+          - |
+            /^def\s(\w+)\(\s*([^)]+)\)\s*:/      '$1 = ($2) ->'
+          - |
+            /^def\s(\w+)\(\)\s*:/                '$1 = ->'
           - /(\W(?:if|while|else|for|elif)(\W.*)?):$/ $1
-          - /(for\W.*\Win\W.*)\.items\(\)/       $1
+          - /(for\W.*\W)in(\W.*)\.items\(\)/     $1of$2
           - /setattr\((.*),(.*),(.*)\)$/         '$1[$2] = $3'
           - /\.append\(/                         '.push('
           - /if\s(.*)\sis\sNone$/                'unless $1?'
+          - /class\s+(\w+)\(command.BaseCommand\):$/  'class $1 extends @Codewave.BaseCommand'
+          - /class\s+(\w+)\(\):$/                'class @Codewave.$1'
+          - /class\s+(\w+)\((.+)\):$/            'class @Codewave.$1 extends $2'
