@@ -2,7 +2,7 @@
 
 
 class @Codewave
-  constructor: (@editor,options...) ->
+  constructor: (@editor,options = {}) ->
     @nameSpaces = []
     @vars = {}
     
@@ -146,7 +146,7 @@ class @Codewave
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
       if recursive && cmd.content? 
-        parser = new Codewave(new Codewave.TextParser(cmd.content))
+        parser = new Codewave(new Codewave.TextParser(cmd.content),{parent: this})
         cmd.content = parser.parseAll()
       if cmd.init().execute()?
         if(cmd.replaceEnd?)
