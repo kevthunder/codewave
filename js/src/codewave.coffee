@@ -180,6 +180,13 @@ class @Codewave
     })
   isRoot: ->
     return !@parent? and (!@context? or !@context.finder?)
+  getRoot: ->
+    if @isRoot
+      this
+    else if @parent?
+      @parent.getRoot()
+    else if @context?
+      @context.codewave.getRoot()
   getCommentChar: ->
     '<!-- %s -->'
   wrapComment: (str) ->

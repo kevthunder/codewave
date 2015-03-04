@@ -286,19 +286,25 @@
 
     function NameSpaceCmd(instance) {
       this.instance = instance;
+      this.name = this.instance.getParam([0]);
     }
 
     NameSpaceCmd.prototype.result = function() {
       var namespaces, nspc, parser, txt, _i, _len;
-      namespaces = this.instance.finder.namespaces;
-      txt = '~~box~~\n';
-      for (_i = 0, _len = namespaces.length; _i < _len; _i++) {
-        nspc = namespaces[_i];
-        txt += nspc + '\n';
+      if (this.name != null) {
+        this.instance.codewave.getRoot().addNameSpace(this.name);
+        return '';
+      } else {
+        namespaces = this.instance.finder.namespaces;
+        txt = '~~box~~\n';
+        for (_i = 0, _len = namespaces.length; _i < _len; _i++) {
+          nspc = namespaces[_i];
+          txt += nspc + '\n';
+        }
+        txt += '~~!close|~~\n~~/box~~';
+        parser = this.instance.getParserForText(txt);
+        return parser.parseAll();
       }
-      txt += '~~!close|~~\n~~/box~~';
-      parser = this.instance.getParserForText(txt);
-      return parser.parseAll();
     };
 
     return NameSpaceCmd;

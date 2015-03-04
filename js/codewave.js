@@ -324,6 +324,16 @@
       return (this.parent == null) && ((this.context == null) || (this.context.finder == null));
     };
 
+    Codewave.prototype.getRoot = function() {
+      if (this.isRoot) {
+        return this;
+      } else if (this.parent != null) {
+        return this.parent.getRoot();
+      } else if (this.context != null) {
+        return this.context.codewave.getRoot();
+      }
+    };
+
     Codewave.prototype.getCommentChar = function() {
       return '<!-- %s -->';
     };

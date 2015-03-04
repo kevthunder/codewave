@@ -208,15 +208,20 @@ class EditCmd extends @Codewave.BaseCommand
 
 class NameSpaceCmd extends @Codewave.BaseCommand
   constructor: (@instance) ->
+    @name = @instance.getParam([0])
     #
   result: ->
-    namespaces = @instance.finder.namespaces
-    txt = '~~box~~\n'
-    for nspc in namespaces 
-      txt += nspc+'\n'
-    txt += '~~!close|~~\n~~/box~~'
-    parser = @instance.getParserForText(txt)
-    return parser.parseAll()
+    if @name?
+      @instance.codewave.getRoot().addNameSpace(@name)
+      return ''
+    else
+      namespaces = @instance.finder.namespaces
+      txt = '~~box~~\n'
+      for nspc in namespaces 
+        txt += nspc+'\n'
+      txt += '~~!close|~~\n~~/box~~'
+      parser = @instance.getParserForText(txt)
+      return parser.parseAll()
 
 
 
