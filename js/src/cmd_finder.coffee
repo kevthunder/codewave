@@ -54,17 +54,22 @@ class @Codewave.CmdFinder
     if @useDetectors 
       @useDetectors = false
       posibilities = new Codewave.CmdFinder(@namespaces,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities()
-      for cmd in posibilities 
+      i = 0
+      while i < posibilities.length
+        cmd = posibilities[i]
         for detector in cmd.detectors 
           res = detector.detect(this)
-          @addNamespaces(res)
+          if res
+            @addNamespaces(res)
+            posibilities = posibilities.concat(new Codewave.CmdFinder(res,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities())
+        i++
   addNamespaces: (spaces) ->
     if spaces 
       if typeof spaces == 'string'
         spaces = [spaces]
       for space in spaces 
         if space not in @namespaces 
-          @namespaces = @namespaces.concat(space)
+          @namespaces.push(space)
   findIn: (cmd,path = null) ->
     unless cmd?
       return null

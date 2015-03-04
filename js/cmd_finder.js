@@ -95,7 +95,7 @@
     };
 
     CmdFinder.prototype.triggerDetectors = function() {
-      var cmd, detector, posibilities, res, _i, _len, _results;
+      var cmd, detector, i, posibilities, res, _i, _len, _ref, _results;
       if (this.useDetectors) {
         this.useDetectors = false;
         posibilities = new Codewave.CmdFinder(this.namespaces, {
@@ -103,20 +103,24 @@
           mustExecute: false,
           useFallbacks: false
         }).findPosibilities();
+        i = 0;
         _results = [];
-        for (_i = 0, _len = posibilities.length; _i < _len; _i++) {
-          cmd = posibilities[_i];
-          _results.push((function() {
-            var _j, _len1, _ref, _results1;
-            _ref = cmd.detectors;
-            _results1 = [];
-            for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-              detector = _ref[_j];
-              res = detector.detect(this);
-              _results1.push(this.addNamespaces(res));
+        while (i < posibilities.length) {
+          cmd = posibilities[i];
+          _ref = cmd.detectors;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            detector = _ref[_i];
+            res = detector.detect(this);
+            if (res) {
+              this.addNamespaces(res);
+              posibilities = posibilities.concat(new Codewave.CmdFinder(res, {
+                parent: this,
+                mustExecute: false,
+                useFallbacks: false
+              }).findPosibilities());
             }
-            return _results1;
-          }).call(this));
+          }
+          _results.push(i++);
         }
         return _results;
       }
@@ -132,7 +136,7 @@
         for (_i = 0, _len = spaces.length; _i < _len; _i++) {
           space = spaces[_i];
           if (__indexOf.call(this.namespaces, space) < 0) {
-            _results.push(this.namespaces = this.namespaces.concat(space));
+            _results.push(this.namespaces.push(space));
           } else {
             _results.push(void 0);
           }
