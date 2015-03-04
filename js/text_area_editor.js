@@ -176,6 +176,12 @@
       }
     };
 
+    TextAreaEditor.prototype.getLang = function() {
+      if (this.obj.hasAttribute('data-lang')) {
+        return this.obj.getAttribute('data-lang');
+      }
+    };
+
     return TextAreaEditor;
 
   })(Codewave.TextParser);

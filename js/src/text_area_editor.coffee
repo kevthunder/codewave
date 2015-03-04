@@ -91,4 +91,6 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
       rng.collapse()
       rng.moveEnd "character", end - start
       rng.select()
+  getLang: ->
+    @obj.getAttribute('data-lang') if @obj.hasAttribute('data-lang')
       

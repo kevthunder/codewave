@@ -132,7 +132,7 @@
         for (_i = 0, _len = spaces.length; _i < _len; _i++) {
           space = spaces[_i];
           if (__indexOf.call(this.namespaces, space) < 0) {
-            _results.push(this.namespaces.append(space));
+            _results.push(this.namespaces = this.namespaces.concat(space));
           } else {
             _results.push(void 0);
           }

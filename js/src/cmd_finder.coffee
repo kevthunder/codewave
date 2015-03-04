@@ -64,7 +64,7 @@ class @Codewave.CmdFinder
         spaces = [spaces]
       for space in spaces 
         if space not in @namespaces 
-          @namespaces.append(space)
+          @namespaces = @namespaces.concat(space)
   findIn: (cmd,path = null) ->
     unless cmd?
       return null
