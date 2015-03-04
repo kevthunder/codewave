@@ -20,6 +20,8 @@
   <script type="text/javascript" src="js/text_parser.js"></script>
   <script type="text/javascript" src="js/text_area_editor.js"></script>
   <script type="text/javascript" src="js/init.js"></script>
+  <script type="text/javascript" src="js/vendors/emmet-min.js"></script>
+  
   
   <script type="text/javascript">
     (function( $ ) {
@@ -32,8 +34,7 @@
 <body>
 <div class="test"></div>
 <textarea name="" id="Editor" class="full">sdfasdfdsfasSed magna purus, fermentum eu, tincidunt eu, varius ~~hello~~, felis. Curabi~~box~~tur ullamcorper ultricies nisi.
-
-Nulla consequat massa quis enim. Suspendisse non nisl sit amet ~~hello~~ velit hendr ~~box 20 5~~erit rutrum.
+~~box 20 5~~
 
 ~~box~~
 This should be inside a box
@@ -45,12 +46,13 @@ nice ! ~~close~~
 ~~testlong~~~~~
 <!-- ~~testlong~~~~~ -->
 <!-- ~~/testlong~~~~ -->
-
 ~~testparam test:test 1 2 test2:"with spaces\"and stuff"~~
 
 ~~edit hello~~
 
 ~~namespace~~
+~~namespace html~~
+~~ul>li~~
 </textarea>
 
 

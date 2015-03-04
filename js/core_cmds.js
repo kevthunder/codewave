@@ -321,7 +321,9 @@
     }
 
     EmmetCmd.prototype.result = function() {
-      throw "Not Implemented";
+      if (typeof emmet !== "undefined" && emmet !== null) {
+        return emmet.expandAbbreviation(this.abbr, this.lang).replace(/\$\{0\}/g, '|');
+      }
     };
 
     return EmmetCmd;

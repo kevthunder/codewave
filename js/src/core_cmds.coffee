@@ -230,5 +230,6 @@ class EmmetCmd extends @Codewave.BaseCommand
     @abbr = @instance.getParam([0,'abbr','abbreviation'])
     @lang = @instance.getParam([1,'lang','language'])
   result: ->
-    throw "Not Implemented"
+    if emmet?
+      emmet.expandAbbreviation(@abbr, @lang).replace(/\$\{0\}/g,'|')
 
