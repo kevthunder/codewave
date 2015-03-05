@@ -64,6 +64,9 @@ initCmds = ->
       'nameToParam' : 'abbr'
     },
   })
+  
+  php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
+  php.addDetector(new Codewave.PairDetector({result:'php:inner',opener:'<?php',closer:'?>','else':'php:outer'}))
 
 @Codewave.Command.cmdInitialisers.push(initCmds)
 

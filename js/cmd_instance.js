@@ -260,6 +260,10 @@
       return this.pos + this.str.length;
     };
 
+    CmdInstance.prototype.getPos = function() {
+      return new Codewave.util.Pos(this.pos, this.pos + this.str.length);
+    };
+
     CmdInstance.prototype.getIndent = function() {
       return this.pos - this.codewave.findLineStart(this.pos);
     };

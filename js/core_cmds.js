@@ -5,7 +5,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   initCmds = function() {
-    var core, html;
+    var core, html, php;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
     core.addDetector(new Codewave.LangDetector());
     core.addCmds({
@@ -48,7 +48,7 @@
       }
     });
     html = Codewave.Command.cmds.addCmd(new Codewave.Command('html'));
-    return html.addCmds({
+    html.addCmds({
       'fallback': {
         'aliasOf': 'core:emmet',
         'defaults': {
@@ -57,6 +57,13 @@
         'nameToParam': 'abbr'
       }
     });
+    php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'));
+    return php.addDetector(new Codewave.PairDetector({
+      result: 'php:inner',
+      opener: '<?php',
+      closer: '?>',
+      'else': 'php:outer'
+    }));
   };
 
   this.Codewave.Command.cmdInitialisers.push(initCmds);

@@ -8,7 +8,19 @@
       this.data = data != null ? data : {};
     }
 
-    Detector.prototype.detect = function(finder) {};
+    Detector.prototype.detect = function(finder) {
+      if (this.detected(finder)) {
+        if (this.data.result != null) {
+          return this.data.result;
+        }
+      } else {
+        if (this.data["else"] != null) {
+          return this.data["else"];
+        }
+      }
+    };
+
+    Detector.prototype.detected = function(finder) {};
 
     return Detector;
 
@@ -26,12 +38,35 @@
       if (finder.codewave != null) {
         lang = finder.codewave.editor.getLang();
         if (lang != null) {
-          return lang.lower();
+          return lang.toLowerCase();
         }
       }
     };
 
     return LangDetector;
+
+  })(Codewave.Detector);
+
+  this.Codewave.PairDetector = (function(_super) {
+    __extends(PairDetector, _super);
+
+    function PairDetector() {
+      return PairDetector.__super__.constructor.apply(this, arguments);
+    }
+
+    PairDetector.prototype.detected = function(finder) {
+      var pair;
+      if ((this.data.opener != null) && (this.data.closer != null)) {
+        pair = new Codewave.util.Pair(this.data.opener, this.data.closer, this.data.skip);
+        console.log(finder);
+        if (pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    return PairDetector;
 
   })(Codewave.Detector);
 

@@ -1,27 +1,79 @@
 class StrPos
-	constructor: (@pos,@str) ->
-		#
-	end: ->
-		@pos + @str.length
+  constructor: (@pos,@str) ->
+    #
+  end: ->
+    @pos + @str.length
 
 class Pos
-	constructor: (@start,@end) ->
-		#
-	containsPt: (pt) ->
-		return @start <= pt and pt <= @end
-	containsPos: (pos) ->
-		return @start <= pos.start and pos.end <= @end
+  constructor: (@start,@end) ->
+    #
+  containsPt: (pt) ->
+    return @start <= pt and pt <= @end
+  containsPos: (pos) ->
+    return @start <= pos.start and pos.end <= @end
 class WrappedPos extends Pos
-	constructor: (@start,@innerStart,@innerEnd,@end) ->
-		#
-	innerContainsPt: (pt) ->
-		return @innerStart <= pt and pt <= @innerEnd
-	innerContainsPos: (pos) ->
-		return @innerStart <= pos.start and pos.end <= @innerEnd
+  constructor: (@start,@innerStart,@innerEnd,@end) ->
+    #
+  innerContainsPt: (pt) ->
+    return @innerStart <= pt and pt <= @innerEnd
+  innerContainsPos: (pos) ->
+    return @innerStart <= pos.start and pos.end <= @innerEnd
 
 class Size
-	constructor: (@width,@height) ->
-		#
+  constructor: (@width,@height) ->
+    #
+    
+class Pair
+  constructor: (@opener,@closer,@skips) ->
+    #
+  openerReg: ->
+    if typeof @opener == 'string' 
+      new RegExp(Codewave.util.escapeRegExp(@opener))
+    else
+      @opener
+  closerReg: ->
+    if typeof @closer == 'string' 
+      new RegExp(Codewave.util.escapeRegExp(@closer))
+    else
+      @closer
+  matchAnyParts: ->
+    {
+      opener: @openerReg()
+      closer: @closerReg()
+    }
+  matchAnyPartKeys: ->
+    keys = []
+    for key, reg of @matchAnyParts()
+      keys.push(key)
+    keys
+  matchAnyReg: ->
+    groups = []
+    for key, reg of @matchAnyParts()
+      groups.push('('+reg.source+')')
+    new RegExp(groups.join('|'))
+  matchAny: (text) ->
+    @matchAnyReg().exec(text)
+  matchAnyNamed: (text) ->
+    @_matchAnyGetName(@matchAny(text))
+  _matchAnyGetName: (match) ->
+    if match
+      for group, i in match
+        if i > 0 and group?
+          return @matchAnyPartKeys()[i-1]
+      null
+  matchAnyLast: (text) ->
+    ctext = text
+    while match = @matchAny(ctext)
+      ctext = ctext.substr(match.index+1)
+      res = match
+    res
+  matchAnyLastNamed: (text) ->
+    @_matchAnyGetName(@matchAnyLast(text))
+  isWapperOf: (pos,text) ->
+    console.log(@matchAnyNamed(text.substr(pos.end)))
+    console.log(@matchAnyLastNamed(text.substr(0,pos.start)))
+    @matchAnyNamed(text.substr(pos.end)) == 'closer' and @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
+    
 
 @Codewave.util = ( 
   splitFirstNamespace: (fullname,isSpace = false) ->
@@ -57,6 +109,7 @@ class Size
   Pos: Pos
   WrappedPos: WrappedPos
   Size: Size
+  Pair: Pair
     
   union: (a1,a2) ->
     Codewave.util.unique(a1.concat(a2))

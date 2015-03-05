@@ -156,6 +156,8 @@ class @Codewave.CmdInstance
     return parser
   getEndPos: ->
     @pos+@str.length
+  getPos: ->
+    new Codewave.util.Pos(@pos,@pos+@str.length)
   getIndent: ->
     @pos - @codewave.findLineStart(@pos)
   applyIndent: (text) ->
