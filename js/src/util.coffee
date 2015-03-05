@@ -24,7 +24,7 @@ class Size
     #
     
 class Pair
-  constructor: (@opener,@closer,@skips) ->
+  constructor: (@opener,@closer,@options) ->
     #
   openerReg: ->
     if typeof @opener == 'string' 
@@ -70,8 +70,6 @@ class Pair
   matchAnyLastNamed: (text) ->
     @_matchAnyGetName(@matchAnyLast(text))
   isWapperOf: (pos,text) ->
-    console.log(@matchAnyNamed(text.substr(pos.end)))
-    console.log(@matchAnyLastNamed(text.substr(0,pos.start)))
     @matchAnyNamed(text.substr(pos.end)) == 'closer' and @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
     
 

@@ -149,8 +149,8 @@
         ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
         ed = Codewave.util.escapeRegExp(this.codewave.deco);
         re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
-        re2 = new RegExp("^(?:" + ed + ")*" + ecr + "\n", "");
-        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*$", "");
+        re2 = new RegExp("^(?:" + ed + ")*" + ecr + "\n");
+        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*$");
         return this.content = this.content.replace(re1, '$1').replace(re2, '').replace(re3, '');
       }
     };
@@ -164,11 +164,17 @@
       if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
         this.cmd = Codewave.Command.cmds.getCmd('core:no_execute');
       } else {
-        this.finder = this.codewave.getFinder(this.cmdName, this._getParentNamespaces());
-        this.finder.instance = this;
+        this.finder = this._getFinder(this.cmdName);
         this.cmd = this.finder.find();
       }
       return this.cmd;
+    };
+
+    CmdInstance.prototype._getFinder = function(cmdName) {
+      var finder;
+      finder = this.codewave.getFinder(cmdName, this._getParentNamespaces());
+      finder.instance = this;
+      return finder;
     };
 
     CmdInstance.prototype._getCmdObj = function() {
@@ -219,7 +225,7 @@
     };
 
     CmdInstance.prototype.execute = function() {
-      var parser, res;
+      var alterFunct, beforeFunct, parser, res;
       if (this.isEmpty()) {
         if ((this.codewave.closingPromp != null) && (this.codewave.closingPromp.whithinOpenBounds(this.pos + this.codewave.brakets.length) != null)) {
           return this.codewave.closingPromp.cancel();
@@ -227,11 +233,17 @@
           return this.replaceWith('');
         }
       } else if (this.cmd != null) {
+        if (beforeFunct = this.cmd.getOption('beforeExecute', this)) {
+          beforeFunct(this);
+        }
         if (this.cmd.resultIsAvailable(this)) {
           if ((res = this.cmd.result(this)) != null) {
             if (this.cmd.getOption('parse', this)) {
               parser = this.getParserForText(res);
               res = parser.parseAll();
+            }
+            if (alterFunct = this.cmd.getOption('alterResult', this)) {
+              res = alterFunct(res, this);
             }
             this.replaceWith(res);
             return true;

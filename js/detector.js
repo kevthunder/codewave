@@ -56,9 +56,8 @@
 
     PairDetector.prototype.detected = function(finder) {
       var pair;
-      if ((this.data.opener != null) && (this.data.closer != null)) {
+      if ((this.data.opener != null) && (this.data.closer != null) && (finder.instance != null)) {
         pair = new Codewave.util.Pair(this.data.opener, this.data.closer, this.data.skip);
-        console.log(finder);
         if (pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())) {
           return true;
         }

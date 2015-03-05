@@ -180,7 +180,7 @@
     };
 
     Codewave.prototype.findAnyNext = function(start, strings, direction) {
-      var end, pos, str, _i, _len, _ref, _ref1;
+      var end, pos, stri, _i, _len, _ref, _ref1;
       if (direction == null) {
         direction = 1;
       }
@@ -190,16 +190,13 @@
           return null;
         }
         for (_i = 0, _len = strings.length; _i < _len; _i++) {
-          str = strings[_i];
-          _ref = [pos, pos + str.length * direction], start = _ref[0], end = _ref[1];
+          stri = strings[_i];
+          _ref = [pos, pos + stri.length * direction], start = _ref[0], end = _ref[1];
           if (end < start) {
             _ref1 = [end, start], start = _ref1[0], end = _ref1[1];
           }
-          if (str === this.editor.textSubstr(start, end)) {
-            return {
-              str: str,
-              pos: direction < 0 ? pos - str.length : pos
-            };
+          if (stri === this.editor.textSubstr(start, end)) {
+            return new Codewave.util.StrPos(direction < 0 ? pos - stri.length : pos, stri);
           }
         }
         pos += direction;

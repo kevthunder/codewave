@@ -111,7 +111,7 @@
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             detector = _ref[_i];
             res = detector.detect(this);
-            if (res) {
+            if (res != null) {
               this.addNamespaces(res);
               posibilities = posibilities.concat(new Codewave.CmdFinder(res, {
                 parent: this,

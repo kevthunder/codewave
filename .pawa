@@ -2,9 +2,9 @@ folder:
   - source: js/src
     target: 
       python: codewave_py
-  - source: codewave_py
-    target: 
-      coffee: js/src
+  # - source: codewave_py
+    # target: 
+      # coffee: js/src
 syntax:
   coffee:
     comment: '#'
@@ -20,23 +20,42 @@ syntax:
           - word true  True
           - word false False
           - word null  None
+          - Codewave.util util
+          - Codewave.Command.cmds command.cmds
+          - Codewave.logger.log logger.log
+          - Codewave.CmdInstance cmd_instance.CmdInstance
+          - |
+            'new RegExp(' 're.compile('
           - ++ +=1
+          - -- -=1
           - /class (@[\w\.]+\.)?(\w+)(\(\))?$/        'class $2():'
           - /@(\w)/                                   'self.$1'
+          - /(\w)\?(\s|:)/                            '$1 is not None$2'
+          - /\s!(\w|@)/                               ' not $1'
+          - /^(\s*)\[([\s\w,]*)\]\s*=\s*\[(.*)\]$/    '$1$2 = $3'
+          - /^(\s*)\[([\s\w,]*)\]\s*=/                '$1$2 ='
+          - /this\[(\w*)\]\s*=\s*(.*)/                'setattr(self,$1,$2)'
           - /\sconstructor:\s*->/                     ' def __init__(self):'
           - /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,$1):'
           - /\s([^\s]+):\s*->/                        ' def $1(self):'
           - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1(self,$2):'
-          - /^(\s*(?:#\s)?(?:if|while|for)\W.*[^:])$/ '$1:'
-          - /^(\s*(?:#\s)?)unless(\W.*[^:])$/         '$1if not$2:'
-          - /^(\s*(?:#\s)?)else if(\W.*[^:]):?$/      '$1elif$2:'
-          - /^(\s*(?:#\s)?else)$/                     '$1:'
+          - /^(\s*)for\W(.*,.*)\Wof\W(.*)$/           '$1for $2 in $3.items():'
+          - /^(\s*(?:if|while|for)\W.*[^:])$/         '$1:'
+          - /^(\s*)unless\s*(\w*)\?\s*$/              '$1if $2 is None:'
+          - /^(\s*)unless(\W.*[^:])$/                 '$1if not$2:'
+          - /^(\s*)else if(\W.*[^:]):?$/              '$1elif$2:'
+          - /^(\s*else)$/                             '$1:'
+          # for the following, the actual match should be /^(\s*)(\w*) = \2\.concat\((.*)\)$/
+          - /^(\s*)(\w*) = \w*\.concat\((.*)\)$/      '$1$2 += $3' 
           - /\[([^\]]*)\.\.([^\]]*)\]/                'range($1,$2\)'
           - /([\w.]*)\.length/                        'len($1)'
           - /\.shift\(/                               '.pop(0'
           - /\.push\(/                                '.append('
           - /([\w.]*)\.join\(([^)]+)\)/               '$2.join($1)'
-          - /#\{([\w.]+)\}/                           "'+$1+'"
+          - /#\{([\w.]+)\}/                           '"+$1+"'
+          - word this  self
+          # - word new  ''
+          - /\bnew\b/  ''
         replace_parts:
           - | 
             .substring( [ 

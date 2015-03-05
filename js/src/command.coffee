@@ -20,6 +20,8 @@ class @Codewave.Command
       nameToParam: null,
       checkCarret: true,
       parse: false,
+      beforeExecute: null,
+      alterResult: null,
     }
     @options = {}
     @finalOptions = null
@@ -52,6 +54,9 @@ class @Codewave.Command
   resultIsAvailable: (instance = null) ->
     if instance? and instance.cmdObj?
       return instance.cmdObj.resultIsAvailable()
+    aliased = @getAliased(instance)
+    if aliased?
+      return aliased.resultIsAvailable(instance)
     for p in ['resultStr','resultFunct']
       if this[p]?
         return true
@@ -98,7 +103,14 @@ class @Codewave.Command
         codewave = instance.codewave
       else
         codewave = new Codewave()
-      aliased = codewave.getCmd(@aliasOf)
+      aliasOf = @aliasOf
+      if instance?
+        aliasOf = aliasOf.replace('%name%',instance.cmdName)
+        @finder = instance._getFinder(aliasOf)
+        @finder.useFallbacks = false
+        aliased = @finder.find()
+      else
+        aliased = codewave.getCmd(aliasOf)
       if instance?
         instance.aliasedCmd = aliased or false
       return aliased
@@ -128,6 +140,7 @@ class @Codewave.Command
     @data = data
     if typeof data == 'string'
       @resultStr = data
+      @options['parse'] = true
       return true
     else if data?
       return @parseDictData(data)

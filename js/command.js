@@ -31,7 +31,9 @@
       this.defaultOptions = {
         nameToParam: null,
         checkCarret: true,
-        parse: false
+        parse: false,
+        beforeExecute: null,
+        alterResult: null
       };
       this.options = {};
       this.finalOptions = null;
@@ -70,12 +72,16 @@
     };
 
     Command.prototype.resultIsAvailable = function(instance) {
-      var p, _i, _len, _ref;
+      var aliased, p, _i, _len, _ref;
       if (instance == null) {
         instance = null;
       }
       if ((instance != null) && (instance.cmdObj != null)) {
         return instance.cmdObj.resultIsAvailable();
+      }
+      aliased = this.getAliased(instance);
+      if (aliased != null) {
+        return aliased.resultIsAvailable(instance);
       }
       _ref = ['resultStr', 'resultFunct'];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -148,7 +154,7 @@
     };
 
     Command.prototype.getAliased = function(instance) {
-      var aliased, codewave;
+      var aliasOf, aliased, codewave;
       if (instance == null) {
         instance = null;
       }
@@ -161,7 +167,15 @@
         } else {
           codewave = new Codewave();
         }
-        aliased = codewave.getCmd(this.aliasOf);
+        aliasOf = this.aliasOf;
+        if (instance != null) {
+          aliasOf = aliasOf.replace('%name%', instance.cmdName);
+          this.finder = instance._getFinder(aliasOf);
+          this.finder.useFallbacks = false;
+          aliased = this.finder.find();
+        } else {
+          aliased = codewave.getCmd(aliasOf);
+        }
         if (instance != null) {
           instance.aliasedCmd = aliased || false;
         }
@@ -222,6 +236,7 @@
       this.data = data;
       if (typeof data === 'string') {
         this.resultStr = data;
+        this.options['parse'] = true;
         return true;
       } else if (data != null) {
         return this.parseDictData(data);

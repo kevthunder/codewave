@@ -70,10 +70,10 @@
   })();
 
   Pair = (function() {
-    function Pair(opener, closer, skips) {
+    function Pair(opener, closer, options) {
       this.opener = opener;
       this.closer = closer;
-      this.skips = skips;
+      this.options = options;
     }
 
     Pair.prototype.openerReg = function() {
@@ -157,8 +157,6 @@
     };
 
     Pair.prototype.isWapperOf = function(pos, text) {
-      console.log(this.matchAnyNamed(text.substr(pos.end)));
-      console.log(this.matchAnyLastNamed(text.substr(0, pos.start)));
       return this.matchAnyNamed(text.substr(pos.end)) === 'closer' && this.matchAnyLastNamed(text.substr(0, pos.start)) === 'opener';
     };
 

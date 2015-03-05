@@ -60,7 +60,7 @@ class @Codewave
       pos = f.pos + f.str.length
       if f.str == @brakets
         if beginning?
-          return new Codewave.CmdInstance(this,beginning,@editor.textSubstr(beginning,f.pos+@brakets.length))
+          return new Codewave.CmdInstance(this, beginning, @editor.textSubstr(beginning, f.pos+@brakets.length))
         else
           beginning = f.pos
       else
@@ -107,14 +107,14 @@ class @Codewave
     while true  
     
       return null unless 0 <= pos < @editor.textLen()
-      for str in strings
-        [start, end] = [pos, pos + str.length * direction]
+      for stri in strings
+        [start, end] = [pos, pos + stri.length * direction]
         
         [start, end] = [end, start] if end < start
-        if str == @editor.textSubstr(start,end)
-          return (
-            str: str
-            pos: if direction < 0 then pos-str.length else pos
+        if stri == @editor.textSubstr(start,end)
+          return new Codewave.util.StrPos(
+            if direction < 0 then pos-stri.length else pos,
+            stri
           )
       pos += direction
   findMatchingPair: (startPos,opening,closing,direction = 1) ->
@@ -145,7 +145,7 @@ class @Codewave
     while cmd = @nextCmd(pos)
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
-      if recursive && cmd.content? 
+      if recursive and cmd.content? 
         parser = new Codewave(new Codewave.TextParser(cmd.content),{parent: this})
         cmd.content = parser.parseAll()
       if cmd.init().execute()?

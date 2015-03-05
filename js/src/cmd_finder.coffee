@@ -59,7 +59,7 @@ class @Codewave.CmdFinder
         cmd = posibilities[i]
         for detector in cmd.detectors 
           res = detector.detect(this)
-          if res
+          if res?
             @addNamespaces(res)
             posibilities = posibilities.concat(new Codewave.CmdFinder(res,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities())
         i++

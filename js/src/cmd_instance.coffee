@@ -97,19 +97,22 @@ class @Codewave.CmdInstance
       ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@codewave.deco)
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
-      re2 = new RegExp("^(?:#{ed})*#{ecr}\n", "")
-      re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$", "")
+      re2 = new RegExp("^(?:#{ed})*#{ecr}\n")
+      re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
-  _getParentCmds: () ->
+  _getParentCmds: ->
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
   _getCmd: ->
     if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
       @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
     else
-      @finder = @codewave.getFinder(@cmdName,@_getParentNamespaces())
-      @finder.instance = this
+      @finder = @_getFinder(@cmdName)
       @cmd = @finder.find()
     @cmd
+  _getFinder: (cmdName)->
+    finder = @codewave.getFinder(cmdName,@_getParentNamespaces())
+    finder.instance = this
+    finder
   _getCmdObj: ->
     if @cmd?
       @cmdObj = @cmd.getExecutableObj(this)
@@ -137,11 +140,15 @@ class @Codewave.CmdInstance
       else
         @replaceWith('')
     else if @cmd?
+      if beforeFunct = @cmd.getOption('beforeExecute',this)
+        beforeFunct(this)
       if @cmd.resultIsAvailable(this)
         if (res = @cmd.result(this))?
           if @cmd.getOption('parse',this) 
             parser = @getParserForText(res)
             res = parser.parseAll()
+          if alterFunct = @cmd.getOption('alterResult',this)
+            res = alterFunct(res,this)
           @replaceWith(res)
           return true
       else

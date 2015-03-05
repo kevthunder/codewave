@@ -29,6 +29,9 @@ initCmds = ->
     'exec_parent':{
       'execute' : exec_parent
     },
+    'content':{
+      'result' : getContent
+    },
     'box':{
       'cls' : BoxCmd
     },
@@ -68,6 +71,20 @@ initCmds = ->
   php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
   php.addDetector(new Codewave.PairDetector({result:'php:inner',opener:'<?php',closer:'?>','else':'php:outer'}))
 
+  phpOuter = php.addCmd(new Codewave.Command('outer'))
+  phpOuter.addCmds({
+    'fallback':{
+      aliasOf: 'php:inner:%name%',
+      beforeExecute: closePhpForContent
+      alterResult: wrapWithPhp
+    },
+  })
+  
+  phpInner = php.addCmd(new Codewave.Command('inner'))
+  phpInner.addCmds({
+    'if':'if(|){\n\t~~content~~\n}'
+  })
+
 @Codewave.Command.cmdInitialisers.push(initCmds)
 
 setVarCmd = (name) -> 
@@ -92,7 +109,13 @@ exec_parent = (instance) ->
     instance.replaceStart = instance.parent.replaceStart
     instance.replaceEnd = instance.parent.replaceEnd
     return res
-  
+getContent = (instance) ->
+  if instance.codewave.context?
+    instance.codewave.context.content
+wrapWithPhp = (result) ->
+  '<?php '+result.replace(/<\?php\s([\\n\\r\s]+)/g,'$1<?php ').replace(/([\n\r\s]+)\s\?>/g,' ?>$1')+' ?>'
+closePhpForContent = (instance) ->
+  instance.content = ' ?>'+instance.content+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   constructor: (@instance)->
     if @instance.content
@@ -234,5 +257,6 @@ class EmmetCmd extends @Codewave.BaseCommand
     @lang = @instance.getParam([1,'lang','language'])
   result: ->
     if emmet?
+      # emmet.require('./parser/abbreviation').expand('ul>li', {pastedContent:'lorem'})
       emmet.expandAbbreviation(@abbr, @lang).replace(/\$\{0\}/g,'|')
 
