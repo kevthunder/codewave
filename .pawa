@@ -20,6 +20,7 @@ syntax:
           - word true  True
           - word false False
           - word null  None
+          - Math.max   max
           - /\bof\b/   in
           - Codewave.util util
           - Codewave.Command.cmds command.cmds
@@ -53,7 +54,7 @@ syntax:
           - /^(\s*)(\w*) = \w*\.concat\((.*)\)$/      '$1$2 += $3' 
           - /\[([^\]]*)\.\.([^\]]*)\]/                'range($1,$2\)'
           - /(\w*).indexOf\((.*)\) > -1/              '$2 in $1'
-          - /typeof\s*(\w*)\s*==\s*['"]string['"]/    'isinstance($1, str)'
+          - /typeof\s*([@.\w]*)\s*==\s*['"]string['"]/    'isinstance($1, str)'
           - /typeof\s*(\w*)\s*==\s*['"]function['"]/  "hasattr($1, '__call__')"
           - /([@\w.]*)\.length/                       'len($1)'
           - /\.shift\(/                               '.pop(0'
