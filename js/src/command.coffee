@@ -147,13 +147,13 @@ class @Codewave.Command
     return false
   parseDictData: (data) ->
     res = _optKey('result',data)
-    if typeof(res) == "function"
+    if typeof res == "function"
       @resultFunct = res
     else if res?
       @resultStr = res
       @options['parse'] = true
     execute = _optKey('execute',data)
-    if typeof(execute) == "function"
+    if typeof execute == "function"
       @executeFunct = execute
     @aliasOf = _optKey('aliasOf',data)
     @cls = _optKey('cls',data)
@@ -195,8 +195,8 @@ class @Codewave.Command
     [space,name] = Codewave.util.splitFirstNamespace(fullname)
     if space?
       next = @getCmd(space)
-      if next?
-        next = @addCmd(new Command(parts[0]))
+      unless next?
+        next = @addCmd(new Command(space))
       return next.setCmd(name,cmd)
     else
       @addCmd(cmd)
@@ -215,7 +215,7 @@ class @Codewave.Command
   for initialiser in Codewave.Command.cmdInitialisers
     initialiser()
 
-@Codewave.Command.saveCmd = (fullname,data) ->
+@Codewave.Command.saveCmd = (fullname, data) ->
   Codewave.Command.cmds.setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
   savedCmds = Codewave.storage.load('cmds')
   unless savedCmds?
@@ -227,7 +227,7 @@ class @Codewave.Command
   savedCmds = Codewave.storage.load('cmds')
   if savedCmds? 
     for fullname, data of savedCmds
-      Codewave.Command.cmds.setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
+      Codewave.Command.cmds.setCmd(fullname, new Codewave.Command(fullname.split(':').pop(), data))
 
   
 

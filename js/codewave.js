@@ -258,7 +258,7 @@
           cmd.content = parser.parseAll();
         }
         if (cmd.init().execute() != null) {
-          if ((cmd.replaceEnd != null)) {
+          if (cmd.replaceEnd != null) {
             pos = cmd.replaceEnd;
           } else {
             pos = this.editor.getCursorPos().end;

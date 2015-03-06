@@ -5,7 +5,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   initCmds = function() {
-    var core, html, php, phpInner, phpOuter;
+    var core, css, html, php, phpInner, phpOuter;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
     core.addDetector(new Codewave.LangDetector());
     core.addCmds({
@@ -60,6 +60,16 @@
         'nameToParam': 'abbr'
       }
     });
+    css = Codewave.Command.cmds.addCmd(new Codewave.Command('css'));
+    css.addCmds({
+      'fallback': {
+        'aliasOf': 'core:emmet',
+        'defaults': {
+          'lang': 'css'
+        },
+        'nameToParam': 'abbr'
+      }
+    });
     php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'));
     php.addDetector(new Codewave.PairDetector({
       result: 'php:inner',
@@ -96,9 +106,9 @@
   };
 
   no_execute = function(instance) {
-    var re;
-    re = new RegExp("^" + Codewave.util.escapeRegExp(instance.codewave.brakets) + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar), "");
-    return instance.str.replace(re, instance.codewave.brakets);
+    var reg;
+    reg = new RegExp("^(" + Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar));
+    return instance.str.replace(reg, '\\1');
   };
 
   quote_carret = function(instance) {
@@ -122,7 +132,10 @@
   };
 
   wrapWithPhp = function(result) {
-    return '<?php ' + result.replace(/<\?php\s([\\n\\r\s]+)/g, '$1<?php ').replace(/([\n\r\s]+)\s\?>/g, ' ?>$1') + ' ?>';
+    var regClose, regOpen;
+    regOpen = /<\?php\s([\\n\\r\s]+)/g;
+    regClose = /([\n\r\s]+)\s\?>/g;
+    return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
   };
 
   closePhpForContent = function(instance) {
@@ -194,7 +207,7 @@
     };
 
     BoxCmd.prototype.decoLine = function(len) {
-      return Array(Math.ceil(len / this.deco.length) + 1).join(this.deco).substring(0, len);
+      return Codewave.util.repeatToLength(self.deco, len);
     };
 
     BoxCmd.prototype.padding = function() {
@@ -357,8 +370,10 @@
     }
 
     EmmetCmd.prototype.result = function() {
+      var res;
       if (typeof emmet !== "undefined" && emmet !== null) {
-        return emmet.expandAbbreviation(this.abbr, this.lang).replace(/\$\{0\}/g, '|');
+        res = emmet.expandAbbreviation(this.abbr, this.lang);
+        return res.replace(/\$\{0\}/g, '|');
       }
     };
 

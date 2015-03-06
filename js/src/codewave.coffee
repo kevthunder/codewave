@@ -146,10 +146,10 @@ class @Codewave
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
       if recursive and cmd.content? 
-        parser = new Codewave(new Codewave.TextParser(cmd.content),{parent: this})
+        parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
       if cmd.init().execute()?
-        if(cmd.replaceEnd?)
+        if cmd.replaceEnd?
           pos = cmd.replaceEnd
         else
           pos = @editor.getCursorPos().end
@@ -173,8 +173,8 @@ class @Codewave
     finder = @getFinder(cmdName,nameSpaces)
     finder.find()
   getFinder: (cmdName,nameSpaces = []) ->
-    return new Codewave.CmdFinder(cmdName,{
-      namespaces: Codewave.util.union(@getNameSpaces(),nameSpaces)
+    return new Codewave.CmdFinder(cmdName, {
+      namespaces: Codewave.util.union(@getNameSpaces(), nameSpaces)
       useDetectors: @isRoot()
       codewave: this
     })

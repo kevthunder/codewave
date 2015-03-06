@@ -19,8 +19,8 @@ class @Codewave.LangDetector extends Codewave.Detector
 class @Codewave.PairDetector extends Codewave.Detector
   detected: (finder) ->
     if @data.opener? and @data.closer? and finder.instance?
-      pair = new Codewave.util.Pair(@data.opener,@data.closer,@data.skip)
-      if pair.isWapperOf(finder.instance.getPos(),finder.codewave.editor.text())
+      pair = new Codewave.util.Pair(@data.opener, @data.closer, @data)
+      if pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())
         return true
     false
       

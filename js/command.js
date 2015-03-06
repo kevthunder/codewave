@@ -323,8 +323,8 @@
       _ref = Codewave.util.splitFirstNamespace(fullname), space = _ref[0], name = _ref[1];
       if (space != null) {
         next = this.getCmd(space);
-        if (next != null) {
-          next = this.addCmd(new Command(parts[0]));
+        if (next == null) {
+          next = this.addCmd(new Command(space));
         }
         return next.setCmd(name, cmd);
       } else {

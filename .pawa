@@ -20,25 +20,29 @@ syntax:
           - word true  True
           - word false False
           - word null  None
+          - /\bof\b/   in
           - Codewave.util util
           - Codewave.Command.cmds command.cmds
+          - Codewave.Command( command.Command(
           - Codewave.logger.log logger.log
           - Codewave.CmdInstance cmd_instance.CmdInstance
+          - Codewave.storage storage
           - |
             'new RegExp(' 're.compile('
           - ++ +=1
           - -- -=1
-          - /class (@[\w\.]+\.)?(\w+)(\(\))?$/        'class $2():'
-          - /@(\w)/                                   'self.$1'
+          - /class (@[\w\.]+\.)?(\w+)$/               'class $2():'
+          - /class (@[\w\.]+\.)?(\w+)\s*extends\s*(?:Codewave.)?([\w.]+)$/ 'class $2($3):'
           - /(\w)\?(\s|:)/                            '$1 is not None$2'
           - /\s!(\w|@)/                               ' not $1'
-          - /^(\s*)\[([\s\w,]*)\]\s*=\s*\[(.*)\]$/    '$1$2 = $3'
-          - /^(\s*)\[([\s\w,]*)\]\s*=/                '$1$2 ='
+          - /^(\s*)\[([\s\w,._@]*)\]\s*=\s*\[(.*)\]$/ '$1$2 = $3'
+          - /^(\s*)\[([\s\w,._@]*)\]\s*=/             '$1$2 ='
           - /this\[(\w*)\]\s*=\s*(.*)/                'setattr(self,$1,$2)'
           - /\sconstructor:\s*->/                     ' def __init__(self):'
           - /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,$1):'
           - /\s([^\s]+):\s*->/                        ' def $1(self):'
           - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1(self,$2):'
+          - /([^\s]+)\s*=\s*(?:\(([^)]*)\))?\s*->/    'def $1($2):'
           - /^(\s*)for\W(.*,.*)\Wof\W(.*)$/           '$1for $2 in $3.items():'
           - /^(\s*(?:if|while|for)\W.*[^:])$/         '$1:'
           - /^(\s*)unless\s*(\w*)\?\s*$/              '$1if $2 is None:'
@@ -48,10 +52,15 @@ syntax:
           # for the following, the actual match should be /^(\s*)(\w*) = \2\.concat\((.*)\)$/
           - /^(\s*)(\w*) = \w*\.concat\((.*)\)$/      '$1$2 += $3' 
           - /\[([^\]]*)\.\.([^\]]*)\]/                'range($1,$2\)'
-          - /([\w.]*)\.length/                        'len($1)'
+          - /(\w*).indexOf\((.*)\) > -1/              '$2 in $1'
+          - /typeof\s*(\w*)\s*==\s*['"]string['"]/    'isinstance($1, str)'
+          - /typeof\s*(\w*)\s*==\s*['"]function['"]/  "hasattr($1, '__call__')"
+          - /([@\w.]*)\.length/                       'len($1)'
           - /\.shift\(/                               '.pop(0'
           - /\.push\(/                                '.append('
+          - .toLowerCase(                             .lower(
           - /([\w.]*)\.join\(([^)]+)\)/               '$2.join($1)'
+          - /@(\w)/                                   'self.$1'
           - /#\{([\w.]+)\}/                           '"+$1+"'
           - word this  self
           # - word new  ''

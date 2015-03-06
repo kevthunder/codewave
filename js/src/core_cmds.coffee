@@ -68,6 +68,15 @@ initCmds = ->
     },
   })
   
+  css = Codewave.Command.cmds.addCmd(new Codewave.Command('css'))
+  css.addCmds({
+    'fallback':{
+      'aliasOf' : 'core:emmet',
+      'defaults' : {'lang':'css'},
+      'nameToParam' : 'abbr'
+    },
+  })
+  
   php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
   php.addDetector(new Codewave.PairDetector({result:'php:inner',opener:'<?php',closer:'?>','else':'php:outer'}))
 
@@ -98,8 +107,8 @@ setVarCmd = (name) ->
   )
   
 no_execute = (instance) ->
-  re = new RegExp("^"+Codewave.util.escapeRegExp(instance.codewave.brakets) + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar), "")
-  instance.str.replace(re,instance.codewave.brakets)
+  reg = new RegExp("^("+Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar))
+  instance.str.replace(reg,'\\1')
   
 quote_carret = (instance) ->
   return instance.content.replace(/\|/g, '||')
@@ -113,14 +122,16 @@ getContent = (instance) ->
   if instance.codewave.context?
     instance.codewave.context.content
 wrapWithPhp = (result) ->
-  '<?php '+result.replace(/<\?php\s([\\n\\r\s]+)/g,'$1<?php ').replace(/([\n\r\s]+)\s\?>/g,' ?>$1')+' ?>'
+  regOpen = /<\?php\s([\\n\\r\s]+)/g
+  regClose = /([\n\r\s]+)\s\?>/g
+  '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+instance.content+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   constructor: (@instance)->
     if @instance.content
       bounds = @textBounds(@instance.content)
-      [@width,@height] = [bounds.width, bounds.height]
+      [@width, @height] = [bounds.width, bounds.height]
     else
       @width = 50
       @height = 3
@@ -160,19 +171,19 @@ class BoxCmd extends @Codewave.BaseCommand
     ln = @width + 2 * @pad + 2 * @deco.length - closing.length
     @wrapComment(closing+@decoLine(ln))
   decoLine: (len) ->
-    Array(Math.ceil(len/@deco.length)+1).join(@deco).substring(0,len)
+    return Codewave.util.repeatToLength(self.deco, len)
   padding: -> 
     return Codewave.util.repeatToLength(" ", @pad)
   lines: (text = '') ->
     text = text or ''
-    lines = text.replace(/\r/g,'').split("\n")
+    lines = text.replace(/\r/g, '').split("\n")
     return (@line(lines[x] or '') for x in [0..@height]).join('\n') 
   line: (text = '') ->
     @wrapComment(
       @deco +
       @padding() +
       text +
-      Codewave.util.repeatToLength(" ", @width-@instance.codewave.removeCarret(text).length) + 
+      Codewave.util.repeatToLength(" ", @width - @instance.codewave.removeCarret(text).length) + 
       @padding() +
       @deco
     )
@@ -258,5 +269,6 @@ class EmmetCmd extends @Codewave.BaseCommand
   result: ->
     if emmet?
       # emmet.require('./parser/abbreviation').expand('ul>li', {pastedContent:'lorem'})
-      emmet.expandAbbreviation(@abbr, @lang).replace(/\$\{0\}/g,'|')
+      res = emmet.expandAbbreviation(@abbr, @lang)
+      res.replace(/\$\{0\}/g, '|')
 
