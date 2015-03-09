@@ -1,4 +1,4 @@
 /.sass-cache
 /js/*.map
-*.pyc
 _pawa_tmp/
+/codewave_py
