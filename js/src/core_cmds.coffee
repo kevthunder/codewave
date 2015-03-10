@@ -10,14 +10,131 @@ initCmds = ->
         ~~box~~
         ~~quote_carret~~
           ___         _   __      __
-         / __|___  __| |__\ \    / /_ ___ ______
-        / /__/ _ \/ _` / -_\ \/\/ / _` \ V / -_/
-        \____\___/\__,_\___|\_/\_/\__,_|\_/\___|
+         / __|___  __| |__\\ \\    / /_ ___ ______
+        / /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/
+        \\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|
         The text editor helper
         ~~/quote_carret~~
+        
+        When using Codewave you will be writing commands directly within 
+        your text editor editing windows. These commands must be placed
+        between two pairs of "~" (tilde) and then with you text either 
+        inside or at the command, they can be executed by pressing 
+        "ctrl"+"shift"+"e".
+        Ex: ~~!hello~~
+        
+        One good thing about codewave is that you dont need to actually
+        type any "~" (tilde), because pressing "ctrl"+"shift"+"e" will
+        add them if you are not allready within a command
+        
+        Codewave does not relly use UI to display any information. 
+        instead, it uses text within code comments to mimic UIs. The 
+        generated comment blocks will be refered as windows in the help
+        sections.
+        
+        To close this window (ie. remove this comment bloc), press 
+        "ctrl"+"shift"+"e" with you cursor on the line bellow.
         ~~!close|~~
+        
+        Use the following command for a walkthrough of some of many
+        features of codewave
+        ~~!help:get_started~~ or ~~!help:demo~~
+        
+        List of all helps subjects 
+        ~~!help:subjects~~ or ~~!help:sub~~ 
+        
+        ~~!close~~
         ~~/box~~
         """
+      'cmds' : {
+        'subjects':{
+          'result' : """
+            ~~box~~
+            ~~!help~~
+            ~~!help:get_started~~ (~~!help:start~~)
+            ~~!help:subjects~~ (~~!help:sub~~)
+            ~~!close|~~
+            ~~/box~~
+            """
+        }
+        'sub':{
+          'aliasOf': 'help:subjects'
+        }
+        'get_started':{
+          'result' : """
+            ~~box~~
+            The classic Hello World.
+            ~~!hello|~~
+            
+            ~~quote_carret~~
+            Codewave allows you to make you own commands (or abbreviations) 
+            put your content inside "source" the do "save". Try adding any 
+            text that is on your mind.
+            ~~!edit my_new_command~~
+            
+            If you did the last step right, you should see your text when you
+            do the following command. It is now saved and you can use it 
+            whenever you want.
+            ~~!my_new_command~~
+            
+            Codewave come with many prexisting commands. Here an example of 
+            php abreviations
+            ~~!php:inner:if~~
+              echo "~~!hello~~"
+            ~~!/php:inner:if~~
+            
+            CodeWave come with the exellent Emmet ( http://emmet.io/ ) to 
+            provide event more abreviations. Emmet will fire automaticaly if
+            you are in a html or css file and no other command of the same 
+            name were defined.
+            ~~!ul>li~~ (if you are in a html doccument)
+            ~~!emmet ul>li~~
+            ~~!emmet m2 css~~
+            
+            Commands are stored in name spaces and some of the namespaces are
+            active depending of the context or they can be called explicitly. 
+            The two following commands are the same and will display the 
+            currently  active namespace. The first command command works 
+            because the core namespace is active.
+            ~~!namespace~~
+            ~~!core:namespace~~
+            
+            you can make an namespace active with the following command.
+            ~~!namespace php~~
+            
+            Check the namespaces again
+            ~~!namespace~~
+            
+            All the dialogs(windows) of codewave are made with the command 
+            "box" and you can use it in your own commands. you can also use a
+            "close" command to make it easy to get rid of the window.
+            ~~!box~~
+            The box will scale with the content you put in it
+            ~~!close|~~
+            ~~!/box~~
+            
+            you may have seen a "|"(Vertical bar) in the last example. this
+            mark where the text cursor will be located once the command is 
+            executed. Use 2 of them if you want to print the actual character.
+            ~~!box~~
+            one : | 
+            two : ||
+            ~~!/box~~
+            
+            If you want to print a command without having it evalute when 
+            the command is executed, use a "!" exclamation mark.
+            ~~!!hello~~
+            
+            
+            ~~/quote_carret~~
+            ~~!close|~~
+            ~~/box~~
+            """
+        }
+        'demo':{
+          'aliasOf': 'help:get_started'
+        }
+      }
     },
     'no_execute':{
       'result' : no_execute
@@ -108,9 +225,10 @@ setVarCmd = (name) ->
   
 no_execute = (instance) ->
   reg = new RegExp("^("+Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar))
-  instance.str.replace(reg,'\\1')
+  instance.str.replace(reg,'$1')
   
 quote_carret = (instance) ->
+  console.log(instance.content.replace(/\|/g, '||'))
   return instance.content.replace(/\|/g, '||')
 exec_parent = (instance) ->
   if instance.parent?
@@ -171,7 +289,7 @@ class BoxCmd extends @Codewave.BaseCommand
     ln = @width + 2 * @pad + 2 * @deco.length - closing.length
     @wrapComment(closing+@decoLine(ln))
   decoLine: (len) ->
-    return Codewave.util.repeatToLength(self.deco, len)
+    return Codewave.util.repeatToLength(@deco, len)
   padding: -> 
     return Codewave.util.repeatToLength(" ", @pad)
   lines: (text = '') ->
@@ -271,4 +389,6 @@ class EmmetCmd extends @Codewave.BaseCommand
       # emmet.require('./parser/abbreviation').expand('ul>li', {pastedContent:'lorem'})
       res = emmet.expandAbbreviation(@abbr, @lang)
       res.replace(/\$\{0\}/g, '|')
+
+
 

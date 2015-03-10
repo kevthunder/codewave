@@ -149,6 +149,10 @@
       }
     };
 
+    Codewave.prototype.findLineEnd = function(pos) {
+      return this.findAnyNext(pos, ["\n", "\r"]);
+    };
+
     Codewave.prototype.findPrevBraket = function(start) {
       return this.findNextBraket(start, -1);
     };
@@ -257,7 +261,8 @@
           });
           cmd.content = parser.parseAll();
         }
-        if (cmd.init().execute() != null) {
+        cmd.init();
+        if (cmd.execute() != null) {
           if (cmd.replaceEnd != null) {
             pos = cmd.replaceEnd;
           } else {
@@ -382,8 +387,9 @@
     };
 
     Codewave.prototype.getCarretPos = function(txt) {
-      var i;
-      txt = txt.replace(this.carretChar + this.carretChar, ' ');
+      var i, reQuoted;
+      reQuoted = new RegExp(Codewave.util.escapeRegExp(this.carretChar + this.carretChar), "g");
+      txt = txt.replace(reQuoted, ' ');
       if ((i = txt.indexOf(this.carretChar)) > -1) {
         return i;
       }

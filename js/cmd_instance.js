@@ -131,7 +131,7 @@
     };
 
     CmdInstance.prototype._checkBox = function() {
-      var cl, cr, endPos;
+      var cl, cr, endPos, lEnd, lStart;
       cl = this.codewave.wrapCommentLeft();
       cr = this.codewave.wrapCommentRight();
       endPos = this.getEndPos() + cr.length;
@@ -139,6 +139,16 @@
         this.pos = this.pos - cl.length;
         this.str = this.codewave.editor.textSubstr(this.pos, endPos);
         return this._removeCommentFromContent();
+      } else {
+        lStart = this.codewave.findLineStart(this.pos);
+        if (this.codewave.editor.textSubstr(lStart, this.pos).indexOf(cl) > -1) {
+          lEnd = this.codewave.findLineEnd(this.getEndPos());
+          console.log(this.codewave.editor.textSubstr(this.getEndPos(), lEnd), cr, this.codewave.editor.textSubstr(this.getEndPos(), lEnd).indexOf(cr));
+          if (this.codewave.editor.textSubstr(this.getEndPos(), lEnd).indexOf(cr) > -1) {
+            this.inBox = 1;
+            return this._removeCommentFromContent();
+          }
+        }
       }
     };
 
@@ -149,8 +159,8 @@
         ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
         ed = Codewave.util.escapeRegExp(this.codewave.deco);
         re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
-        re2 = new RegExp("^(?:" + ed + ")*" + ecr + "\n");
-        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*$");
+        re2 = new RegExp("^\\s*(?:" + ed + ")*" + ecr + "\r?\n");
+        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*\\s*$");
         return this.content = this.content.replace(re1, '$1').replace(re2, '').replace(re3, '');
       }
     };

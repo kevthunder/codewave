@@ -27,8 +27,8 @@ You may need to put it on a web server to be able to use the localstorage
 
 ## ToDo
 
-* Backport modif done in Python
-* Pass the current language to emmet
+* format in-box commands
+* help section
 * Create some default commands
 
 ## devloppement

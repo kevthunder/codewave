@@ -91,14 +91,22 @@ class @Codewave.CmdInstance
       @pos = @pos - cl.length
       @str = @codewave.editor.textSubstr(@pos,endPos)
       @_removeCommentFromContent()
+    else
+      lStart = @codewave.findLineStart(@pos)
+      if @codewave.editor.textSubstr(lStart,@pos).indexOf(cl) > -1
+        lEnd = @codewave.findLineEnd(@getEndPos())
+        console.log(@codewave.editor.textSubstr(@getEndPos(),lEnd),cr,@codewave.editor.textSubstr(@getEndPos(),lEnd).indexOf(cr))
+        if @codewave.editor.textSubstr(@getEndPos(),lEnd).indexOf(cr) > -1
+          @inBox = 1
+          @_removeCommentFromContent()
   _removeCommentFromContent: ->
     if @content
       ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
       ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@codewave.deco)
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
-      re2 = new RegExp("^(?:#{ed})*#{ecr}\n")
-      re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*$")
+      re2 = new RegExp("^\\s*(?:#{ed})*#{ecr}\r?\n")
+      re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*\\s*$")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getParentCmds: ->
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()

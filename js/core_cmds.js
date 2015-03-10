@@ -10,7 +10,21 @@
     core.addDetector(new Codewave.LangDetector());
     core.addCmds({
       'help': {
-        'result': "~~box~~\n~~quote_carret~~\n  ___         _   __      __\n / __|___  __| |__\ \    / /_ ___ ______\n/ /__/ _ \/ _` / -_\ \/\/ / _` \ V / -_/\n\____\___/\__,_\___|\_/\_/\__,_|\_/\___|\nThe text editor helper\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+        'result': "~~box~~\n~~quote_carret~~\n  ___         _   __      __\n / __|___  __| |__\\ \\    / /_ ___ ______\n/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/\n\\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|\nThe text editor helper\n~~/quote_carret~~\n\nWhen using Codewave you will be writing commands directly within \nyour text editor editing windows. These commands must be placed\nbetween two pairs of \"~\" (tilde) and then with you text either \ninside or at the command, they can be executed by pressing \n\"ctrl\"+\"shift\"+\"e\".\nEx: ~~!hello~~\n\nOne good thing about codewave is that you dont need to actually\ntype any \"~\" (tilde), because pressing \"ctrl\"+\"shift\"+\"e\" will\nadd them if you are not allready within a command\n\nCodewave does not relly use UI to display any information. \ninstead, it uses text within code comments to mimic UIs. The \ngenerated comment blocks will be refered as windows in the help\nsections.\n\nTo close this window (ie. remove this comment bloc), press \n\"ctrl\"+\"shift\"+\"e\" with you cursor on the line bellow.\n~~!close|~~\n\nUse the following command for a walkthrough of some of many\nfeatures of codewave\n~~!help:get_started~~ or ~~!help:demo~~\n\nList of all helps subjects \n~~!help:subjects~~ or ~~!help:sub~~ \n\n~~!close~~\n~~/box~~",
+        'cmds': {
+          'subjects': {
+            'result': "~~box~~\n~~!help~~\n~~!help:get_started~~ (~~!help:start~~)\n~~!help:subjects~~ (~~!help:sub~~)\n~~!close|~~\n~~/box~~"
+          },
+          'sub': {
+            'aliasOf': 'help:subjects'
+          },
+          'get_started': {
+            'result': "~~box~~\nThe classic Hello World.\n~~!hello|~~\n\n~~quote_carret~~\nCodewave allows you to make you own commands (or abbreviations) \nput your content inside \"source\" the do \"save\". Try adding any \ntext that is on your mind.\n~~!edit my_new_command~~\n\nIf you did the last step right, you should see your text when you\ndo the following command. It is now saved and you can use it \nwhenever you want.\n~~!my_new_command~~\n\nCodewave come with many prexisting commands. Here an example of \nphp abreviations\n~~!php:inner:if~~\n  echo \"~~!hello~~\"\n~~!/php:inner:if~~\n\nCodeWave come with the exellent Emmet ( http://emmet.io/ ) to \nprovide event more abreviations. Emmet will fire automaticaly if\nyou are in a html or css file and no other command of the same \nname were defined.\n~~!ul>li~~ (if you are in a html doccument)\n~~!emmet ul>li~~\n~~!emmet m2 css~~\n\nCommands are stored in name spaces and some of the namespaces are\nactive depending of the context or they can be called explicitly. \nThe two following commands are the same and will display the \ncurrently  active namespace. The first command command works \nbecause the core namespace is active.\n~~!namespace~~\n~~!core:namespace~~\n\nyou can make an namespace active with the following command.\n~~!namespace php~~\n\nCheck the namespaces again\n~~!namespace~~\n\nAll the dialogs(windows) of codewave are made with the command \n\"box\" and you can use it in your own commands. you can also use a\n\"close\" command to make it easy to get rid of the window.\n~~!box~~\nThe box will scale with the content you put in it\n~~!close|~~\n~~!/box~~\n\nyou may have seen a \"|\"(Vertical bar) in the last example. this\nmark where the text cursor will be located once the command is \nexecuted. Use 2 of them if you want to print the actual character.\n~~!box~~\none : | \ntwo : ||\n~~!/box~~\n\nIf you want to print a command without having it evalute when \nthe command is executed, use a \"!\" exclamation mark.\n~~!!hello~~\n\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+          },
+          'demo': {
+            'aliasOf': 'help:get_started'
+          }
+        }
       },
       'no_execute': {
         'result': no_execute
@@ -108,10 +122,11 @@
   no_execute = function(instance) {
     var reg;
     reg = new RegExp("^(" + Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar));
-    return instance.str.replace(reg, '\\1');
+    return instance.str.replace(reg, '$1');
   };
 
   quote_carret = function(instance) {
+    console.log(instance.content.replace(/\|/g, '||'));
     return instance.content.replace(/\|/g, '||');
   };
 
@@ -207,7 +222,7 @@
     };
 
     BoxCmd.prototype.decoLine = function(len) {
-      return Codewave.util.repeatToLength(self.deco, len);
+      return Codewave.util.repeatToLength(this.deco, len);
     };
 
     BoxCmd.prototype.padding = function() {

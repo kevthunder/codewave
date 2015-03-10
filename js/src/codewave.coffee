@@ -91,6 +91,8 @@ class @Codewave
   findLineStart: (pos) -> 
     p = @findAnyNext(pos ,["\n"], -1)
     if p then p.pos+1 else 0
+  findLineEnd: (pos) -> 
+    @findAnyNext(pos ,["\n","\r"])
   findPrevBraket: (start) -> 
     @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
@@ -148,7 +150,9 @@ class @Codewave
       if recursive and cmd.content? 
         parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
-      if cmd.init().execute()?
+      cmd.init()
+      # console.log(cmd)
+      if cmd.execute()?
         if cmd.replaceEnd?
           pos = cmd.replaceEnd
         else
@@ -215,7 +219,8 @@ class @Codewave
     reTmp = new RegExp(Codewave.util.escapeRegExp(tmp), "g")
     txt.replace(reQuoted,tmp).replace(reCarret,'').replace(reTmp, @carretChar)
   getCarretPos: (txt) ->
-    txt = txt.replace(@carretChar+@carretChar, ' ')
+    reQuoted = new RegExp(Codewave.util.escapeRegExp(@carretChar+@carretChar), "g")
+    txt = txt.replace(reQuoted, ' ')
     if (i = txt.indexOf(@carretChar)) > -1
       return i
 
