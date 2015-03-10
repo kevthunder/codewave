@@ -147,7 +147,7 @@ class @Codewave
     while cmd = @nextCmd(pos)
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
-      if recursive and cmd.content? 
+      if recursive and cmd.content? and (!cmd.getCmd()? or !cmd.cmd.getOption('preventParseAll'))
         parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
       cmd.init()

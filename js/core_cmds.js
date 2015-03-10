@@ -30,7 +30,7 @@
                 'result': "Codewave allows you to make you own commands (or abbreviations) \nput your content inside \"source\" the do \"save\". Try adding any \ntext that is on your mind.\n~~!edit my_new_command|~~\n\nIf you did the last step right, you should see your text when you\ndo the following command. It is now saved and you can use it \nwhenever you want.\n~~!my_new_command~~"
               }
             },
-            'result': "~~box~~\n~~help:editing:intro~~\n\n~~quote_carret~~\nWhen you make your command you may need to tell where the text cursor \nwill be located once the command is executed. To do that, use a \"|\" \n(Vertical bar). Use 2 of them if you want to print the actual \ncharacter.\n~~!box~~\none : | \ntwo : ||\n~~!/box~~\n\nIf you want to print a command without having it evalute when \nthe command is executed, use a \"!\" exclamation mark.\n~~!!hello~~\n\nfor commands that have both a openig and a closing tag, you can use\nthe \"content\" command. \"content\" will be replaced with the text\nthat is between tha tags. Look at the code of the following command\nfor en example of how it can be used.\n~~edit php:inner:if~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+            'result': "~~box~~\n~~help:editing:intro~~\n\n~~quote_carret~~\nWhen you make your command you may need to tell where the text cursor \nwill be located once the command is executed. To do that, use a \"|\" \n(Vertical bar). Use 2 of them if you want to print the actual \ncharacter.\n~~!box~~\none : | \ntwo : ||\n~~!/box~~\n\nIf you want to print a command without having it evalute when \nthe command is executed, use a \"!\" exclamation mark.\n~~!!hello~~\n\nfor commands that have both a openig and a closing tag, you can use\nthe \"content\" command. \"content\" will be replaced with the text\nthat is between tha tags. Look at the code of the following command\nfor en example of how it can be used.\n~~!edit php:inner:if~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
           },
           'edit': {
             'aliasOf': 'help:editing'
@@ -58,7 +58,9 @@
       },
       'edit': {
         'cmds': {
-          'source': setVarCmd('source'),
+          'source': Codewave.util.merge(setVarCmd('source'), {
+            'preventParseAll': true
+          }),
           'save': {
             'aliasOf': 'core:exec_parent'
           }
@@ -137,7 +139,6 @@
   };
 
   quote_carret = function(instance) {
-    console.log(instance.content.replace(/\|/g, '||'));
     return instance.content.replace(/\|/g, '||');
   };
 
@@ -171,9 +172,12 @@
   BoxCmd = (function(_super) {
     __extends(BoxCmd, _super);
 
-    function BoxCmd(instance) {
+    function BoxCmd() {
+      return BoxCmd.__super__.constructor.apply(this, arguments);
+    }
+
+    BoxCmd.prototype.init = function() {
       var bounds, params, _ref;
-      this.instance = instance;
       this.cmd = this.instance.getParam(['cmd']);
       this.deco = this.instance.codewave.deco;
       this.pad = 2;
@@ -195,8 +199,8 @@
       } else if (this.instance.params.length > 0) {
         params.push(0);
       }
-      this.height = this.instance.getParam(params, this.height);
-    }
+      return this.height = this.instance.getParam(params, this.height);
+    };
 
     BoxCmd.prototype.result = function() {
       return this.startSep() + "\n" + this.lines(this.instance.content) + "\n" + this.endSep();
@@ -226,7 +230,6 @@
       if (this.cmd != null) {
         cmd = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
       }
-      console.log(this, cmd);
       ln = this.width + 2 * this.pad + 2 * this.deco.length - cmd.length;
       return this.wrapComment(cmd + this.decoLine(ln));
     };
@@ -284,10 +287,13 @@
   CloseCmd = (function(_super) {
     __extends(CloseCmd, _super);
 
-    function CloseCmd(instance) {
-      this.instance = instance;
-      this.deco = this.instance.codewave.deco;
+    function CloseCmd() {
+      return CloseCmd.__super__.constructor.apply(this, arguments);
     }
+
+    CloseCmd.prototype.init = function() {
+      return this.deco = this.instance.codewave.deco;
+    };
 
     CloseCmd.prototype.startFind = function() {
       return this.instance.codewave.wrapCommentLeft(this.deco + this.deco);
@@ -318,9 +324,12 @@
   EditCmd = (function(_super) {
     __extends(EditCmd, _super);
 
-    function EditCmd(instance) {
+    function EditCmd() {
+      return EditCmd.__super__.constructor.apply(this, arguments);
+    }
+
+    EditCmd.prototype.init = function() {
       var _ref;
-      this.instance = instance;
       this.cmdName = this.instance.getParam([0, 'cmd']);
       this.verbalize = (_ref = this.instance.getParam([1])) === 'v' || _ref === 'verbalize';
       if (this.cmdName != null) {
@@ -329,8 +338,14 @@
         this.cmd = this.finder.find();
       }
       this.editable = this.cmd != null ? this.cmd.isEditable() : true;
-      this.content = this.instance.content;
-    }
+      return this.content = this.instance.content;
+    };
+
+    EditCmd.prototype.getOptions = function() {
+      return {
+        allowedNamed: ['cmd']
+      };
+    };
 
     EditCmd.prototype.result = function() {
       if (this.content) {
@@ -372,10 +387,13 @@
   NameSpaceCmd = (function(_super) {
     __extends(NameSpaceCmd, _super);
 
-    function NameSpaceCmd(instance) {
-      this.instance = instance;
-      this.name = this.instance.getParam([0]);
+    function NameSpaceCmd() {
+      return NameSpaceCmd.__super__.constructor.apply(this, arguments);
     }
+
+    NameSpaceCmd.prototype.init = function() {
+      return this.name = this.instance.getParam([0]);
+    };
 
     NameSpaceCmd.prototype.result = function() {
       var namespaces, nspc, parser, txt, _i, _len;
@@ -402,11 +420,14 @@
   EmmetCmd = (function(_super) {
     __extends(EmmetCmd, _super);
 
-    function EmmetCmd(instance) {
-      this.instance = instance;
-      this.abbr = this.instance.getParam([0, 'abbr', 'abbreviation']);
-      this.lang = this.instance.getParam([1, 'lang', 'language']);
+    function EmmetCmd() {
+      return EmmetCmd.__super__.constructor.apply(this, arguments);
     }
+
+    EmmetCmd.prototype.init = function() {
+      this.abbr = this.instance.getParam([0, 'abbr', 'abbreviation']);
+      return this.lang = this.instance.getParam([1, 'lang', 'language']);
+    };
 
     EmmetCmd.prototype.result = function() {
       var res;

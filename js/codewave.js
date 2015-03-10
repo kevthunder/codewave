@@ -255,7 +255,7 @@
       while (cmd = this.nextCmd(pos)) {
         pos = cmd.getEndPos();
         this.editor.setCursorPos(pos);
-        if (recursive && (cmd.content != null)) {
+        if (recursive && (cmd.content != null) && ((cmd.getCmd() == null) || !cmd.cmd.getOption('preventParseAll'))) {
           parser = new Codewave(new Codewave.TextParser(cmd.content), {
             parent: this
           });

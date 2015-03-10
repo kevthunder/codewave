@@ -10,11 +10,13 @@ class @Codewave.CmdInstance
       @_checkElongated()
       @_checkBox()
   init: ->
-    unless @isEmpty()
-      @_getParentCmds()
-      @_getCmd()
-      @_parseParams(@rawParams)
+    unless @isEmpty() || @inited
+      @inited = true
+      @getCmd()
       @_getCmdObj()
+      @_parseParams(@rawParams)
+      if @cmdObj?
+        @cmdObj.init()
     this
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
@@ -42,6 +44,7 @@ class @Codewave.CmdInstance
       if nameToParam? 
         @named[nameToParam] = @cmdName
     if params.length
+      allowedNamed = @cmd.getOption('allowedNamed',this)
       inStr = false
       param = ''
       name = false
@@ -56,7 +59,7 @@ class @Codewave.CmdInstance
           name = false
         else if chr == '"' and (i == 0 or params[i-1] != '\\')
           inStr = !inStr
-        else if chr == ':' and !name and !inStr
+        else if chr == ':' and !name and !inStr and (!allowedNamed? or name in allowedNamed)
           name = param
           param = ''
         else
@@ -109,12 +112,14 @@ class @Codewave.CmdInstance
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getParentCmds: ->
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
-  _getCmd: ->
-    if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
-      @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
-    else
-      @finder = @_getFinder(@cmdName)
-      @cmd = @finder.find()
+  getCmd: ->
+    unless @cmd?
+      @_getParentCmds()
+      if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
+        @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
+      else
+        @finder = @_getFinder(@cmdName)
+        @cmd = @finder.find()
     @cmd
   _getFinder: (cmdName)->
     finder = @codewave.getFinder(cmdName,@_getParentNamespaces())

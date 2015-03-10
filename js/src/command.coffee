@@ -22,6 +22,7 @@ class @Codewave.Command
       parse: false,
       beforeExecute: null,
       alterResult: null,
+      preventParseAll: false,
     }
     @options = {}
     @finalOptions = null
@@ -234,6 +235,8 @@ class @Codewave.Command
 
 class @Codewave.BaseCommand
   constructor: (@instance) ->
+    #
+  init: ->
     #
   resultIsAvailable: ->
     return this["result"]?

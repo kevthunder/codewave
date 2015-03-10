@@ -155,7 +155,7 @@ initCmds = ->
             the "content" command. "content" will be replaced with the text
             that is between tha tags. Look at the code of the following command
             for en example of how it can be used.
-            ~~edit php:inner:if~~
+            ~~!edit php:inner:if~~
             
             ~~/quote_carret~~
             ~~!close|~~
@@ -188,7 +188,9 @@ initCmds = ->
     },
     'edit':{
       'cmds' : {
-        'source': setVarCmd('source'),
+        'source': Codewave.util.merge(setVarCmd('source'),{
+          'preventParseAll' : true
+        }),
         'save':{
           'aliasOf': 'core:exec_parent'
         }
@@ -259,7 +261,6 @@ no_execute = (instance) ->
   instance.str.replace(reg,'$1')
   
 quote_carret = (instance) ->
-  console.log(instance.content.replace(/\|/g, '||'))
   return instance.content.replace(/\|/g, '||')
 exec_parent = (instance) ->
   if instance.parent?
@@ -277,7 +278,7 @@ wrapWithPhp = (result) ->
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+instance.content+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
-  constructor: (@instance)->
+  init: ->
     @cmd = @instance.getParam(['cmd'])
     @deco = @instance.codewave.deco
     @pad = 2
@@ -317,7 +318,6 @@ class BoxCmd extends @Codewave.BaseCommand
     cmd = ''
     if @cmd?
       cmd = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
-    console.log(this,cmd)
     ln = @width + 2 * @pad + 2 * @deco.length - cmd.length
     @wrapComment(cmd+@decoLine(ln))
   endSep: ->
@@ -347,7 +347,7 @@ class BoxCmd extends @Codewave.BaseCommand
     Codewave.util.getTxtSize(@instance.codewave.removeCarret(text))
     
 class CloseCmd extends @Codewave.BaseCommand
-  constructor: (@instance)->
+  init: ->
     @deco = @instance.codewave.deco
   startFind: ->
     @instance.codewave.wrapCommentLeft(@deco + @deco)
@@ -365,7 +365,7 @@ class CloseCmd extends @Codewave.BaseCommand
       @instance.replaceWith('')
           
 class EditCmd extends @Codewave.BaseCommand
-  constructor: (@instance)->
+  init: ->
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
     if @cmdName?
@@ -374,6 +374,10 @@ class EditCmd extends @Codewave.BaseCommand
       @cmd = @finder.find()
     @editable = if @cmd? then @cmd.isEditable() else true
     @content = @instance.content
+  getOptions: ->
+    return {
+      allowedNamed: ['cmd']
+    }
   result: ->
     if @content
       @resultWithContent()
@@ -403,7 +407,7 @@ class EditCmd extends @Codewave.BaseCommand
       if @verbalize then parser.getText() else parser.parseAll()
 
 class NameSpaceCmd extends @Codewave.BaseCommand
-  constructor: (@instance) ->
+  init: ->
     @name = @instance.getParam([0])
     #
   result: ->
@@ -422,7 +426,7 @@ class NameSpaceCmd extends @Codewave.BaseCommand
 
 
 class EmmetCmd extends @Codewave.BaseCommand
-  constructor: (@instance) ->
+  init: ->
     @abbr = @instance.getParam([0,'abbr','abbreviation'])
     @lang = @instance.getParam([1,'lang','language'])
   result: ->

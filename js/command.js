@@ -33,7 +33,8 @@
         checkCarret: true,
         parse: false,
         beforeExecute: null,
-        alterResult: null
+        alterResult: null,
+        preventParseAll: false
       };
       this.options = {};
       this.finalOptions = null;
@@ -387,6 +388,8 @@
     function BaseCommand(instance) {
       this.instance = instance;
     }
+
+    BaseCommand.prototype.init = function() {};
 
     BaseCommand.prototype.resultIsAvailable = function() {
       return this["result"] != null;
