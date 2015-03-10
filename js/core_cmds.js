@@ -13,16 +13,27 @@
         'result': "~~box~~\n~~quote_carret~~\n  ___         _   __      __\n / __|___  __| |__\\ \\    / /_ ___ ______\n/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/\n\\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|\nThe text editor helper\n~~/quote_carret~~\n\nWhen using Codewave you will be writing commands directly within \nyour text editor editing windows. These commands must be placed\nbetween two pairs of \"~\" (tilde) and then with you text either \ninside or at the command, they can be executed by pressing \n\"ctrl\"+\"shift\"+\"e\".\nEx: ~~!hello~~\n\nOne good thing about codewave is that you dont need to actually\ntype any \"~\" (tilde), because pressing \"ctrl\"+\"shift\"+\"e\" will\nadd them if you are not allready within a command\n\nCodewave does not relly use UI to display any information. \ninstead, it uses text within code comments to mimic UIs. The \ngenerated comment blocks will be refered as windows in the help\nsections.\n\nTo close this window (ie. remove this comment bloc), press \n\"ctrl\"+\"shift\"+\"e\" with you cursor on the line bellow.\n~~!close|~~\n\nUse the following command for a walkthrough of some of many\nfeatures of codewave\n~~!help:get_started~~ or ~~!help:demo~~\n\nList of all helps subjects \n~~!help:subjects~~ or ~~!help:sub~~ \n\n~~!close~~\n~~/box~~",
         'cmds': {
           'subjects': {
-            'result': "~~box~~\n~~!help~~\n~~!help:get_started~~ (~~!help:start~~)\n~~!help:subjects~~ (~~!help:sub~~)\n~~!close|~~\n~~/box~~"
+            'result': "~~box~~\n~~!help~~\n~~!help:get_started~~ (~~!help:start~~)\n~~!help:subjects~~ (~~!help:sub~~)\n~~!help:editing~~ (~~!help:edit~~)\n~~!close|~~\n~~/box~~"
           },
           'sub': {
             'aliasOf': 'help:subjects'
           },
           'get_started': {
-            'result': "~~box~~\nThe classic Hello World.\n~~!hello|~~\n\n~~quote_carret~~\nCodewave allows you to make you own commands (or abbreviations) \nput your content inside \"source\" the do \"save\". Try adding any \ntext that is on your mind.\n~~!edit my_new_command~~\n\nIf you did the last step right, you should see your text when you\ndo the following command. It is now saved and you can use it \nwhenever you want.\n~~!my_new_command~~\n\nCodewave come with many prexisting commands. Here an example of \nphp abreviations\n~~!php:inner:if~~\n  echo \"~~!hello~~\"\n~~!/php:inner:if~~\n\nCodeWave come with the exellent Emmet ( http://emmet.io/ ) to \nprovide event more abreviations. Emmet will fire automaticaly if\nyou are in a html or css file and no other command of the same \nname were defined.\n~~!ul>li~~ (if you are in a html doccument)\n~~!emmet ul>li~~\n~~!emmet m2 css~~\n\nCommands are stored in name spaces and some of the namespaces are\nactive depending of the context or they can be called explicitly. \nThe two following commands are the same and will display the \ncurrently  active namespace. The first command command works \nbecause the core namespace is active.\n~~!namespace~~\n~~!core:namespace~~\n\nyou can make an namespace active with the following command.\n~~!namespace php~~\n\nCheck the namespaces again\n~~!namespace~~\n\nAll the dialogs(windows) of codewave are made with the command \n\"box\" and you can use it in your own commands. you can also use a\n\"close\" command to make it easy to get rid of the window.\n~~!box~~\nThe box will scale with the content you put in it\n~~!close|~~\n~~!/box~~\n\nyou may have seen a \"|\"(Vertical bar) in the last example. this\nmark where the text cursor will be located once the command is \nexecuted. Use 2 of them if you want to print the actual character.\n~~!box~~\none : | \ntwo : ||\n~~!/box~~\n\nIf you want to print a command without having it evalute when \nthe command is executed, use a \"!\" exclamation mark.\n~~!!hello~~\n\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+            'result': "~~box~~\nThe classic Hello World.\n~~!hello|~~\n\n~~help:editing:intro~~\n~~quote_carret~~\n\nfor more information on creating your own commands, see:\n~~!help:editing~~\n\nCodewave come with many prexisting commands. Here an example of \nphp abreviations\n~~!php:inner:if~~\n  echo \"~~!hello~~\"\n~~!/php:inner:if~~\n\nCodeWave come with the exellent Emmet ( http://emmet.io/ ) to \nprovide event more abreviations. Emmet will fire automaticaly if\nyou are in a html or css file and no other command of the same \nname were defined.\n~~!ul>li~~ (if you are in a html doccument)\n~~!emmet ul>li~~\n~~!emmet m2 css~~\n\nCommands are stored in name spaces and some of the namespaces are\nactive depending of the context or they can be called explicitly. \nThe two following commands are the same and will display the \ncurrently  active namespace. The first command command works \nbecause the core namespace is active.\n~~!namespace~~\n~~!core:namespace~~\n\nyou can make an namespace active with the following command.\n~~!namespace php~~\n\nCheck the namespaces again\n~~!namespace~~\n\nAll the dialogs(windows) of codewave are made with the command \n\"box\" and you can use it in your own commands. you can also use a\n\"close\" command to make it easy to get rid of the window.\n~~!box~~\nThe box will scale with the content you put in it\n~~!close|~~\n~~!/box~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
           },
           'demo': {
             'aliasOf': 'help:get_started'
+          },
+          'editing': {
+            'cmds': {
+              'intro': {
+                'result': "Codewave allows you to make you own commands (or abbreviations) \nput your content inside \"source\" the do \"save\". Try adding any \ntext that is on your mind.\n~~!edit my_new_command|~~\n\nIf you did the last step right, you should see your text when you\ndo the following command. It is now saved and you can use it \nwhenever you want.\n~~!my_new_command~~"
+              }
+            },
+            'result': "~~box~~\n~~help:editing:intro~~\n\n~~quote_carret~~\nWhen you make your command you may need to tell where the text cursor \nwill be located once the command is executed. To do that, use a \"|\" \n(Vertical bar). Use 2 of them if you want to print the actual \ncharacter.\n~~!box~~\none : | \ntwo : ||\n~~!/box~~\n\nIf you want to print a command without having it evalute when \nthe command is executed, use a \"!\" exclamation mark.\n~~!!hello~~\n\nfor commands that have both a openig and a closing tag, you can use\nthe \"content\" command. \"content\" will be replaced with the text\nthat is between tha tags. Look at the code of the following command\nfor en example of how it can be used.\n~~edit php:inner:if~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+          },
+          'edit': {
+            'aliasOf': 'help:editing'
           }
         }
       },
@@ -163,6 +174,9 @@
     function BoxCmd(instance) {
       var bounds, params, _ref;
       this.instance = instance;
+      this.cmd = this.instance.getParam(['cmd']);
+      this.deco = this.instance.codewave.deco;
+      this.pad = 2;
       if (this.instance.content) {
         bounds = this.textBounds(this.instance.content);
         _ref = [bounds.width, bounds.height], this.width = _ref[0], this.height = _ref[1];
@@ -174,7 +188,7 @@
       if (this.instance.params.length > 1) {
         params.push(0);
       }
-      this.width = this.instance.getParam(params, this.width);
+      this.width = Math.max(this.minWidth(), this.instance.getParam(params, this.width));
       params = ['height'];
       if (this.instance.params.length > 1) {
         params.push(1);
@@ -182,9 +196,6 @@
         params.push(0);
       }
       this.height = this.instance.getParam(params, this.height);
-      this.cmd = this.instance.getParam(['cmd']);
-      this.deco = this.instance.codewave.deco;
-      this.pad = 2;
     }
 
     BoxCmd.prototype.result = function() {
@@ -201,12 +212,21 @@
       return this.wrapComment(this.decoLine(len));
     };
 
+    BoxCmd.prototype.minWidth = function() {
+      if (this.cmd != null) {
+        return this.cmd.length;
+      } else {
+        return 0;
+      }
+    };
+
     BoxCmd.prototype.startSep = function() {
       var cmd, ln;
       cmd = '';
       if (this.cmd != null) {
         cmd = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
       }
+      console.log(this, cmd);
       ln = this.width + 2 * this.pad + 2 * this.deco.length - cmd.length;
       return this.wrapComment(cmd + this.decoLine(ln));
     };
@@ -303,7 +323,11 @@
       this.instance = instance;
       this.cmdName = this.instance.getParam([0, 'cmd']);
       this.verbalize = (_ref = this.instance.getParam([1])) === 'v' || _ref === 'verbalize';
-      this.cmd = this.cmdName != null ? this.instance.codewave.getCmd(this.cmdName) : null;
+      if (this.cmdName != null) {
+        this.finder = this.instance.codewave.getFinder(this.cmdName);
+        this.finder.useFallbacks = false;
+        this.cmd = this.finder.find();
+      }
       this.editable = this.cmd != null ? this.cmd.isEditable() : true;
       this.content = this.instance.content;
     }
@@ -329,7 +353,7 @@
     EditCmd.prototype.resultWithoutContent = function() {
       var name, parser, source;
       if (!this.cmd || this.editable) {
-        source = this.cmd ? this.cmd.resultStr : '|';
+        source = this.cmd ? this.cmd.resultStr : '';
         name = this.cmd ? this.cmd.fullName : this.cmdName;
         parser = this.instance.getParserForText("~~box cmd:\"" + this.instance.cmd.fullName + " " + name + "\"~~\n~~source~~\n" + source + "|\n~~/source~~\n~~save~~ ~~!close~~\n~~/box~~");
         parser.checkCarret = false;

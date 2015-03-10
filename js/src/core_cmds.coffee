@@ -53,6 +53,7 @@ initCmds = ->
             ~~!help~~
             ~~!help:get_started~~ (~~!help:start~~)
             ~~!help:subjects~~ (~~!help:sub~~)
+            ~~!help:editing~~ (~~!help:edit~~)
             ~~!close|~~
             ~~/box~~
             """
@@ -66,16 +67,11 @@ initCmds = ->
             The classic Hello World.
             ~~!hello|~~
             
+            ~~help:editing:intro~~
             ~~quote_carret~~
-            Codewave allows you to make you own commands (or abbreviations) 
-            put your content inside "source" the do "save". Try adding any 
-            text that is on your mind.
-            ~~!edit my_new_command~~
             
-            If you did the last step right, you should see your text when you
-            do the following command. It is now saved and you can use it 
-            whenever you want.
-            ~~!my_new_command~~
+            for more information on creating your own commands, see:
+            ~~!help:editing~~
             
             Codewave come with many prexisting commands. Here an example of 
             php abreviations
@@ -113,9 +109,39 @@ initCmds = ->
             ~~!close|~~
             ~~!/box~~
             
-            you may have seen a "|"(Vertical bar) in the last example. this
-            mark where the text cursor will be located once the command is 
-            executed. Use 2 of them if you want to print the actual character.
+            ~~/quote_carret~~
+            ~~!close|~~
+            ~~/box~~
+            """
+        }
+        'demo':{
+          'aliasOf': 'help:get_started'
+        }
+        'editing':{
+          'cmds' : {
+            'intro':{
+              'result' : """
+                Codewave allows you to make you own commands (or abbreviations) 
+                put your content inside "source" the do "save". Try adding any 
+                text that is on your mind.
+                ~~!edit my_new_command|~~
+                
+                If you did the last step right, you should see your text when you
+                do the following command. It is now saved and you can use it 
+                whenever you want.
+                ~~!my_new_command~~
+                """
+            }
+          }
+          'result' : """
+            ~~box~~
+            ~~help:editing:intro~~
+            
+            ~~quote_carret~~
+            When you make your command you may need to tell where the text cursor 
+            will be located once the command is executed. To do that, use a "|" 
+            (Vertical bar). Use 2 of them if you want to print the actual 
+            character.
             ~~!box~~
             one : | 
             two : ||
@@ -125,14 +151,19 @@ initCmds = ->
             the command is executed, use a "!" exclamation mark.
             ~~!!hello~~
             
+            for commands that have both a openig and a closing tag, you can use
+            the "content" command. "content" will be replaced with the text
+            that is between tha tags. Look at the code of the following command
+            for en example of how it can be used.
+            ~~edit php:inner:if~~
             
             ~~/quote_carret~~
             ~~!close|~~
             ~~/box~~
             """
         }
-        'demo':{
-          'aliasOf': 'help:get_started'
+        'edit':{
+          'aliasOf': 'help:editing'
         }
       }
     },
@@ -247,6 +278,10 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+instance.content+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   constructor: (@instance)->
+    @cmd = @instance.getParam(['cmd'])
+    @deco = @instance.codewave.deco
+    @pad = 2
+    
     if @instance.content
       bounds = @textBounds(@instance.content)
       [@width, @height] = [bounds.width, bounds.height]
@@ -257,7 +292,7 @@ class BoxCmd extends @Codewave.BaseCommand
     params = ['width']
     if @instance.params.length > 1 
       params.push(0)
-    @width = @instance.getParam(params,@width)
+    @width = Math.max(@minWidth(),@instance.getParam(params,@width))
       
     params = ['height']
     if @instance.params.length > 1 
@@ -266,9 +301,6 @@ class BoxCmd extends @Codewave.BaseCommand
       params.push(0)
     @height = @instance.getParam(params,@height)
     
-    @cmd = @instance.getParam(['cmd'])
-    @deco = @instance.codewave.deco
-    @pad = 2
   result: ->
     return @startSep() + "\n" + @lines(@instance.content) + "\n"+ @endSep()
   wrapComment: (str) ->
@@ -276,10 +308,16 @@ class BoxCmd extends @Codewave.BaseCommand
   separator: ->
     len = @width + 2 * @pad + 2 * @deco.length
     @wrapComment(@decoLine(len))
+  minWidth: ->
+    if @cmd?
+      @cmd.length
+    else
+      0
   startSep: ->
     cmd = ''
     if @cmd?
       cmd = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
+    console.log(this,cmd)
     ln = @width + 2 * @pad + 2 * @deco.length - cmd.length
     @wrapComment(cmd+@decoLine(ln))
   endSep: ->
@@ -330,7 +368,10 @@ class EditCmd extends @Codewave.BaseCommand
   constructor: (@instance)->
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
-    @cmd = if @cmdName? then @instance.codewave.getCmd(@cmdName) else null
+    if @cmdName?
+      @finder = @instance.codewave.getFinder(@cmdName) 
+      @finder.useFallbacks = false
+      @cmd = @finder.find()
     @editable = if @cmd? then @cmd.isEditable() else true
     @content = @instance.content
   result: ->
@@ -347,7 +388,7 @@ class EditCmd extends @Codewave.BaseCommand
       ''
   resultWithoutContent: ->
     if !@cmd or @editable
-      source = if @cmd then @cmd.resultStr else '|'
+      source = if @cmd then @cmd.resultStr else ''
       name = if @cmd then @cmd.fullName else @cmdName
       parser = @instance.getParserForText(
         """

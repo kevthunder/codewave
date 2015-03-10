@@ -95,7 +95,6 @@ class @Codewave.CmdInstance
       lStart = @codewave.findLineStart(@pos)
       if @codewave.editor.textSubstr(lStart,@pos).indexOf(cl) > -1
         lEnd = @codewave.findLineEnd(@getEndPos())
-        console.log(@codewave.editor.textSubstr(@getEndPos(),lEnd),cr,@codewave.editor.textSubstr(@getEndPos(),lEnd).indexOf(cr))
         if @codewave.editor.textSubstr(@getEndPos(),lEnd).indexOf(cr) > -1
           @inBox = 1
           @_removeCommentFromContent()

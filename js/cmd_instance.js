@@ -143,7 +143,6 @@
         lStart = this.codewave.findLineStart(this.pos);
         if (this.codewave.editor.textSubstr(lStart, this.pos).indexOf(cl) > -1) {
           lEnd = this.codewave.findLineEnd(this.getEndPos());
-          console.log(this.codewave.editor.textSubstr(this.getEndPos(), lEnd), cr, this.codewave.editor.textSubstr(this.getEndPos(), lEnd).indexOf(cr));
           if (this.codewave.editor.textSubstr(this.getEndPos(), lEnd).indexOf(cr) > -1) {
             this.inBox = 1;
             return this._removeCommentFromContent();
