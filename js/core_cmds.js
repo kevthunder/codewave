@@ -110,11 +110,42 @@
         aliasOf: 'php:inner:%name%',
         beforeExecute: closePhpForContent,
         alterResult: wrapWithPhp
-      }
+      },
+      php: '<?php\n\t~~content~~|\n?>'
     });
     phpInner = php.addCmd(new Codewave.Command('inner'));
     return phpInner.addCmds({
-      'if': 'if(|){\n\t~~content~~\n}'
+      'if': 'if(|){\n\t~~content~~\n}',
+      'info': 'phpinfo();',
+      'echo': 'echo ${id}',
+      'e': {
+        aliasOf: 'php:inner:echo'
+      },
+      'class': "class | {\n\tfunction __construct() {\n\t\t~~content~~\n\t}\n}",
+      'c': {
+        aliasOf: 'php:inner:class'
+      },
+      'function': 'function |() {\n\t~~content~~\n}',
+      'funct': {
+        aliasOf: 'php:inner:function'
+      },
+      'f': {
+        aliasOf: 'php:inner:function'
+      },
+      'array': '$| = array();',
+      'a': 'array()',
+      'for': 'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
+      'foreach': 'foreach ($| as $key => $val) {\n\t~~content~~\n}',
+      'each': {
+        aliasOf: 'php:inner:foreach'
+      },
+      'while': 'while(|) {\n\t~~content~~\n}',
+      'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
+      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'ife': {
+        aliasOf: 'php:inner:ifelse'
+      },
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
     });
   };
 
