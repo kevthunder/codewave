@@ -5,7 +5,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   initCmds = function() {
-    var core, css, html, php, phpInner, phpOuter;
+    var core, css, html, js, php, phpInner, phpOuter;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
     core.addDetector(new Codewave.LangDetector());
     core.addCmds({
@@ -19,7 +19,7 @@
             'aliasOf': 'help:subjects'
           },
           'get_started': {
-            'result': "~~box~~\nThe classic Hello World.\n~~!hello|~~\n\n~~help:editing:intro~~\n~~quote_carret~~\n\nfor more information on creating your own commands, see:\n~~!help:editing~~\n\nCodewave come with many prexisting commands. Here an example of \nphp abreviations\n~~!php:inner:if~~\n  echo \"~~!hello~~\"\n~~!/php:inner:if~~\n\nCodeWave come with the exellent Emmet ( http://emmet.io/ ) to \nprovide event more abreviations. Emmet will fire automaticaly if\nyou are in a html or css file and no other command of the same \nname were defined.\n~~!ul>li~~ (if you are in a html doccument)\n~~!emmet ul>li~~\n~~!emmet m2 css~~\n\nCommands are stored in name spaces and some of the namespaces are\nactive depending of the context or they can be called explicitly. \nThe two following commands are the same and will display the \ncurrently  active namespace. The first command command works \nbecause the core namespace is active.\n~~!namespace~~\n~~!core:namespace~~\n\nyou can make an namespace active with the following command.\n~~!namespace php~~\n\nCheck the namespaces again\n~~!namespace~~\n\nAll the dialogs(windows) of codewave are made with the command \n\"box\" and you can use it in your own commands. you can also use a\n\"close\" command to make it easy to get rid of the window.\n~~!box~~\nThe box will scale with the content you put in it\n~~!close|~~\n~~!/box~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
+            'result': "~~box~~\nThe classic Hello World.\n~~!hello|~~\n\n~~help:editing:intro~~\n~~quote_carret~~\n\nfor more information on creating your own commands, see:\n~~!help:editing~~\n\nCodewave come with many prexisting commands. Here an example of \njavascript abreviations\n~~!js:f~~\n~~!js:if~~\n  ~~!js:log~~\"~~!hello~~\"~~!/js:log~~\n~~!/js:if~~\n~~!/js:f~~\n\nCodeWave come with the exellent Emmet ( http://emmet.io/ ) to \nprovide event more abreviations. Emmet will fire automaticaly if\nyou are in a html or css file and no other command of the same \nname were defined.\n~~!ul>li~~ (if you are in a html doccument)\n~~!emmet ul>li~~\n~~!emmet m2 css~~\n\nCommands are stored in name spaces and some of the namespaces are\nactive depending of the context or they can be called explicitly. \nThe two following commands are the same and will display the \ncurrently  active namespace. The first command command works \nbecause the core namespace is active.\n~~!namespace~~\n~~!core:namespace~~\n\nyou can make an namespace active with the following command.\n~~!namespace php~~\n\nCheck the namespaces again\n~~!namespace~~\n\nAll the dialogs(windows) of codewave are made with the command \n\"box\" and you can use it in your own commands. you can also use a\n\"close\" command to make it easy to get rid of the window.\n~~!box~~\nThe box will scale with the content you put in it\n~~!close|~~\n~~!/box~~\n\n~~/quote_carret~~\n~~!close|~~\n~~/box~~"
           },
           'demo': {
             'aliasOf': 'help:get_started'
@@ -114,7 +114,7 @@
       php: '<?php\n\t~~content~~|\n?>'
     });
     phpInner = php.addCmd(new Codewave.Command('inner'));
-    return phpInner.addCmds({
+    phpInner.addCmds({
       'if': 'if(|){\n\t~~content~~\n}',
       'info': 'phpinfo();',
       'echo': 'echo ${id}',
@@ -144,6 +144,33 @@
       'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
       'ife': {
         aliasOf: 'php:inner:ifelse'
+      },
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+    });
+    js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
+    return js.addCmds({
+      'if': 'if(|){\n\t~~content~~\n}',
+      'log': 'if(window.console){\n\tconsole.log(~~content~~|)\n}',
+      'function': 'function |() {\n\t~~content~~\n}',
+      'funct': {
+        aliasOf: 'js:function'
+      },
+      'f': {
+        aliasOf: 'js:function'
+      },
+      'for': 'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
+      'forin': 'foreach (var val in |) {\n\t~~content~~\n}',
+      'each': {
+        aliasOf: 'js:forin'
+      },
+      'foreach': {
+        aliasOf: 'js:forin'
+      },
+      'while': 'while(|) {\n\t~~content~~\n}',
+      'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
+      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'ife': {
+        aliasOf: 'js:ifelse'
       },
       'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
     });

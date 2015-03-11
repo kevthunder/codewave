@@ -74,10 +74,12 @@ initCmds = ->
             ~~!help:editing~~
             
             Codewave come with many prexisting commands. Here an example of 
-            php abreviations
-            ~~!php:inner:if~~
-              echo "~~!hello~~"
-            ~~!/php:inner:if~~
+            javascript abreviations
+            ~~!js:f~~
+            ~~!js:if~~
+              ~~!js:log~~"~~!hello~~"~~!/js:log~~
+            ~~!/js:if~~
+            ~~!/js:f~~
             
             CodeWave come with the exellent Emmet ( http://emmet.io/ ) to 
             provide event more abreviations. Emmet will fire automaticaly if
@@ -266,6 +268,33 @@ initCmds = ->
     'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}'
     'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}'
     'ife':{   aliasOf: 'php:inner:ifelse' }
+    'switch':	"""
+      switch( | ) { 
+      \tcase :
+      \t\t~~content~~
+      \t\tbreak;
+      \tdefault :
+      \t\t
+      \t\tbreak;
+      }
+      """
+  })
+  
+  js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
+  js.addCmds({
+    'if':  'if(|){\n\t~~content~~\n}'
+    'log':  'if(window.console){\n\tconsole.log(~~content~~|)\n}'
+    'function':	'function |() {\n\t~~content~~\n}'
+    'funct':{ aliasOf: 'js:function' }
+    'f':{     aliasOf: 'js:function' }
+    'for': 		'for (var i = 0; i < |; i++) {\n\t~~content~~\n}'
+    'forin':'foreach (var val in |) {\n\t~~content~~\n}'
+    'each':{  aliasOf: 'js:forin' }
+    'foreach':{  aliasOf: 'js:forin' }
+    'while':  'while(|) {\n\t~~content~~\n}'
+    'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}'
+    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}'
+    'ife':{   aliasOf: 'js:ifelse' }
     'switch':	"""
       switch( | ) { 
       \tcase :

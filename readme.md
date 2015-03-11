@@ -27,8 +27,8 @@ You may need to put it on a web server to be able to use the localstorage
 
 ## ToDo
 
+* better indentation handling
 * format in-box commands
-* help section
 * Create some default commands
 
 ## devloppement
