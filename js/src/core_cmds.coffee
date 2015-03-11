@@ -304,13 +304,13 @@ exec_parent = (instance) ->
     return res
 getContent = (instance) ->
   if instance.codewave.context?
-    instance.codewave.context.content
+    instance.codewave.context.content || ''
 wrapWithPhp = (result) ->
   regOpen = /<\?php\s([\\n\\r\s]+)/g
   regClose = /([\n\r\s]+)\s\?>/g
   '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
 closePhpForContent = (instance) ->
-  instance.content = ' ?>'+instance.content+'<?php '
+  instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
     @cmd = @instance.getParam(['cmd'])

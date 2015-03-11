@@ -185,7 +185,7 @@
 
   getContent = function(instance) {
     if (instance.codewave.context != null) {
-      return instance.codewave.context.content;
+      return instance.codewave.context.content || '';
     }
   };
 
@@ -197,7 +197,7 @@
   };
 
   closePhpForContent = function(instance) {
-    return instance.content = ' ?>' + instance.content + '<?php ';
+    return instance.content = ' ?>' + (instance.content || '') + '<?php ';
   };
 
   BoxCmd = (function(_super) {
