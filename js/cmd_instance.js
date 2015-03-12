@@ -382,7 +382,9 @@
         start = this.prevEOL();
         end = this.nextEOL();
         helper = new Codewave.util.BoxHelper(this.codewave).getOptFromLine(this.rawWithFullLines(), false);
-        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + text + this.codewave.marker + this.sameLinesSuffix());
+        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + text + this.codewave.marker + this.sameLinesSuffix(), {
+          multiline: false
+        });
         _ref = res.split(this.codewave.marker), prefix = _ref[0], text = _ref[1], suffix = _ref[2];
       }
       cursorPos = start + prefix.length + text.length;

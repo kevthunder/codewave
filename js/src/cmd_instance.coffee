@@ -234,7 +234,7 @@ class @Codewave.CmdInstance
       start = @prevEOL()
       end = @nextEOL()
       helper = new Codewave.util.BoxHelper(@codewave).getOptFromLine(@rawWithFullLines(),false)
-      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+text+@codewave.marker+@sameLinesSuffix())
+      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+text+@codewave.marker+@sameLinesSuffix(),{multiline:false})
       [prefix,text,suffix] = res.split(@codewave.marker)
       
     cursorPos = start+prefix.length+text.length

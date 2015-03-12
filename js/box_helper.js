@@ -138,18 +138,29 @@
       return this;
     };
 
-    BoxHelper.prototype.reformatLines = function(text) {
-      return this.lines(this.removeComment(text), false);
+    BoxHelper.prototype.reformatLines = function(text, options) {
+      if (options == null) {
+        options = {};
+      }
+      return this.lines(this.removeComment(text, options), false);
     };
 
-    BoxHelper.prototype.removeComment = function(text) {
-      var ecl, ecr, ed, re1, re2;
+    BoxHelper.prototype.removeComment = function(text, options) {
+      var defaults, ecl, ecr, ed, flag, opt, re1, re2;
+      if (options == null) {
+        options = {};
+      }
       if (text != null) {
+        defaults = {
+          multiline: true
+        };
+        opt = Codewave.util.merge(defaults, options);
         ecl = Codewave.util.escapeRegExp(this.codewave.wrapCommentLeft());
         ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
         ed = Codewave.util.escapeRegExp(this.deco);
-        re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")*\\s{0," + this.pad + "}", 'gm');
-        re2 = new RegExp("\\s*(?:" + ed + ")*" + ecr + "\\s*$", 'gm');
+        flag = options['multiline'] ? 'gm' : '';
+        re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")*\\s{0," + this.pad + "}", flag);
+        re2 = new RegExp("\\s*(?:" + ed + ")*" + ecr + "\\s*$", flag);
         return text = text.replace(re1, '').replace(re2, '');
       }
     };

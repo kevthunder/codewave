@@ -72,15 +72,20 @@ class @Codewave.util.BoxHelper
     endPos = resEnd.index + resEnd[1].length - @pad
     @width = endPos - startPos
     this
-  reformatLines: (text) ->
-    @lines(@removeComment(text),false)
-  removeComment: (text)->
+  reformatLines: (text,options={}) ->
+    @lines(@removeComment(text,options),false)
+  removeComment: (text,options={})->
     if text?
+      defaults = {
+        multiline: true
+      }
+      opt = Codewave.util.merge(defaults,options)
       ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
       ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@deco)
-      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}",'gm')
-      re2 = new RegExp("\\s*(?:#{ed})*#{ecr}\\s*$",'gm')
+      flag = if options['multiline'] then 'gm' else ''
+      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}",flag)
+      re2 = new RegExp("\\s*(?:#{ed})*#{ecr}\\s*$",flag)
       text = text.replace(re1,'').replace(re2,'')
    
   
