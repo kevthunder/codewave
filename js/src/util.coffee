@@ -88,12 +88,13 @@ class Pair
     [parts.join(':'),name]
 
   trimEmptyLine: (txt) ->
-    return txt.replace(/^\r?\n/, '').replace(/\r?\n$/, '')
+    return txt.replace(/^\s*\r?\n/, '').replace(/\r?\n\s*$/, '')
 
   escapeRegExp: (str) ->
     str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
 
   repeatToLength: (txt, length) ->
+    return '' if length <= 0
     Array(Math.ceil(length/txt.length)+1).join(txt).substring(0,length)
 
   getTxtSize: (txt) ->

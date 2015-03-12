@@ -150,7 +150,13 @@
     };
 
     Codewave.prototype.findLineEnd = function(pos) {
-      return this.findAnyNext(pos, ["\n", "\r"]);
+      var p;
+      p = this.findAnyNext(pos, ["\n", "\r"]);
+      if (p) {
+        return p.pos;
+      } else {
+        return this.editor.textLen();
+      }
     };
 
     Codewave.prototype.findPrevBraket = function(start) {
@@ -393,6 +399,16 @@
       if ((i = txt.indexOf(this.carretChar)) > -1) {
         return i;
       }
+    };
+
+    Codewave.prototype.marker = '[[[[codewave_marquer]]]]';
+
+    Codewave.prototype.regMarker = function() {
+      return new RegExp(Codewave.util.escapeRegExp(this.marker), "g");
+    };
+
+    Codewave.prototype.removeMarkers = function(text) {
+      return text.replace(this.regMarker(), '');
     };
 
     return Codewave;

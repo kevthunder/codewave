@@ -92,7 +92,8 @@ class @Codewave
     p = @findAnyNext(pos ,["\n"], -1)
     if p then p.pos+1 else 0
   findLineEnd: (pos) -> 
-    @findAnyNext(pos ,["\n","\r"])
+    p = @findAnyNext(pos ,["\n","\r"])
+    if p then p.pos else @editor.textLen()
   findPrevBraket: (start) -> 
     @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
@@ -223,6 +224,11 @@ class @Codewave
     txt = txt.replace(reQuoted, ' ')
     if (i = txt.indexOf(@carretChar)) > -1
       return i
+  marker: '[[[[codewave_marquer]]]]'
+  regMarker: ->
+    new RegExp(Codewave.util.escapeRegExp(@marker), "g")
+  removeMarkers: (text) ->
+    text.replace(@regMarker(),'')
 
 @Codewave.init = ->
   Codewave.Command.initCmds()

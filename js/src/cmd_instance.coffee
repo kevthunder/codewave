@@ -9,6 +9,7 @@ class @Codewave.CmdInstance
       @_findClosing()
       @_checkElongated()
       @_checkBox()
+      @content = @removeIndentFromContent(@content)
   init: ->
     unless @isEmpty() || @inited
       @inited = true
@@ -71,6 +72,8 @@ class @Codewave.CmdInstance
           @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
+      console.log(@codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/\n/g,'\\n'))
+      console.log(Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos)).replace(/\n/g,'\\n'))
       @content = Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
       @str = @codewave.editor.textSubstr(@pos,f.pos+f.str.length)
   _findClosingPos: ->
@@ -95,10 +98,8 @@ class @Codewave.CmdInstance
       @str = @codewave.editor.textSubstr(@pos,endPos)
       @_removeCommentFromContent()
     else
-      lStart = @codewave.findLineStart(@pos)
-      if @codewave.editor.textSubstr(lStart,@pos).indexOf(cl) > -1
-        lEnd = @codewave.findLineEnd(@getEndPos())
-        if @codewave.editor.textSubstr(@getEndPos(),lEnd).indexOf(cr) > -1
+      if @sameLinesPrefix().indexOf(cl) > -1
+        if @sameLinesSuffix().indexOf(cr) > -1
           @inBox = 1
           @_removeCommentFromContent()
   _removeCommentFromContent: ->
@@ -112,6 +113,26 @@ class @Codewave.CmdInstance
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getParentCmds: ->
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
+  prevEOL: ->
+    unless @_prevEOL?
+      @_prevEOL = @codewave.findLineStart(@pos)
+    @_prevEOL
+  nextEOL: ->
+    unless @_nextEOL?
+      @_nextEOL = @codewave.findLineEnd(@getEndPos())
+    @_nextEOL
+  rawWithFullLines: ->
+    unless @_rawWithFullLines?
+      @_rawWithFullLines = @codewave.editor.textSubstr(@prevEOL(),@nextEOL())
+    @_rawWithFullLines
+  sameLinesPrefix: ->
+    unless @_sameLinesPrefix?
+      @_sameLinesPrefix = @codewave.editor.textSubstr(@prevEOL(),@pos)
+    @_sameLinesPrefix
+  sameLinesSuffix: ->
+    unless @_sameLinesSuffix?
+      @_sameLinesSuffix = @codewave.editor.textSubstr(@getEndPos(),@nextEOL())
+    @_sameLinesSuffix
   getCmd: ->
     unless @cmd?
       @_getParentCmds()
@@ -156,6 +177,7 @@ class @Codewave.CmdInstance
         beforeFunct(this)
       if @cmd.resultIsAvailable(this)
         if (res = @cmd.result(this))?
+          res = @formatIndent(res)
           if @cmd.getOption('parse',this) 
             parser = @getParserForText(res)
             res = parser.parseAll()
@@ -167,7 +189,7 @@ class @Codewave.CmdInstance
           return @cmd.execute(this)
   result: -> 
     if @cmd.resultIsAvailable()
-      @cmd.result(this)
+      @formatIndent(@cmd.result(this))
   getParserForText: (txt) ->
     parser = new Codewave(new Codewave.TextParser(txt))
     parser.context = this
@@ -178,21 +200,51 @@ class @Codewave.CmdInstance
   getPos: ->
     new Codewave.util.Pos(@pos,@pos+@str.length)
   getIndent: ->
-    @pos - @codewave.findLineStart(@pos)
+    unless @indentLen?
+      if @inBox?
+        helper = new Codewave.util.BoxHelper(@codewave)
+        @indentLen = helper.removeComment(@sameLinesPrefix()).length
+      else
+        @indentLen = @pos - @codewave.findLineStart(@pos)
+    @indentLen
+  formatIndent: (text) ->
+    if text?
+      text.replace(/\t/g,'  ')
+    else
+      text
   applyIndent: (text) ->
-    reg = /\n/g
-    text.replace(reg,"\n"+Codewave.util.repeatToLength(" ",@getIndent()))
+    if text?
+      reg = /\n/g
+      text.replace(reg,"\n"+Codewave.util.repeatToLength(" ",@getIndent()))
+    else
+      text
+  removeIndentFromContent: (text) ->
+    if text?
+      reg = new RegExp('^\\s{'+@getIndent()+'}','gm')
+      text.replace(reg,'')
+    else
+      text
   replaceWith: (text) ->
-    text = @applyIndent(text)
+    prefix = suffix = ''
+    start = @pos
+    end = @getEndPos()
     
-    cursorPos = @pos+text.length
+    text = @applyIndent(text)
+    if @inBox?
+      start = @prevEOL()
+      end = @nextEOL()
+      helper = new Codewave.util.BoxHelper(@codewave).getOptFromLine(@rawWithFullLines(),false)
+      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+text+@codewave.marker+@sameLinesSuffix())
+      [prefix,text,suffix] = res.split(@codewave.marker)
+      
+    cursorPos = start+prefix.length+text.length
     if @cmd? and @codewave.checkCarret and @cmd.getOption('checkCarret',this)
       if (p = @codewave.getCarretPos(text))? 
-        cursorPos = @pos+p
+        cursorPos = start+prefix.length+p
       text = @codewave.removeCarret(text)
       
       
-    @codewave.editor.spliceText(@pos,@getEndPos(),text)
+    @codewave.editor.spliceText(start,end,prefix+text+suffix)
     @codewave.editor.setCursorPos(cursorPos)
-    @replaceStart = @pos
-    @replaceEnd = @pos+text.length
+    @replaceStart = start
+    @replaceEnd = start+prefix.length+text.length+suffix.length

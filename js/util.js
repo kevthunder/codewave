@@ -186,12 +186,15 @@
       return [parts.join(':'), name];
     },
     trimEmptyLine: function(txt) {
-      return txt.replace(/^\r?\n/, '').replace(/\r?\n$/, '');
+      return txt.replace(/^\s*\r?\n/, '').replace(/\r?\n\s*$/, '');
     },
     escapeRegExp: function(str) {
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     },
     repeatToLength: function(txt, length) {
+      if (length <= 0) {
+        return '';
+      }
       return Array(Math.ceil(length / txt.length) + 1).join(txt).substring(0, length);
     },
     getTxtSize: function(txt) {

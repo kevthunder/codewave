@@ -15,6 +15,7 @@
         this._findClosing();
         this._checkElongated();
         this._checkBox();
+        this.content = this.removeIndentFromContent(this.content);
       }
     }
 
@@ -107,6 +108,8 @@
     CmdInstance.prototype._findClosing = function() {
       var f;
       if (f = this._findClosingPos()) {
+        console.log(this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos).replace(/\n/g, '\\n'));
+        console.log(Codewave.util.trimEmptyLine(this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos)).replace(/\n/g, '\\n'));
         this.content = Codewave.util.trimEmptyLine(this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos));
         return this.str = this.codewave.editor.textSubstr(this.pos, f.pos + f.str.length);
       }
@@ -137,7 +140,7 @@
     };
 
     CmdInstance.prototype._checkBox = function() {
-      var cl, cr, endPos, lEnd, lStart;
+      var cl, cr, endPos;
       cl = this.codewave.wrapCommentLeft();
       cr = this.codewave.wrapCommentRight();
       endPos = this.getEndPos() + cr.length;
@@ -146,10 +149,8 @@
         this.str = this.codewave.editor.textSubstr(this.pos, endPos);
         return this._removeCommentFromContent();
       } else {
-        lStart = this.codewave.findLineStart(this.pos);
-        if (this.codewave.editor.textSubstr(lStart, this.pos).indexOf(cl) > -1) {
-          lEnd = this.codewave.findLineEnd(this.getEndPos());
-          if (this.codewave.editor.textSubstr(this.getEndPos(), lEnd).indexOf(cr) > -1) {
+        if (this.sameLinesPrefix().indexOf(cl) > -1) {
+          if (this.sameLinesSuffix().indexOf(cr) > -1) {
             this.inBox = 1;
             return this._removeCommentFromContent();
           }
@@ -173,6 +174,41 @@
     CmdInstance.prototype._getParentCmds = function() {
       var _ref;
       return this.parent = (_ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? _ref.init() : void 0;
+    };
+
+    CmdInstance.prototype.prevEOL = function() {
+      if (this._prevEOL == null) {
+        this._prevEOL = this.codewave.findLineStart(this.pos);
+      }
+      return this._prevEOL;
+    };
+
+    CmdInstance.prototype.nextEOL = function() {
+      if (this._nextEOL == null) {
+        this._nextEOL = this.codewave.findLineEnd(this.getEndPos());
+      }
+      return this._nextEOL;
+    };
+
+    CmdInstance.prototype.rawWithFullLines = function() {
+      if (this._rawWithFullLines == null) {
+        this._rawWithFullLines = this.codewave.editor.textSubstr(this.prevEOL(), this.nextEOL());
+      }
+      return this._rawWithFullLines;
+    };
+
+    CmdInstance.prototype.sameLinesPrefix = function() {
+      if (this._sameLinesPrefix == null) {
+        this._sameLinesPrefix = this.codewave.editor.textSubstr(this.prevEOL(), this.pos);
+      }
+      return this._sameLinesPrefix;
+    };
+
+    CmdInstance.prototype.sameLinesSuffix = function() {
+      if (this._sameLinesSuffix == null) {
+        this._sameLinesSuffix = this.codewave.editor.textSubstr(this.getEndPos(), this.nextEOL());
+      }
+      return this._sameLinesSuffix;
     };
 
     CmdInstance.prototype.getCmd = function() {
@@ -256,6 +292,7 @@
         }
         if (this.cmd.resultIsAvailable(this)) {
           if ((res = this.cmd.result(this)) != null) {
+            res = this.formatIndent(res);
             if (this.cmd.getOption('parse', this)) {
               parser = this.getParserForText(res);
               res = parser.parseAll();
@@ -274,7 +311,7 @@
 
     CmdInstance.prototype.result = function() {
       if (this.cmd.resultIsAvailable()) {
-        return this.cmd.result(this);
+        return this.formatIndent(this.cmd.result(this));
       }
     };
 
@@ -295,29 +332,70 @@
     };
 
     CmdInstance.prototype.getIndent = function() {
-      return this.pos - this.codewave.findLineStart(this.pos);
+      var helper;
+      if (this.indentLen == null) {
+        if (this.inBox != null) {
+          helper = new Codewave.util.BoxHelper(this.codewave);
+          this.indentLen = helper.removeComment(this.sameLinesPrefix()).length;
+        } else {
+          this.indentLen = this.pos - this.codewave.findLineStart(this.pos);
+        }
+      }
+      return this.indentLen;
+    };
+
+    CmdInstance.prototype.formatIndent = function(text) {
+      if (text != null) {
+        return text.replace(/\t/g, '  ');
+      } else {
+        return text;
+      }
     };
 
     CmdInstance.prototype.applyIndent = function(text) {
       var reg;
-      reg = /\n/g;
-      return text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", this.getIndent()));
+      if (text != null) {
+        reg = /\n/g;
+        return text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", this.getIndent()));
+      } else {
+        return text;
+      }
+    };
+
+    CmdInstance.prototype.removeIndentFromContent = function(text) {
+      var reg;
+      if (text != null) {
+        reg = new RegExp('^\\s{' + this.getIndent() + '}', 'gm');
+        return text.replace(reg, '');
+      } else {
+        return text;
+      }
     };
 
     CmdInstance.prototype.replaceWith = function(text) {
-      var cursorPos, p;
+      var cursorPos, end, helper, p, prefix, res, start, suffix, _ref;
+      prefix = suffix = '';
+      start = this.pos;
+      end = this.getEndPos();
       text = this.applyIndent(text);
-      cursorPos = this.pos + text.length;
+      if (this.inBox != null) {
+        start = this.prevEOL();
+        end = this.nextEOL();
+        helper = new Codewave.util.BoxHelper(this.codewave).getOptFromLine(this.rawWithFullLines(), false);
+        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + text + this.codewave.marker + this.sameLinesSuffix());
+        _ref = res.split(this.codewave.marker), prefix = _ref[0], text = _ref[1], suffix = _ref[2];
+      }
+      cursorPos = start + prefix.length + text.length;
       if ((this.cmd != null) && this.codewave.checkCarret && this.cmd.getOption('checkCarret', this)) {
         if ((p = this.codewave.getCarretPos(text)) != null) {
-          cursorPos = this.pos + p;
+          cursorPos = start + prefix.length + p;
         }
         text = this.codewave.removeCarret(text);
       }
-      this.codewave.editor.spliceText(this.pos, this.getEndPos(), text);
+      this.codewave.editor.spliceText(start, end, prefix + text + suffix);
       this.codewave.editor.setCursorPos(cursorPos);
-      this.replaceStart = this.pos;
-      return this.replaceEnd = this.pos + text.length;
+      this.replaceStart = start;
+      return this.replaceEnd = start + prefix.length + text.length + suffix.length;
     };
 
     return CmdInstance;

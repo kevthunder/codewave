@@ -235,43 +235,38 @@
     }
 
     BoxCmd.prototype.init = function() {
-      var bounds, params, _ref;
+      var bounds, height, params, width, _ref;
+      this.helper = new Codewave.util.BoxHelper(this.instance.codewave);
       this.cmd = this.instance.getParam(['cmd']);
-      this.deco = this.instance.codewave.deco;
-      this.pad = 2;
+      if (this.cmd != null) {
+        this.helper.openText = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
+        this.helper.closeText = this.instance.codewave.brakets + this.instance.codewave.closeChar + this.cmd.split(" ")[0] + this.instance.codewave.brakets;
+      }
+      this.helper.deco = this.instance.codewave.deco;
+      this.helper.pad = 2;
       if (this.instance.content) {
-        bounds = this.textBounds(this.instance.content);
-        _ref = [bounds.width, bounds.height], this.width = _ref[0], this.height = _ref[1];
+        bounds = this.helper.textBounds(this.instance.content);
+        _ref = [bounds.width, bounds.height], width = _ref[0], height = _ref[1];
       } else {
-        this.width = 50;
-        this.height = 3;
+        width = 50;
+        height = 3;
       }
       params = ['width'];
       if (this.instance.params.length > 1) {
         params.push(0);
       }
-      this.width = Math.max(this.minWidth(), this.instance.getParam(params, this.width));
+      this.helper.width = Math.max(this.minWidth(), this.instance.getParam(params, width));
       params = ['height'];
       if (this.instance.params.length > 1) {
         params.push(1);
       } else if (this.instance.params.length > 0) {
         params.push(0);
       }
-      return this.height = this.instance.getParam(params, this.height);
+      return this.helper.height = this.instance.getParam(params, height);
     };
 
     BoxCmd.prototype.result = function() {
-      return this.startSep() + "\n" + this.lines(this.instance.content) + "\n" + this.endSep();
-    };
-
-    BoxCmd.prototype.wrapComment = function(str) {
-      return this.instance.codewave.wrapComment(str);
-    };
-
-    BoxCmd.prototype.separator = function() {
-      var len;
-      len = this.width + 2 * this.pad + 2 * this.deco.length;
-      return this.wrapComment(this.decoLine(len));
+      return this.helper.draw(this.instance.content);
     };
 
     BoxCmd.prototype.minWidth = function() {
@@ -280,62 +275,6 @@
       } else {
         return 0;
       }
-    };
-
-    BoxCmd.prototype.startSep = function() {
-      var cmd, ln;
-      cmd = '';
-      if (this.cmd != null) {
-        cmd = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
-      }
-      ln = this.width + 2 * this.pad + 2 * this.deco.length - cmd.length;
-      return this.wrapComment(cmd + this.decoLine(ln));
-    };
-
-    BoxCmd.prototype.endSep = function() {
-      var closing, ln;
-      closing = '';
-      if (this.cmd != null) {
-        closing = this.instance.codewave.brakets + this.instance.codewave.closeChar + this.cmd.split(" ")[0] + this.instance.codewave.brakets;
-      }
-      ln = this.width + 2 * this.pad + 2 * this.deco.length - closing.length;
-      return this.wrapComment(closing + this.decoLine(ln));
-    };
-
-    BoxCmd.prototype.decoLine = function(len) {
-      return Codewave.util.repeatToLength(this.deco, len);
-    };
-
-    BoxCmd.prototype.padding = function() {
-      return Codewave.util.repeatToLength(" ", this.pad);
-    };
-
-    BoxCmd.prototype.lines = function(text) {
-      var lines, x;
-      if (text == null) {
-        text = '';
-      }
-      text = text || '';
-      lines = text.replace(/\r/g, '').split("\n");
-      return ((function() {
-        var _i, _ref, _results;
-        _results = [];
-        for (x = _i = 0, _ref = this.height; 0 <= _ref ? _i <= _ref : _i >= _ref; x = 0 <= _ref ? ++_i : --_i) {
-          _results.push(this.line(lines[x] || ''));
-        }
-        return _results;
-      }).call(this)).join('\n');
-    };
-
-    BoxCmd.prototype.line = function(text) {
-      if (text == null) {
-        text = '';
-      }
-      return this.wrapComment(this.deco + this.padding() + text + Codewave.util.repeatToLength(" ", this.width - this.instance.codewave.removeCarret(text).length) + this.padding() + this.deco);
-    };
-
-    BoxCmd.prototype.textBounds = function(text) {
-      return Codewave.util.getTxtSize(this.instance.codewave.removeCarret(text));
     };
 
     return BoxCmd;
@@ -350,26 +289,15 @@
     }
 
     CloseCmd.prototype.init = function() {
-      return this.deco = this.instance.codewave.deco;
-    };
-
-    CloseCmd.prototype.startFind = function() {
-      return this.instance.codewave.wrapCommentLeft(this.deco + this.deco);
-    };
-
-    CloseCmd.prototype.endFind = function() {
-      return this.instance.codewave.wrapCommentRight(this.deco + this.deco);
+      return this.helper = new Codewave.util.BoxHelper(this.instance.codewave);
     };
 
     CloseCmd.prototype.execute = function() {
-      var end, endFind, start, startFind;
-      startFind = this.startFind();
-      endFind = this.endFind();
-      start = this.instance.codewave.findPrev(this.instance.pos, startFind);
-      end = this.instance.codewave.findNext(this.instance.getEndPos(), endFind);
-      if ((start != null) && (end != null)) {
-        this.instance.codewave.editor.spliceText(start, end + endFind.length, '');
-        return this.instance.codewave.editor.setCursorPos(start);
+      var box;
+      box = this.helper.getBoxForPos(this.instance.getPos());
+      if (box != null) {
+        this.instance.codewave.editor.spliceText(box.start, box.end, '');
+        return this.instance.codewave.editor.setCursorPos(box.start);
       } else {
         return this.instance.replaceWith('');
       }

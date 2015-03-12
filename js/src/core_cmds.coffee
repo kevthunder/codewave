@@ -342,88 +342,49 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
+    @helper = new Codewave.util.BoxHelper(@instance.codewave)
     @cmd = @instance.getParam(['cmd'])
-    @deco = @instance.codewave.deco
-    @pad = 2
+    if @cmd?
+      @helper.openText  = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
+      @helper.closeText = @instance.codewave.brakets+@instance.codewave.closeChar+@cmd.split(" ")[0]+@instance.codewave.brakets
+    @helper.deco = @instance.codewave.deco
+    @helper.pad = 2
     
     if @instance.content
-      bounds = @textBounds(@instance.content)
-      [@width, @height] = [bounds.width, bounds.height]
+      bounds = @helper.textBounds(@instance.content)
+      [width, height] = [bounds.width, bounds.height]
     else
-      @width = 50
-      @height = 3
+      width = 50
+      height = 3
     
     params = ['width']
     if @instance.params.length > 1 
       params.push(0)
-    @width = Math.max(@minWidth(),@instance.getParam(params,@width))
+    @helper.width = Math.max(@minWidth(),@instance.getParam(params,width))
       
     params = ['height']
     if @instance.params.length > 1 
       params.push(1)
     else if @instance.params.length > 0
       params.push(0)
-    @height = @instance.getParam(params,@height)
+    @helper.height = @instance.getParam(params,height)
     
   result: ->
-    return @startSep() + "\n" + @lines(@instance.content) + "\n"+ @endSep()
-  wrapComment: (str) ->
-    @instance.codewave.wrapComment(str)
-  separator: ->
-    len = @width + 2 * @pad + 2 * @deco.length
-    @wrapComment(@decoLine(len))
+    return @helper.draw(@instance.content)
   minWidth: ->
     if @cmd?
       @cmd.length
     else
       0
-  startSep: ->
-    cmd = ''
-    if @cmd?
-      cmd = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
-    ln = @width + 2 * @pad + 2 * @deco.length - cmd.length
-    @wrapComment(cmd+@decoLine(ln))
-  endSep: ->
-    closing = ''
-    if @cmd?
-      closing = @instance.codewave.brakets+@instance.codewave.closeChar+@cmd.split(" ")[0]+@instance.codewave.brakets
-    ln = @width + 2 * @pad + 2 * @deco.length - closing.length
-    @wrapComment(closing+@decoLine(ln))
-  decoLine: (len) ->
-    return Codewave.util.repeatToLength(@deco, len)
-  padding: -> 
-    return Codewave.util.repeatToLength(" ", @pad)
-  lines: (text = '') ->
-    text = text or ''
-    lines = text.replace(/\r/g, '').split("\n")
-    return (@line(lines[x] or '') for x in [0..@height]).join('\n') 
-  line: (text = '') ->
-    @wrapComment(
-      @deco +
-      @padding() +
-      text +
-      Codewave.util.repeatToLength(" ", @width - @instance.codewave.removeCarret(text).length) + 
-      @padding() +
-      @deco
-    )
-  textBounds: (text) ->
-    Codewave.util.getTxtSize(@instance.codewave.removeCarret(text))
-    
+  
 class CloseCmd extends @Codewave.BaseCommand
   init: ->
-    @deco = @instance.codewave.deco
-  startFind: ->
-    @instance.codewave.wrapCommentLeft(@deco + @deco)
-  endFind: ->
-    @instance.codewave.wrapCommentRight(@deco + @deco)
+    @helper = new Codewave.util.BoxHelper(@instance.codewave)
   execute: ->
-    startFind = @startFind()
-    endFind = @endFind()
-    start = @instance.codewave.findPrev(@instance.pos, startFind)
-    end = @instance.codewave.findNext(@instance.getEndPos(), endFind)
-    if start? and end?
-      @instance.codewave.editor.spliceText(start,end + endFind.length,'')
-      @instance.codewave.editor.setCursorPos(start)
+    box = @helper.getBoxForPos(@instance.getPos())
+    if box?
+      @instance.codewave.editor.spliceText(box.start,box.end,'')
+      @instance.codewave.editor.setCursorPos(box.start)
     else
       @instance.replaceWith('')
           
