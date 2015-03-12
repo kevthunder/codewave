@@ -27,7 +27,7 @@ You may need to put it on a web server to be able to use the localstorage
 
 ## ToDo
 
-
+* error box inside box
 * format in-box commands
 * Create some default commands
 
