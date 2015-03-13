@@ -22,14 +22,19 @@ syntax:
           - word null  None
           - Math.max   max
           - /\bof\b/   in
-          - Codewave.util util
-          - Codewave.Command.cmds command.cmds
-          - Codewave.Command( command.Command(
-          - Codewave.logger.log logger.log
-          - Codewave.CmdInstance cmd_instance.CmdInstance
-          - Codewave.storage storage
+          - Codewave.util.BoxHelper   box_helper.BoxHelper
+          - Codewave.util             util
+          - Codewave.Command.cmds     command.cmds
+          - Codewave.Command(         command.Command(
+          - Codewave.logger.log       logger.log
+          - Codewave.CmdInstance      cmd_instance.CmdInstance
+          - Codewave.TextParser       text_parser.TextParser
+          - Codewave.storage          storage
+          - Codewave.Command.saveCmd( command.saveCmd(
           - |
-            'new RegExp(' 're.compile('
+            'new Codewave(' codewave_core.codewave.Codewave(
+          - |
+            'new RegExp('  're.compile('
           - ++ +=1
           - -- -=1
           - /class (@[\w\.]+\.)?(\w+)$/               'class $2():'

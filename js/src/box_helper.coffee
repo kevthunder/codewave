@@ -31,10 +31,10 @@ class @Codewave.util.BoxHelper
     return Codewave.util.repeatToLength(@deco, len)
   padding: -> 
     return Codewave.util.repeatToLength(" ", @pad)
-  lines: (text = '',toHeight=true) ->
+  lines: (text = '', uptoHeight=true) ->
     text = text or ''
     lines = text.replace(/\r/g, '').split("\n")
-    if toHeight
+    if uptoHeight
       return (@line(lines[x] or '') for x in [0..@height]).join('\n') 
     else
       return (@line(l) for l in lines).join('\n') 

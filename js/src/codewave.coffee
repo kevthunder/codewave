@@ -3,6 +3,7 @@
 
 class @Codewave
   constructor: (@editor,options = {}) ->
+    @marker = '[[[[codewave_marquer]]]]'
     @nameSpaces = []
     @vars = {}
     
@@ -224,9 +225,8 @@ class @Codewave
     txt = txt.replace(reQuoted, ' ')
     if (i = txt.indexOf(@carretChar)) > -1
       return i
-  marker: '[[[[codewave_marquer]]]]'
-  regMarker: ->
-    new RegExp(Codewave.util.escapeRegExp(@marker), "g")
+  regMarker: (flags="g") ->
+    new RegExp(Codewave.util.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->
     text.replace(@regMarker(),'')
 

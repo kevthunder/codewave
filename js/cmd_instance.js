@@ -148,13 +148,9 @@
         this.pos = this.pos - cl.length;
         this.str = this.codewave.editor.textSubstr(this.pos, endPos);
         return this._removeCommentFromContent();
-      } else {
-        if (this.sameLinesPrefix().indexOf(cl) > -1) {
-          if (this.sameLinesSuffix().indexOf(cr) > -1) {
-            this.inBox = 1;
-            return this._removeCommentFromContent();
-          }
-        }
+      } else if (this.sameLinesPrefix().indexOf(cl) > -1 && this.sameLinesSuffix().indexOf(cr) > -1) {
+        this.inBox = 1;
+        return this._removeCommentFromContent();
       }
     };
 

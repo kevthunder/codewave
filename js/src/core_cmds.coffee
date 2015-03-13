@@ -230,7 +230,12 @@ initCmds = ->
   })
   
   php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
-  php.addDetector(new Codewave.PairDetector({result:'php:inner',opener:'<?php',closer:'?>','else':'php:outer'}))
+  php.addDetector(new Codewave.PairDetector({
+    result: 'php:inner',
+    opener: '<?php',
+    closer: '?>',
+    'else': 'php:outer'
+  })) 
 
   phpOuter = php.addCmd(new Codewave.Command('outer'))
   phpOuter.addCmds({
@@ -239,35 +244,35 @@ initCmds = ->
       beforeExecute: closePhpForContent
       alterResult: wrapWithPhp
     },
-    php:'<?php\n\t~~content~~|\n?>',
+    php: '<?php\n\t~~content~~|\n?>',
   })
   
   phpInner = php.addCmd(new Codewave.Command('inner'))
   phpInner.addCmds({
-    'if':  'if(|){\n\t~~content~~\n}'
-    'info':'phpinfo();'
-    'echo':'echo ${id}'
-    'e':{  aliasOf: 'php:inner:echo' }
+    'if':   'if(|){\n\t~~content~~\n}',
+    'info': 'phpinfo();',
+    'echo': 'echo ${id}',
+    'e':{   aliasOf: 'php:inner:echo' },
     'class':"""
       class | {
       \tfunction __construct() {
       \t\t~~content~~
       \t}
       }
-      """
-    'c':{     aliasOf: 'php:inner:class' }
-    'function':	'function |() {\n\t~~content~~\n}'
-    'funct':{ aliasOf: 'php:inner:function' }
-    'f':{     aliasOf: 'php:inner:function' }
-    'array':  '$| = array();'
-    'a':	    'array()'
-    'for': 		'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}'
-    'foreach':'foreach ($| as $key => $val) {\n\t~~content~~\n}'
-    'each':{  aliasOf: 'php:inner:foreach' }
-    'while':  'while(|) {\n\t~~content~~\n}'
-    'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}'
-    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}'
-    'ife':{   aliasOf: 'php:inner:ifelse' }
+      """,
+    'c':{     aliasOf: 'php:inner:class' },
+    'function':	'function |() {\n\t~~content~~\n}',
+    'funct':{ aliasOf: 'php:inner:function' },
+    'f':{     aliasOf: 'php:inner:function' },
+    'array':  '$| = array();',
+    'a':	    'array()',
+    'for': 		'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
+    'foreach':'foreach ($| as $key => $val) {\n\t~~content~~\n}',
+    'each':{  aliasOf: 'php:inner:foreach' },
+    'while':  'while(|) {\n\t~~content~~\n}',
+    'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
+    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+    'ife':{   aliasOf: 'php:inner:ifelse' },
     'switch':	"""
       switch( | ) { 
       \tcase :
@@ -277,24 +282,24 @@ initCmds = ->
       \t\t
       \t\tbreak;
       }
-      """
+      """,
   })
   
   js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
   js.addCmds({
-    'if':  'if(|){\n\t~~content~~\n}'
-    'log':  'if(window.console){\n\tconsole.log(~~content~~|)\n}'
-    'function':	'function |() {\n\t~~content~~\n}'
-    'funct':{ aliasOf: 'js:function' }
-    'f':{     aliasOf: 'js:function' }
-    'for': 		'for (var i = 0; i < |; i++) {\n\t~~content~~\n}'
-    'forin':'foreach (var val in |) {\n\t~~content~~\n}'
-    'each':{  aliasOf: 'js:forin' }
-    'foreach':{  aliasOf: 'js:forin' }
-    'while':  'while(|) {\n\t~~content~~\n}'
-    'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}'
-    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}'
-    'ife':{   aliasOf: 'js:ifelse' }
+    'if':  'if(|){\n\t~~content~~\n}',
+    'log':  'if(window.console){\n\tconsole.log(~~content~~|)\n}',
+    'function':	'function |() {\n\t~~content~~\n}',
+    'funct':{ aliasOf: 'js:function' },
+    'f':{     aliasOf: 'js:function' },
+    'for': 		'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
+    'forin':'foreach (var val in |) {\n\t~~content~~\n}',
+    'each':{  aliasOf: 'js:forin' },
+    'foreach':{  aliasOf: 'js:forin' },
+    'while':  'while(|) {\n\t~~content~~\n}',
+    'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
+    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+    'ife':{   aliasOf: 'js:ifelse' },
     'switch':	"""
       switch( | ) { 
       \tcase :
@@ -304,7 +309,7 @@ initCmds = ->
       \t\t
       \t\tbreak;
       }
-      """
+      """,
   })
 
 @Codewave.Command.cmdInitialisers.push(initCmds)
@@ -345,8 +350,8 @@ class BoxCmd extends @Codewave.BaseCommand
     @helper = new Codewave.util.BoxHelper(@instance.codewave)
     @cmd = @instance.getParam(['cmd'])
     if @cmd?
-      @helper.openText  = @instance.codewave.brakets+@cmd+@instance.codewave.brakets
-      @helper.closeText = @instance.codewave.brakets+@instance.codewave.closeChar+@cmd.split(" ")[0]+@instance.codewave.brakets
+      @helper.openText  = @instance.codewave.brakets + @cmd + @instance.codewave.brakets
+      @helper.closeText = @instance.codewave.brakets + @instance.codewave.closeChar + @cmd.split(" ")[0] + @instance.codewave.brakets
     @helper.deco = @instance.codewave.deco
     @helper.pad = 2
     
@@ -360,7 +365,7 @@ class BoxCmd extends @Codewave.BaseCommand
     params = ['width']
     if @instance.params.length > 1 
       params.push(0)
-    @helper.width = Math.max(@minWidth(),@instance.getParam(params,width))
+    @helper.width = Math.max(@minWidth(), @instance.getParam(params, width))
       
     params = ['height']
     if @instance.params.length > 1 
@@ -410,9 +415,9 @@ class EditCmd extends @Codewave.BaseCommand
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
       parser.parseAll()
-      Codewave.Command.saveCmd(@cmdName,(
+      Codewave.Command.saveCmd(@cmdName, {
         result: parser.vars.source
-      ))
+      })
       ''
   resultWithoutContent: ->
     if !@cmd or @editable

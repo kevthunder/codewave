@@ -60,17 +60,17 @@
       return Codewave.util.repeatToLength(" ", this.pad);
     };
 
-    BoxHelper.prototype.lines = function(text, toHeight) {
+    BoxHelper.prototype.lines = function(text, uptoHeight) {
       var l, lines, x;
       if (text == null) {
         text = '';
       }
-      if (toHeight == null) {
-        toHeight = true;
+      if (uptoHeight == null) {
+        uptoHeight = true;
       }
       text = text || '';
       lines = text.replace(/\r/g, '').split("\n");
-      if (toHeight) {
+      if (uptoHeight) {
         return ((function() {
           var _i, _ref, _results;
           _results = [];

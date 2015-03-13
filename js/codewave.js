@@ -7,6 +7,7 @@
       if (options == null) {
         options = {};
       }
+      this.marker = '[[[[codewave_marquer]]]]';
       this.nameSpaces = [];
       this.vars = {};
       this.parent = options['parent'] || null;
@@ -401,10 +402,11 @@
       }
     };
 
-    Codewave.prototype.marker = '[[[[codewave_marquer]]]]';
-
-    Codewave.prototype.regMarker = function() {
-      return new RegExp(Codewave.util.escapeRegExp(this.marker), "g");
+    Codewave.prototype.regMarker = function(flags) {
+      if (flags == null) {
+        flags = "g";
+      }
+      return new RegExp(Codewave.util.escapeRegExp(this.marker), flags);
     };
 
     Codewave.prototype.removeMarkers = function(text) {

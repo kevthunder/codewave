@@ -87,7 +87,7 @@ class @Codewave.CmdInstance
     max = @codewave.editor.textLen()
     while endPos < max and @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) == @codewave.deco
       endPos+=@codewave.deco.length
-    if endPos >= max or @codewave.editor.textSubstr(endPos,endPos+@codewave.deco.length) in [' ',"\n","\r"]
+    if endPos >= max or @codewave.editor.textSubstr(endPos, endPos + @codewave.deco.length) in [' ',"\n","\r"]
       @str = @codewave.editor.textSubstr(@pos,endPos)
   _checkBox: ->
     cl = @codewave.wrapCommentLeft()
@@ -97,11 +97,9 @@ class @Codewave.CmdInstance
       @pos = @pos - cl.length
       @str = @codewave.editor.textSubstr(@pos,endPos)
       @_removeCommentFromContent()
-    else
-      if @sameLinesPrefix().indexOf(cl) > -1
-        if @sameLinesSuffix().indexOf(cr) > -1
-          @inBox = 1
-          @_removeCommentFromContent()
+    else if @sameLinesPrefix().indexOf(cl) > -1 and @sameLinesSuffix().indexOf(cr) > -1
+      @inBox = 1
+      @_removeCommentFromContent()
   _removeCommentFromContent: ->
     if @content
       ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
@@ -215,7 +213,7 @@ class @Codewave.CmdInstance
   applyIndent: (text) ->
     if text?
       reg = /\n/g
-      text.replace(reg,"\n"+Codewave.util.repeatToLength(" ",@getIndent()))
+      text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", @getIndent()))
     else
       text
   removeIndentFromContent: (text) ->
