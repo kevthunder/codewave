@@ -6,6 +6,7 @@ initCmds = ->
   
   core.addCmds({
     'help':{
+      'replaceBox' : true,
       'result' : """
         ~~box~~
         ~~quote_carret~~
@@ -48,10 +49,11 @@ initCmds = ->
         """
       'cmds' : {
         'subjects':{
+          'replaceBox' : true,
           'result' : """
             ~~box~~
             ~~!help~~
-            ~~!help:get_started~~ (~~!help:start~~)
+            ~~!help:get_started~~ (~~!help:demo~~)
             ~~!help:subjects~~ (~~!help:sub~~)
             ~~!help:editing~~ (~~!help:edit~~)
             ~~!close|~~
@@ -62,6 +64,7 @@ initCmds = ->
           'aliasOf': 'help:subjects'
         }
         'get_started':{
+          'replaceBox' : true,
           'result' : """
             ~~box~~
             The classic Hello World.
@@ -135,6 +138,7 @@ initCmds = ->
                 """
             }
           }
+          'replaceBox' : true,
           'result' : """
             ~~box~~
             ~~help:editing:intro~~
@@ -347,6 +351,7 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
+    console.log(@instance)
     @helper = new Codewave.util.BoxHelper(@instance.codewave)
     @cmd = @instance.getParam(['cmd'])
     if @cmd?

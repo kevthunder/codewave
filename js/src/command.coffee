@@ -23,6 +23,7 @@ class @Codewave.Command
       beforeExecute: null,
       alterResult: null,
       preventParseAll: false,
+      replaceBox: false,
     }
     @options = {}
     @finalOptions = null

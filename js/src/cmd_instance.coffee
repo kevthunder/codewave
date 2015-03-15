@@ -72,8 +72,6 @@ class @Codewave.CmdInstance
           @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
-      console.log(@codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/\n/g,'\\n'))
-      console.log(Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos)).replace(/\n/g,'\\n'))
       @content = Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
       @str = @codewave.editor.textSubstr(@pos,f.pos+f.str.length)
   _findClosingPos: ->
@@ -222,27 +220,39 @@ class @Codewave.CmdInstance
       text.replace(reg,'')
     else
       text
-  replaceWith: (text) ->
-    prefix = suffix = ''
-    start = @pos
-    end = @getEndPos()
-    
-    text = @applyIndent(text)
-    if @inBox?
-      start = @prevEOL()
-      end = @nextEOL()
-      helper = new Codewave.util.BoxHelper(@codewave).getOptFromLine(@rawWithFullLines(),false)
-      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+text+@codewave.marker+@sameLinesSuffix(),{multiline:false})
-      [prefix,text,suffix] = res.split(@codewave.marker)
-      
-    cursorPos = start+prefix.length+text.length
+  alterResultForBox: (repl) ->
+    helper = new Codewave.util.BoxHelper(@codewave)
+    helper.getOptFromLine(@rawWithFullLines(),false)
+    if @cmd.getOption('replaceBox',this)
+      box = helper.getBoxForPos(@getPos())
+      [repl.start, repl.end] = [box.start, box.end]
+      @indentLen = helper.indent
+      repl.text = @applyIndent(repl.text)
+    else
+      repl.text = @applyIndent(repl.text)
+      repl.start = @prevEOL()
+      repl.end = @nextEOL()
+      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+repl.text+@codewave.marker+@sameLinesSuffix(),{multiline:false})
+      [repl.prefix,repl.text,repl.suffix] = res.split(@codewave.marker)
+    repl
+  getCursorFromResult: (repl) ->
+    cursorPos = repl.resPosBeforePrefix()
     if @cmd? and @codewave.checkCarret and @cmd.getOption('checkCarret',this)
-      if (p = @codewave.getCarretPos(text))? 
-        cursorPos = start+prefix.length+p
-      text = @codewave.removeCarret(text)
+      if (p = @codewave.getCarretPos(repl.text))? 
+        cursorPos = repl.start+repl.prefix.length+p
+      repl.text = @codewave.removeCarret(repl.text)
+    cursorPos
+  replaceWith: (text) ->
+    repl = new Codewave.util.Replacement(@pos,@getEndPos(),text)
+    
+    if @inBox?
+      @alterResultForBox(repl)
+    else
+      repl.text = @applyIndent(repl.text)
       
-      
-    @codewave.editor.spliceText(start,end,prefix+text+suffix)
+    cursorPos = @getCursorFromResult(repl)
+    
+    repl.applyToEditor(@codewave.editor)
     @codewave.editor.setCursorPos(cursorPos)
-    @replaceStart = start
-    @replaceEnd = start+prefix.length+text.length+suffix.length
+    @replaceStart = repl.start
+    @replaceEnd = repl.resEnd()

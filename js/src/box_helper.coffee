@@ -1,7 +1,7 @@
 class @Codewave.util.BoxHelper
   constructor: (@codewave, options = {}) ->
     defaults = {
-      deco: codewave.deco
+      deco: @codewave.deco
       pad: 2
       width: 50
       height: 3
