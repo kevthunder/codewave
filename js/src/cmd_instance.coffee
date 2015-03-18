@@ -232,7 +232,7 @@ class @Codewave.CmdInstance
       repl.text = @applyIndent(repl.text)
       repl.start = @prevEOL()
       repl.end = @nextEOL()
-      res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+repl.text+@codewave.marker+@sameLinesSuffix(),{multiline:false})
+      res = helper.reformatLines(@sameLinesPrefix() + @codewave.marker + repl.text + @codewave.marker + @sameLinesSuffix(), {multiline:false})
       [repl.prefix,repl.text,repl.suffix] = res.split(@codewave.marker)
     repl
   getCursorFromResult: (repl) ->
