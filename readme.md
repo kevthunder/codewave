@@ -28,8 +28,7 @@ You may need to put it on a web server to be able to use the localstorage
 ## ToDo
 
 * comment styles
-* error box inside box
-* format in-box commands
+  * context
 * Create some default commands
 
 ## devloppement
