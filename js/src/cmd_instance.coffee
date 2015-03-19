@@ -72,8 +72,6 @@ class @Codewave.CmdInstance
           @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
-      console.log(@codewave.editor.textSubstr(@pos+@str.length,f.pos).replace(/\n/g,'\\n'))
-      console.log(Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos)).replace(/\n/g,'\\n'))
       @content = Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
       @str = @codewave.editor.textSubstr(@pos,f.pos+f.str.length)
   _findClosingPos: ->
@@ -188,7 +186,7 @@ class @Codewave.CmdInstance
   result: -> 
     if @cmd.resultIsAvailable()
       @formatIndent(@cmd.result(this))
-  getParserForText: (txt) ->
+  getParserForText: (txt='') ->
     parser = new Codewave(new Codewave.TextParser(txt))
     parser.context = this
     parser.checkCarret = false

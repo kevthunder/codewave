@@ -244,11 +244,13 @@ initCmds = ->
       beforeExecute: closePhpForContent
       alterResult: wrapWithPhp
     },
+    'comment': '<?php /* ~~content~~ */ ?>',
     php: '<?php\n\t~~content~~|\n?>',
   })
   
   phpInner = php.addCmd(new Codewave.Command('inner'))
   phpInner.addCmds({
+    'comment': '/* ~~content~~ */',
     'if':   'if(|){\n\t~~content~~\n}',
     'info': 'phpinfo();',
     'echo': 'echo ${id}',
@@ -287,6 +289,7 @@ initCmds = ->
   
   js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
   js.addCmds({
+    'comment': '/* ~~content~~ */',
     'if':  'if(|){\n\t~~content~~\n}',
     'log':  'if(window.console){\n\tconsole.log(~~content~~|)\n}',
     'function':	'function |() {\n\t~~content~~\n}',
@@ -347,7 +350,7 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.codewave)
+    @helper = new Codewave.util.BoxHelper(@instance.getParserForText())
     @cmd = @instance.getParam(['cmd'])
     if @cmd?
       @helper.openText  = @instance.codewave.brakets + @cmd + @instance.codewave.brakets
@@ -384,7 +387,7 @@ class BoxCmd extends @Codewave.BaseCommand
   
 class CloseCmd extends @Codewave.BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.codewave)
+    @helper = new Codewave.util.BoxHelper(@instance.getParserForText())
   execute: ->
     box = @helper.getBoxForPos(@instance.getPos())
     if box?

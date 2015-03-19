@@ -27,6 +27,7 @@ class @Codewave
         this[key] = val
     @editor.bindedTo(this) if @editor?
   onActivationKey: ->
+    @process = new Codewave.Process()
     Codewave.logger.log('activation key')
     
     if(cmd = @commandOnCursorPos()?.init())
@@ -38,6 +39,8 @@ class @Codewave
         @addBrakets(cpos.start,cpos.end)
       else
         @promptClosingCmd(cpos.start,cpos.end)
+        
+    @process = null
   commandOnCursorPos: ->
     cpos = @editor.getCursorPos()
     @commandOnPos(cpos.end)
@@ -194,6 +197,16 @@ class @Codewave
     else if @context?
       @context.codewave.getRoot()
   getCommentChar: ->
+    if @getRoot().process? and @getRoot().process.commentChar?
+      return @process.commentChar
+    cmd = @getCmd('comment')
+    if cmd?
+      res = cmd.result()
+      if res?
+        res = res.replace('~~content~~','%s')
+        if @process?
+          @process.commentChar = res
+        return res
     '<!-- %s -->'
   wrapComment: (str) ->
     cc = @getCommentChar()

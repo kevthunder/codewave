@@ -1,7 +1,7 @@
 class @Codewave.util.BoxHelper
   constructor: (@codewave, options = {}) ->
     defaults = {
-      deco: codewave.deco
+      deco: @codewave.deco
       pad: 2
       width: 50
       height: 3
@@ -49,7 +49,6 @@ class @Codewave.util.BoxHelper
       @deco
     )
   removeIgnoredContent: (text) ->
-    console.log(text,@codewave.removeMarkers(text))
     @codewave.removeMarkers(@codewave.removeCarret(text))
   textBounds: (text) ->
     Codewave.util.getTxtSize(@removeIgnoredContent(text))

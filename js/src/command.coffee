@@ -72,7 +72,7 @@ class @Codewave.Command
       res = Codewave.util.merge(res,instance.cmdObj.getDefaults())
     res
   result: (instance) ->
-    if instance.cmdObj?
+    if instance? && instance.cmdObj?
       return instance.cmdObj.result()
     aliased = @getAliased(instance)
     if aliased?
@@ -82,7 +82,7 @@ class @Codewave.Command
     if @resultStr?
       @resultStr
   execute: (instance) ->
-    if instance.cmdObj?
+    if instance? && instance.cmdObj?
       return instance.cmdObj.execute()
     aliased = @getAliased(instance)
     if aliased?

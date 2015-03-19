@@ -1,0 +1,3 @@
+class @Codewave.Process
+  constructor: () ->
+    #
