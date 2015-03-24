@@ -5,6 +5,8 @@ class @Codewave.CmdFinder
     defaults = {
       parent: null
       namespaces: []
+      parentContext: null
+      context: null
       root: Codewave.Command.cmds
       mustExecute: true
       useDetectors: true
@@ -21,6 +23,12 @@ class @Codewave.CmdFinder
         this[key] = @parent[key]
       else
         this[key] = val
+    unless @context?
+      @context = new Codewave.Context(@codewave)
+    if @parentContext?
+      @context.parent = @parentContext
+    if @namespaces?
+      @context.addNamespaces(@namespaces)
   find: ->
     @triggerDetectors()
     @cmd = @findIn(@root)
@@ -33,7 +41,7 @@ class @Codewave.CmdFinder
     paths = {}
     for name in @names 
       [space,rest] = Codewave.util.splitFirstNamespace(name)
-      if space? and !(space in @namespaces)
+      if space? and !(space in @context.getNameSpaces())
         unless space of paths 
           paths[space] = []
         paths[space].push(rest)
@@ -53,23 +61,16 @@ class @Codewave.CmdFinder
   triggerDetectors: ->
     if @useDetectors 
       @useDetectors = false
-      posibilities = new Codewave.CmdFinder(@namespaces,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities()
+      posibilities = new Codewave.CmdFinder(@context.getNameSpaces(),{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities()
       i = 0
       while i < posibilities.length
         cmd = posibilities[i]
         for detector in cmd.detectors 
           res = detector.detect(this)
           if res?
-            @addNamespaces(res)
+            @context.addNamespaces(res)
             posibilities = posibilities.concat(new Codewave.CmdFinder(res,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities())
         i++
-  addNamespaces: (spaces) ->
-    if spaces 
-      if typeof spaces == 'string'
-        spaces = [spaces]
-      for space in spaces 
-        if space not in @namespaces 
-          @namespaces.push(space)
   findIn: (cmd,path = null) ->
     unless cmd?
       return null
@@ -85,7 +86,7 @@ class @Codewave.CmdFinder
       next = @root.getCmd(space)
       if next? 
         posibilities = posibilities.concat(new Codewave.CmdFinder(names, {parent: this, root: next}).findPosibilities())
-    for nspc in @namespaces
+    for nspc in @context.getNameSpaces()
       [nspcName,rest] = Codewave.util.splitFirstNamespace(nspc,true)
       next = @root.getCmd(nspcName)
       if next? 

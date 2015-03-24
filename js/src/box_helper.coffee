@@ -1,7 +1,7 @@
 class @Codewave.util.BoxHelper
-  constructor: (@codewave, options = {}) ->
+  constructor: (@context, options = {}) ->
     defaults = {
-      deco: @codewave.deco
+      deco: @context.codewave.deco
       pad: 2
       width: 50
       height: 3
@@ -17,7 +17,7 @@ class @Codewave.util.BoxHelper
   draw: (text) ->
     return @startSep() + "\n" + @lines(text) + "\n"+ @endSep()
   wrapComment: (str) ->
-    @codewave.wrapComment(str)
+    @context.wrapComment(str)
   separator: ->
     len = @width + 2 * @pad + 2 * @deco.length
     @wrapComment(@decoLine(len))
@@ -49,27 +49,28 @@ class @Codewave.util.BoxHelper
       @deco
     )
   removeIgnoredContent: (text) ->
-    @codewave.removeMarkers(@codewave.removeCarret(text))
+    @context.codewave.removeMarkers(@context.codewave.removeCarret(text))
   textBounds: (text) ->
     Codewave.util.getTxtSize(@removeIgnoredContent(text))
   getBoxForPos: (pos) ->
-    startFind = @codewave.wrapCommentLeft(@deco + @deco)
-    endFind = @codewave.wrapCommentRight(@deco + @deco)
-    start = @codewave.findPrev(pos.start, startFind)
-    end = @codewave.findNext(pos.end, endFind)
+    startFind = @context.wrapCommentLeft(@deco + @deco)
+    endFind = @context.wrapCommentRight(@deco + @deco)
+    start = @context.codewave.findPrev(pos.start, startFind)
+    end = @context.codewave.findNext(pos.end, endFind)
     if start? and end?
       new Codewave.util.Pos(start,end + endFind.length)
   getOptFromLine: (line,getPad=true) ->
-    rStart = new RegExp("(\\s*)("+@codewave.wrapCommentLeft(@deco)+")(\\s*)")
-    rEnd = new RegExp("(\\s*)("+@codewave.wrapCommentRight(@deco)+")")
+    rStart = new RegExp("(\\s*)("+@context.wrapCommentLeft(@deco)+")(\\s*)")
+    rEnd = new RegExp("(\\s*)("+@context.wrapCommentRight(@deco)+")")
     resStart = rStart.exec(line)
     resEnd = rEnd.exec(line)
-    if getPad
-      @pad = Math.min(resStart[3].length,resEnd[1].length)
-    @indent = resStart[1].length
-    startPos = resStart.index + resStart[1].length + resStart[2].length + @pad
-    endPos = resEnd.index + resEnd[1].length - @pad
-    @width = endPos - startPos
+    if resStart? and resEnd?
+      if getPad
+        @pad = Math.min(resStart[3].length,resEnd[1].length)
+      @indent = resStart[1].length
+      startPos = resStart.index + resStart[1].length + resStart[2].length + @pad
+      endPos = resEnd.index + resEnd[1].length - @pad
+      @width = endPos - startPos
     this
   reformatLines: (text,options={}) ->
     @lines(@removeComment(text,options),false)
@@ -79,8 +80,8 @@ class @Codewave.util.BoxHelper
         multiline: true
       }
       opt = Codewave.util.merge(defaults,options)
-      ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
-      ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
+      ecl = Codewave.util.escapeRegExp(@context.wrapCommentLeft())
+      ecr = Codewave.util.escapeRegExp(@context.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@deco)
       flag = if options['multiline'] then 'gm' else ''
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}",flag)

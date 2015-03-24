@@ -14,8 +14,6 @@
         this._splitComponents();
         this._findClosing();
         this._checkElongated();
-        this._checkBox();
-        this.content = this.removeIndentFromContent(this.content);
       }
     }
 
@@ -23,6 +21,8 @@
       if (!(this.isEmpty() || this.inited)) {
         this.inited = true;
         this.getCmd();
+        this._checkBox();
+        this.content = this.removeIndentFromContent(this.content);
         this._getCmdObj();
         this._parseParams(this.rawParams);
         if (this.cmdObj != null) {
@@ -72,7 +72,9 @@
         }
       }
       if (params.length) {
-        allowedNamed = this.cmd.getOption('allowedNamed', this);
+        if (this.cmd != null) {
+          allowedNamed = this.cmd.getOption('allowedNamed', this);
+        }
         inStr = false;
         param = '';
         name = false;
@@ -139,8 +141,8 @@
 
     CmdInstance.prototype._checkBox = function() {
       var cl, cr, endPos;
-      cl = this.codewave.wrapCommentLeft();
-      cr = this.codewave.wrapCommentRight();
+      cl = this.context.wrapCommentLeft();
+      cr = this.context.wrapCommentRight();
       endPos = this.getEndPos() + cr.length;
       if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(endPos - cr.length, endPos) === cr) {
         this.pos = this.pos - cl.length;
@@ -155,8 +157,8 @@
     CmdInstance.prototype._removeCommentFromContent = function() {
       var ecl, ecr, ed, re1, re2, re3;
       if (this.content) {
-        ecl = Codewave.util.escapeRegExp(this.codewave.wrapCommentLeft());
-        ecr = Codewave.util.escapeRegExp(this.codewave.wrapCommentRight());
+        ecl = Codewave.util.escapeRegExp(this.context.wrapCommentLeft());
+        ecr = Codewave.util.escapeRegExp(this.context.wrapCommentRight());
         ed = Codewave.util.escapeRegExp(this.codewave.deco);
         re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
         re2 = new RegExp("^\\s*(?:" + ed + ")*" + ecr + "\r?\n");
@@ -210,9 +212,14 @@
         this._getParentCmds();
         if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
           this.cmd = Codewave.Command.cmds.getCmd('core:no_execute');
+          this.context = this.codewave.context;
         } else {
           this.finder = this._getFinder(this.cmdName);
+          this.context = this.finder.context;
           this.cmd = this.finder.find();
+          if (this.cmd != null) {
+            this.context.addNameSpace(this.cmd.fullName);
+          }
         }
       }
       return this.cmd;
@@ -220,7 +227,7 @@
 
     CmdInstance.prototype._getFinder = function(cmdName) {
       var finder;
-      finder = this.codewave.getFinder(cmdName, this._getParentNamespaces());
+      finder = this.codewave.context.getFinder(cmdName, this._getParentNamespaces());
       finder.instance = this;
       return finder;
     };
@@ -314,8 +321,9 @@
       if (txt == null) {
         txt = '';
       }
-      parser = new Codewave(new Codewave.TextParser(txt));
-      parser.context = this;
+      parser = new Codewave(new Codewave.TextParser(txt), {
+        inInstance: this
+      });
       parser.checkCarret = false;
       return parser;
     };
@@ -332,7 +340,7 @@
       var helper;
       if (this.indentLen == null) {
         if (this.inBox != null) {
-          helper = new Codewave.util.BoxHelper(this.codewave);
+          helper = new Codewave.util.BoxHelper(this.context);
           this.indentLen = helper.removeComment(this.sameLinesPrefix()).length;
         } else {
           this.indentLen = this.pos - this.codewave.findLineStart(this.pos);
@@ -378,7 +386,7 @@
       if (this.inBox != null) {
         start = this.prevEOL();
         end = this.nextEOL();
-        helper = new Codewave.util.BoxHelper(this.codewave).getOptFromLine(this.rawWithFullLines(), false);
+        helper = new Codewave.util.BoxHelper(this.context).getOptFromLine(this.rawWithFullLines(), false);
         res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + text + this.codewave.marker + this.sameLinesSuffix(), {
           multiline: false
         });

@@ -239,7 +239,8 @@
 
     BoxCmd.prototype.init = function() {
       var bounds, height, params, width, _ref;
-      this.helper = new Codewave.util.BoxHelper(this.instance.getParserForText());
+      console.log(this.instance.context);
+      this.helper = new Codewave.util.BoxHelper(this.instance.context);
       this.cmd = this.instance.getParam(['cmd']);
       if (this.cmd != null) {
         this.helper.openText = this.instance.codewave.brakets + this.cmd + this.instance.codewave.brakets;
@@ -292,7 +293,7 @@
     }
 
     CloseCmd.prototype.init = function() {
-      return this.helper = new Codewave.util.BoxHelper(this.instance.getParserForText());
+      return this.helper = new Codewave.util.BoxHelper(this.instance.context);
     };
 
     CloseCmd.prototype.execute = function() {
@@ -322,7 +323,7 @@
       this.cmdName = this.instance.getParam([0, 'cmd']);
       this.verbalize = (_ref = this.instance.getParam([1])) === 'v' || _ref === 'verbalize';
       if (this.cmdName != null) {
-        this.finder = this.instance.codewave.getFinder(this.cmdName);
+        this.finder = this.instance.context.getFinder(this.cmdName);
         this.finder.useFallbacks = false;
         this.cmd = this.finder.find();
       }
@@ -347,6 +348,7 @@
     EditCmd.prototype.resultWithContent = function() {
       var parser;
       parser = this.instance.getParserForText(this.content);
+      console.log(parser);
       parser.parseAll();
       Codewave.Command.saveCmd(this.cmdName, {
         result: parser.vars.source

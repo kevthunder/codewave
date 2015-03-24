@@ -4,7 +4,6 @@
 class @Codewave
   constructor: (@editor,options = {}) ->
     @marker = '[[[[codewave_marquer]]]]'
-    @nameSpaces = []
     @vars = {}
     
     @parent = options['parent'] or null
@@ -15,7 +14,8 @@ class @Codewave
       'closeChar' : '/',
       'noExecuteChar' : '!',
       'carretChar' : '|',
-      'checkCarret' : true
+      'checkCarret' : true,
+      'inInstance' : null
     }
     
     for key, val of defaults
@@ -26,6 +26,10 @@ class @Codewave
       else
         this[key] = val
     @editor.bindedTo(this) if @editor?
+    
+    @context = new Codewave.Context(this)
+    if @inInstance?
+      @context.parent = @inInstance.context
   onActivationKey: ->
     @process = new Codewave.Process()
     Codewave.logger.log('activation key')
@@ -165,68 +169,15 @@ class @Codewave
     @getText()
   getText: ->
     @editor.text()
-  getNameSpaces: () ->
-    npcs = ['core'].concat(@nameSpaces)
-    if @parent?
-      npcs = npcs.concat(@parent.getNameSpaces())
-    if @context?
-      if @context.finder?
-        npcs = npcs.concat(@context.finder.namespaces)
-      npcs = npcs.concat([@context.cmd.fullName])
-    return Codewave.util.unique(npcs)
-  addNameSpace: (name) ->
-    @nameSpaces.push(name)
-  removeNameSpace: (name) ->
-    @nameSpaces = @nameSpaces.filter (n) -> n isnt name
-  getCmd: (cmdName,nameSpaces = []) ->
-    finder = @getFinder(cmdName,nameSpaces)
-    finder.find()
-  getFinder: (cmdName,nameSpaces = []) ->
-    return new Codewave.CmdFinder(cmdName, {
-      namespaces: Codewave.util.union(@getNameSpaces(), nameSpaces)
-      useDetectors: @isRoot()
-      codewave: this
-    })
   isRoot: ->
-    return !@parent? and (!@context? or !@context.finder?)
+    return !@parent? and (!@inInstance? or !@inInstance.finder?)
   getRoot: ->
     if @isRoot
       this
     else if @parent?
       @parent.getRoot()
-    else if @context?
-      @context.codewave.getRoot()
-  getCommentChar: ->
-    if @getRoot().process? and @getRoot().process.commentChar?
-      return @process.commentChar
-    cmd = @getCmd('comment')
-    if cmd?
-      res = cmd.result()
-      if res?
-        res = res.replace('~~content~~','%s')
-        if @process?
-          @process.commentChar = res
-        return res
-    '<!-- %s -->'
-  wrapComment: (str) ->
-    cc = @getCommentChar()
-    if cc.indexOf('%s') > -1
-      cc.replace('%s',str)
-    else
-      cc + ' ' + str + ' ' + cc
-  wrapCommentLeft: (str = '') ->
-    cc = @getCommentChar()
-    console.log()
-    if (i = cc.indexOf('%s')) > -1
-      cc.substr(0,i) + str
-    else
-      cc + ' ' + str
-  wrapCommentRight: (str = '') ->
-    cc = @getCommentChar()
-    if (i = cc.indexOf('%s')) > -1
-      str + cc.substr(i+2)
-    else
-      str + ' ' + cc
+    else if @inInstance?
+      @inInstance.codewave.getRoot()
   removeCarret: (txt) ->
     tmp = '[[[[quoted_carret]]]]'
     reCarret = new RegExp(Codewave.util.escapeRegExp(@carretChar), "g")

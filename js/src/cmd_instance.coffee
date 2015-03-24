@@ -8,12 +8,12 @@ class @Codewave.CmdInstance
       @_splitComponents()
       @_findClosing()
       @_checkElongated()
-      @_checkBox()
-      @content = @removeIndentFromContent(@content)
   init: ->
     unless @isEmpty() || @inited
       @inited = true
       @getCmd()
+      @_checkBox()
+      @content = @removeIndentFromContent(@content)
       @_getCmdObj()
       @_parseParams(@rawParams)
       if @cmdObj?
@@ -45,7 +45,8 @@ class @Codewave.CmdInstance
       if nameToParam? 
         @named[nameToParam] = @cmdName
     if params.length
-      allowedNamed = @cmd.getOption('allowedNamed',this)
+      if @cmd?
+        allowedNamed = @cmd.getOption('allowedNamed',this) 
       inStr = false
       param = ''
       name = false
@@ -88,8 +89,8 @@ class @Codewave.CmdInstance
     if endPos >= max or @codewave.editor.textSubstr(endPos, endPos + @codewave.deco.length) in [' ',"\n","\r"]
       @str = @codewave.editor.textSubstr(@pos,endPos)
   _checkBox: ->
-    cl = @codewave.wrapCommentLeft()
-    cr = @codewave.wrapCommentRight()
+    cl = @context.wrapCommentLeft()
+    cr = @context.wrapCommentRight()
     endPos = @getEndPos() + cr.length
     if @codewave.editor.textSubstr(@pos - cl.length,@pos) == cl and @codewave.editor.textSubstr(endPos - cr.length,endPos) == cr
       @pos = @pos - cl.length
@@ -100,8 +101,8 @@ class @Codewave.CmdInstance
       @_removeCommentFromContent()
   _removeCommentFromContent: ->
     if @content
-      ecl = Codewave.util.escapeRegExp(@codewave.wrapCommentLeft())
-      ecr = Codewave.util.escapeRegExp(@codewave.wrapCommentRight())
+      ecl = Codewave.util.escapeRegExp(@context.wrapCommentLeft())
+      ecr = Codewave.util.escapeRegExp(@context.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@codewave.deco)
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
       re2 = new RegExp("^\\s*(?:#{ed})*#{ecr}\r?\n")
@@ -134,12 +135,16 @@ class @Codewave.CmdInstance
       @_getParentCmds()
       if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
         @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
+        @context = @codewave.context
       else
         @finder = @_getFinder(@cmdName)
+        @context = @finder.context
         @cmd = @finder.find()
+        if @cmd?
+          @context.addNameSpace(@cmd.fullName)
     @cmd
   _getFinder: (cmdName)->
-    finder = @codewave.getFinder(cmdName,@_getParentNamespaces())
+    finder = @codewave.context.getFinder(cmdName,@_getParentNamespaces())
     finder.instance = this
     finder
   _getCmdObj: ->
@@ -187,8 +192,7 @@ class @Codewave.CmdInstance
     if @cmd.resultIsAvailable()
       @formatIndent(@cmd.result(this))
   getParserForText: (txt='') ->
-    parser = new Codewave(new Codewave.TextParser(txt))
-    parser.context = this
+    parser = new Codewave(new Codewave.TextParser(txt),{inInstance:this})
     parser.checkCarret = false
     return parser
   getEndPos: ->
@@ -198,7 +202,7 @@ class @Codewave.CmdInstance
   getIndent: ->
     unless @indentLen?
       if @inBox?
-        helper = new Codewave.util.BoxHelper(@codewave)
+        helper = new Codewave.util.BoxHelper(@context)
         @indentLen = helper.removeComment(@sameLinesPrefix()).length
       else
         @indentLen = @pos - @codewave.findLineStart(@pos)
@@ -229,7 +233,7 @@ class @Codewave.CmdInstance
     if @inBox?
       start = @prevEOL()
       end = @nextEOL()
-      helper = new Codewave.util.BoxHelper(@codewave).getOptFromLine(@rawWithFullLines(),false)
+      helper = new Codewave.util.BoxHelper(@context).getOptFromLine(@rawWithFullLines(),false)
       res = helper.reformatLines(@sameLinesPrefix()+@codewave.marker+text+@codewave.marker+@sameLinesSuffix(),{multiline:false})
       [prefix,text,suffix] = res.split(@codewave.marker)
       

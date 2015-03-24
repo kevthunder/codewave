@@ -101,9 +101,9 @@ class @Codewave.Command
       return instance.aliasedCmd or null
     if @aliasOf?
       if instance?
-        codewave = instance.codewave
+        context = instance.context
       else
-        codewave = new Codewave()
+        context = new Codewave.Context()
       aliasOf = @aliasOf
       if instance?
         aliasOf = aliasOf.replace('%name%',instance.cmdName)
@@ -111,7 +111,7 @@ class @Codewave.Command
         @finder.useFallbacks = false
         aliased = @finder.find()
       else
-        aliased = codewave.getCmd(aliasOf)
+        aliased = context.getCmd(aliasOf)
       if instance?
         instance.aliasedCmd = aliased or false
       return aliased

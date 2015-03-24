@@ -155,7 +155,7 @@
     };
 
     Command.prototype.getAliased = function(instance) {
-      var aliasOf, aliased, codewave;
+      var aliasOf, aliased, context;
       if (instance == null) {
         instance = null;
       }
@@ -164,9 +164,9 @@
       }
       if (this.aliasOf != null) {
         if (instance != null) {
-          codewave = instance.codewave;
+          context = instance.context;
         } else {
-          codewave = new Codewave();
+          context = new Codewave.Context();
         }
         aliasOf = this.aliasOf;
         if (instance != null) {
@@ -175,7 +175,7 @@
           this.finder.useFallbacks = false;
           aliased = this.finder.find();
         } else {
-          aliased = codewave.getCmd(aliasOf);
+          aliased = context.getCmd(aliasOf);
         }
         if (instance != null) {
           instance.aliasedCmd = aliased || false;

@@ -350,7 +350,8 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.getParserForText())
+    console.log(@instance.context)
+    @helper = new Codewave.util.BoxHelper(@instance.context)
     @cmd = @instance.getParam(['cmd'])
     if @cmd?
       @helper.openText  = @instance.codewave.brakets + @cmd + @instance.codewave.brakets
@@ -387,7 +388,7 @@ class BoxCmd extends @Codewave.BaseCommand
   
 class CloseCmd extends @Codewave.BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.getParserForText())
+    @helper = new Codewave.util.BoxHelper(@instance.context)
   execute: ->
     box = @helper.getBoxForPos(@instance.getPos())
     if box?
@@ -401,7 +402,7 @@ class EditCmd extends @Codewave.BaseCommand
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
     if @cmdName?
-      @finder = @instance.codewave.getFinder(@cmdName) 
+      @finder = @instance.context.getFinder(@cmdName) 
       @finder.useFallbacks = false
       @cmd = @finder.find()
     @editable = if @cmd? then @cmd.isEditable() else true
@@ -417,6 +418,7 @@ class EditCmd extends @Codewave.BaseCommand
       @resultWithoutContent()
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
+      console.log(parser)
       parser.parseAll()
       Codewave.Command.saveCmd(@cmdName, {
         result: parser.vars.source

@@ -8,7 +8,6 @@
         options = {};
       }
       this.marker = '[[[[codewave_marquer]]]]';
-      this.nameSpaces = [];
       this.vars = {};
       this.parent = options['parent'] || null;
       delete options['parent'];
@@ -18,7 +17,8 @@
         'closeChar': '/',
         'noExecuteChar': '!',
         'carretChar': '|',
-        'checkCarret': true
+        'checkCarret': true,
+        'inInstance': null
       };
       for (key in defaults) {
         val = defaults[key];
@@ -32,6 +32,10 @@
       }
       if (this.editor != null) {
         this.editor.bindedTo(this);
+      }
+      this.context = new Codewave.Context(this);
+      if (this.inInstance != null) {
+        this.context.parent = this.inInstance.context;
       }
     }
 
@@ -286,53 +290,8 @@
       return this.editor.text();
     };
 
-    Codewave.prototype.getNameSpaces = function() {
-      var npcs;
-      npcs = ['core'].concat(this.nameSpaces);
-      if (this.parent != null) {
-        npcs = npcs.concat(this.parent.getNameSpaces());
-      }
-      if (this.context != null) {
-        if (this.context.finder != null) {
-          npcs = npcs.concat(this.context.finder.namespaces);
-        }
-        npcs = npcs.concat([this.context.cmd.fullName]);
-      }
-      return Codewave.util.unique(npcs);
-    };
-
-    Codewave.prototype.addNameSpace = function(name) {
-      return this.nameSpaces.push(name);
-    };
-
-    Codewave.prototype.removeNameSpace = function(name) {
-      return this.nameSpaces = this.nameSpaces.filter(function(n) {
-        return n !== name;
-      });
-    };
-
-    Codewave.prototype.getCmd = function(cmdName, nameSpaces) {
-      var finder;
-      if (nameSpaces == null) {
-        nameSpaces = [];
-      }
-      finder = this.getFinder(cmdName, nameSpaces);
-      return finder.find();
-    };
-
-    Codewave.prototype.getFinder = function(cmdName, nameSpaces) {
-      if (nameSpaces == null) {
-        nameSpaces = [];
-      }
-      return new Codewave.CmdFinder(cmdName, {
-        namespaces: Codewave.util.union(this.getNameSpaces(), nameSpaces),
-        useDetectors: this.isRoot(),
-        codewave: this
-      });
-    };
-
     Codewave.prototype.isRoot = function() {
-      return (this.parent == null) && ((this.context == null) || (this.context.finder == null));
+      return (this.parent == null) && ((this.inInstance == null) || (this.inInstance.finder == null));
     };
 
     Codewave.prototype.getRoot = function() {
@@ -340,64 +299,8 @@
         return this;
       } else if (this.parent != null) {
         return this.parent.getRoot();
-      } else if (this.context != null) {
-        return this.context.codewave.getRoot();
-      }
-    };
-
-    Codewave.prototype.getCommentChar = function() {
-      var cmd, res;
-      if ((this.getRoot().process != null) && (this.getRoot().process.commentChar != null)) {
-        return this.process.commentChar;
-      }
-      cmd = this.getCmd('comment');
-      if (cmd != null) {
-        res = cmd.result();
-        if (res != null) {
-          res = res.replace('~~content~~', '%s');
-          if (this.process != null) {
-            this.process.commentChar = res;
-          }
-          return res;
-        }
-      }
-      return '<!-- %s -->';
-    };
-
-    Codewave.prototype.wrapComment = function(str) {
-      var cc;
-      cc = this.getCommentChar();
-      if (cc.indexOf('%s') > -1) {
-        return cc.replace('%s', str);
-      } else {
-        return cc + ' ' + str + ' ' + cc;
-      }
-    };
-
-    Codewave.prototype.wrapCommentLeft = function(str) {
-      var cc, i;
-      if (str == null) {
-        str = '';
-      }
-      cc = this.getCommentChar();
-      console.log();
-      if ((i = cc.indexOf('%s')) > -1) {
-        return cc.substr(0, i) + str;
-      } else {
-        return cc + ' ' + str;
-      }
-    };
-
-    Codewave.prototype.wrapCommentRight = function(str) {
-      var cc, i;
-      if (str == null) {
-        str = '';
-      }
-      cc = this.getCommentChar();
-      if ((i = cc.indexOf('%s')) > -1) {
-        return str + cc.substr(i + 2);
-      } else {
-        return str + ' ' + cc;
+      } else if (this.inInstance != null) {
+        return this.inInstance.codewave.getRoot();
       }
     };
 

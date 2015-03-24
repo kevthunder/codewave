@@ -11,6 +11,8 @@
       defaults = {
         parent: null,
         namespaces: [],
+        parentContext: null,
+        context: null,
         root: Codewave.Command.cmds,
         mustExecute: true,
         useDetectors: true,
@@ -29,6 +31,15 @@
         } else {
           this[key] = val;
         }
+      }
+      if (this.context == null) {
+        this.context = new Codewave.Context(this.codewave);
+      }
+      if (this.parentContext != null) {
+        this.context.parent = this.parentContext;
+      }
+      if (this.namespaces != null) {
+        this.context.addNamespaces(this.namespaces);
       }
     }
 
@@ -52,7 +63,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         name = _ref[_i];
         _ref1 = Codewave.util.splitFirstNamespace(name), space = _ref1[0], rest = _ref1[1];
-        if ((space != null) && !(__indexOf.call(this.namespaces, space) >= 0)) {
+        if ((space != null) && !(__indexOf.call(this.context.getNameSpaces(), space) >= 0)) {
           if (!(space in paths)) {
             paths[space] = [];
           }
@@ -98,7 +109,7 @@
       var cmd, detector, i, posibilities, res, _i, _len, _ref, _results;
       if (this.useDetectors) {
         this.useDetectors = false;
-        posibilities = new Codewave.CmdFinder(this.namespaces, {
+        posibilities = new Codewave.CmdFinder(this.context.getNameSpaces(), {
           parent: this,
           mustExecute: false,
           useFallbacks: false
@@ -112,7 +123,7 @@
             detector = _ref[_i];
             res = detector.detect(this);
             if (res != null) {
-              this.addNamespaces(res);
+              this.context.addNamespaces(res);
               posibilities = posibilities.concat(new Codewave.CmdFinder(res, {
                 parent: this,
                 mustExecute: false,
@@ -121,25 +132,6 @@
             }
           }
           _results.push(i++);
-        }
-        return _results;
-      }
-    };
-
-    CmdFinder.prototype.addNamespaces = function(spaces) {
-      var space, _i, _len, _results;
-      if (spaces) {
-        if (typeof spaces === 'string') {
-          spaces = [spaces];
-        }
-        _results = [];
-        for (_i = 0, _len = spaces.length; _i < _len; _i++) {
-          space = spaces[_i];
-          if (__indexOf.call(this.namespaces, space) < 0) {
-            _results.push(this.namespaces.push(space));
-          } else {
-            _results.push(void 0);
-          }
         }
         return _results;
       }
@@ -177,7 +169,7 @@
           }).findPosibilities());
         }
       }
-      _ref1 = this.namespaces;
+      _ref1 = this.context.getNameSpaces();
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         nspc = _ref1[_i];
         _ref2 = Codewave.util.splitFirstNamespace(nspc, true), nspcName = _ref2[0], rest = _ref2[1];
