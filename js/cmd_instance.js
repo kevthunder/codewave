@@ -377,32 +377,52 @@
       }
     };
 
-    CmdInstance.prototype.replaceWith = function(text) {
-      var cursorPos, end, helper, p, prefix, res, start, suffix, _ref;
-      prefix = suffix = '';
-      start = this.pos;
-      end = this.getEndPos();
-      text = this.applyIndent(text);
-      if (this.inBox != null) {
-        start = this.prevEOL();
-        end = this.nextEOL();
-        helper = new Codewave.util.BoxHelper(this.context).getOptFromLine(this.rawWithFullLines(), false);
-        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + text + this.codewave.marker + this.sameLinesSuffix(), {
+    CmdInstance.prototype.alterResultForBox = function(repl) {
+      var box, helper, res, _ref, _ref1;
+      helper = new Codewave.util.BoxHelper(this.context);
+      helper.getOptFromLine(this.rawWithFullLines(), false);
+      if (this.cmd.getOption('replaceBox', this)) {
+        box = helper.getBoxForPos(this.getPos());
+        _ref = [box.start, box.end], repl.start = _ref[0], repl.end = _ref[1];
+        this.indentLen = helper.indent;
+        repl.text = this.applyIndent(repl.text);
+      } else {
+        repl.text = this.applyIndent(repl.text);
+        repl.start = this.prevEOL();
+        repl.end = this.nextEOL();
+        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + repl.text + this.codewave.marker + this.sameLinesSuffix(), {
           multiline: false
         });
-        _ref = res.split(this.codewave.marker), prefix = _ref[0], text = _ref[1], suffix = _ref[2];
+        _ref1 = res.split(this.codewave.marker), repl.prefix = _ref1[0], repl.text = _ref1[1], repl.suffix = _ref1[2];
       }
-      cursorPos = start + prefix.length + text.length;
+      return repl;
+    };
+
+    CmdInstance.prototype.getCursorFromResult = function(repl) {
+      var cursorPos, p;
+      cursorPos = repl.resPosBeforePrefix();
       if ((this.cmd != null) && this.codewave.checkCarret && this.cmd.getOption('checkCarret', this)) {
-        if ((p = this.codewave.getCarretPos(text)) != null) {
-          cursorPos = start + prefix.length + p;
+        if ((p = this.codewave.getCarretPos(repl.text)) != null) {
+          cursorPos = repl.start + repl.prefix.length + p;
         }
-        text = this.codewave.removeCarret(text);
+        repl.text = this.codewave.removeCarret(repl.text);
       }
-      this.codewave.editor.spliceText(start, end, prefix + text + suffix);
+      return cursorPos;
+    };
+
+    CmdInstance.prototype.replaceWith = function(text) {
+      var cursorPos, repl;
+      repl = new Codewave.util.Replacement(this.pos, this.getEndPos(), text);
+      if (this.inBox != null) {
+        this.alterResultForBox(repl);
+      } else {
+        repl.text = this.applyIndent(repl.text);
+      }
+      cursorPos = this.getCursorFromResult(repl);
+      repl.applyToEditor(this.codewave.editor);
       this.codewave.editor.setCursorPos(cursorPos);
-      this.replaceStart = start;
-      return this.replaceEnd = start + prefix.length + text.length + suffix.length;
+      this.replaceStart = repl.start;
+      return this.replaceEnd = repl.resEnd();
     };
 
     return CmdInstance;

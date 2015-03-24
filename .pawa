@@ -1,8 +1,8 @@
 folder:
   - source: js/src
     target: 
-      python: codewave_py
-  # - source: codewave_py
+      python: codewave-py
+  # - source: codewave-py
     # target: 
       # coffee: js/src
 syntax:

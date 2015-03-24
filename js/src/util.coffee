@@ -23,6 +23,17 @@ class Size
   constructor: (@width,@height) ->
     #
     
+class Replacement
+  constructor: (@start, @end, @text, @prefix ='', @suffix = '') ->
+    #
+  resPosBeforePrefix: ->
+    @start+@prefix.length+@text.length
+  resEnd: -> 
+    @start+@prefix.length+@text.length+@suffix.length
+  applyToEditor: (editor) ->
+    editor.spliceText(@start,@end,@prefix+@text+@suffix)
+    
+    
 class Pair
   constructor: (@opener,@closer,@options) ->
     #
@@ -109,6 +120,7 @@ class Pair
   WrappedPos: WrappedPos
   Size: Size
   Pair: Pair
+  Replacement: Replacement
     
   union: (a1,a2) ->
     Codewave.util.unique(a1.concat(a2))

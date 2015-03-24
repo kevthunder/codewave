@@ -34,7 +34,8 @@
         parse: false,
         beforeExecute: null,
         alterResult: null,
-        preventParseAll: false
+        preventParseAll: false,
+        replaceBox: false
       };
       this.options = {};
       this.finalOptions = null;
