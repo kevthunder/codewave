@@ -123,8 +123,9 @@
       if (getPad == null) {
         getPad = true;
       }
-      rStart = new RegExp("(\\s*)(" + this.context.wrapCommentLeft(this.deco) + ")(\\s*)");
-      rEnd = new RegExp("(\\s*)(" + this.context.wrapCommentRight(this.deco) + ")");
+      rStart = new RegExp("(\\s*)(" + Codewave.util.escapeRegExp(this.context.wrapCommentLeft(this.deco)) + ")(\\s*)");
+      rEnd = new RegExp("(\\s*)(" + Codewave.util.escapeRegExp(this.context.wrapCommentRight(this.deco)) + ")");
+      console.log(rStart, rEnd);
       resStart = rStart.exec(line);
       resEnd = rEnd.exec(line);
       if ((resStart != null) && (resEnd != null)) {

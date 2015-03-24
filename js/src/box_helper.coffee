@@ -60,8 +60,9 @@ class @Codewave.util.BoxHelper
     if start? and end?
       new Codewave.util.Pos(start,end + endFind.length)
   getOptFromLine: (line,getPad=true) ->
-    rStart = new RegExp("(\\s*)("+@context.wrapCommentLeft(@deco)+")(\\s*)")
-    rEnd = new RegExp("(\\s*)("+@context.wrapCommentRight(@deco)+")")
+    rStart = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentLeft(@deco))+")(\\s*)")
+    rEnd = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentRight(@deco))+")")
+    console.log(rStart,rEnd)
     resStart = rStart.exec(line)
     resEnd = rEnd.exec(line)
     if resStart? and resEnd?

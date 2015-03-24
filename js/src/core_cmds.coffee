@@ -340,8 +340,8 @@ exec_parent = (instance) ->
     instance.replaceEnd = instance.parent.replaceEnd
     return res
 getContent = (instance) ->
-  if instance.codewave.context?
-    instance.codewave.context.content || ''
+  if instance.codewave.inInstance?
+    instance.codewave.inInstance.content || ''
 wrapWithPhp = (result) ->
   regOpen = /<\?php\s([\\n\\r\s]+)/g
   regClose = /([\n\r\s]+)\s\?>/g
@@ -350,7 +350,6 @@ closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends @Codewave.BaseCommand
   init: ->
-    console.log(@instance.context)
     @helper = new Codewave.util.BoxHelper(@instance.context)
     @cmd = @instance.getParam(['cmd'])
     if @cmd?
@@ -418,7 +417,6 @@ class EditCmd extends @Codewave.BaseCommand
       @resultWithoutContent()
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
-      console.log(parser)
       parser.parseAll()
       Codewave.Command.saveCmd(@cmdName, {
         result: parser.vars.source
@@ -446,13 +444,14 @@ class NameSpaceCmd extends @Codewave.BaseCommand
     #
   result: ->
     if @name?
-      @instance.codewave.getRoot().addNameSpace(@name)
+      @instance.codewave.getRoot().context.addNameSpace(@name)
       return ''
     else
-      namespaces = @instance.finder.namespaces
+      namespaces = @instance.context.getNameSpaces()
       txt = '~~box~~\n'
       for nspc in namespaces 
-        txt += nspc+'\n'
+        if nspc != @instance.cmd.fullName
+          txt += nspc+'\n'
       txt += '~~!close|~~\n~~/box~~'
       parser = @instance.getParserForText(txt)
       return parser.parseAll()

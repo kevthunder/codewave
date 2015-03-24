@@ -214,8 +214,8 @@
   };
 
   getContent = function(instance) {
-    if (instance.codewave.context != null) {
-      return instance.codewave.context.content || '';
+    if (instance.codewave.inInstance != null) {
+      return instance.codewave.inInstance.content || '';
     }
   };
 
@@ -239,7 +239,6 @@
 
     BoxCmd.prototype.init = function() {
       var bounds, height, params, width, _ref;
-      console.log(this.instance.context);
       this.helper = new Codewave.util.BoxHelper(this.instance.context);
       this.cmd = this.instance.getParam(['cmd']);
       if (this.cmd != null) {
@@ -348,7 +347,6 @@
     EditCmd.prototype.resultWithContent = function() {
       var parser;
       parser = this.instance.getParserForText(this.content);
-      console.log(parser);
       parser.parseAll();
       Codewave.Command.saveCmd(this.cmdName, {
         result: parser.vars.source
@@ -389,14 +387,16 @@
     NameSpaceCmd.prototype.result = function() {
       var namespaces, nspc, parser, txt, _i, _len;
       if (this.name != null) {
-        this.instance.codewave.getRoot().addNameSpace(this.name);
+        this.instance.codewave.getRoot().context.addNameSpace(this.name);
         return '';
       } else {
-        namespaces = this.instance.finder.namespaces;
+        namespaces = this.instance.context.getNameSpaces();
         txt = '~~box~~\n';
         for (_i = 0, _len = namespaces.length; _i < _len; _i++) {
           nspc = namespaces[_i];
-          txt += nspc + '\n';
+          if (nspc !== this.instance.cmd.fullName) {
+            txt += nspc + '\n';
+          }
         }
         txt += '~~!close|~~\n~~/box~~';
         parser = this.instance.getParserForText(txt);
