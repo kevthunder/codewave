@@ -34,6 +34,5 @@ You may need to put it on a web server to be able to use the localstorage
 ## devloppement
 
 ```sh
-sass --watch sass:css
-coffee -wmo js js/src
+grunt watch --force
 ```

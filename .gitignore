@@ -1,5 +1,9 @@
 /.sass-cache
 /js/*.map
+/css/*.map
+/js/*.src.coffee
 _pawa_tmp/
 /codewave_py
 /codewave-py
+/node_modules
+/npm-debug.log
