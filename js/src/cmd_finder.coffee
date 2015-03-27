@@ -1,3 +1,6 @@
+# [pawa]
+#   replace Codewave.CmdFinder CmdFinder
+
 class @Codewave.CmdFinder
   constructor: (names, options) ->
     if typeof names == 'string'
@@ -61,7 +64,7 @@ class @Codewave.CmdFinder
   triggerDetectors: ->
     if @useDetectors 
       @useDetectors = false
-      posibilities = new Codewave.CmdFinder(@context.getNameSpaces(),{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities()
+      posibilities = new Codewave.CmdFinder(@context.getNameSpaces(), {parent: this, mustExecute: false, useFallbacks: false}).findPosibilities()
       i = 0
       while i < posibilities.length
         cmd = posibilities[i]
@@ -69,7 +72,7 @@ class @Codewave.CmdFinder
           res = detector.detect(this)
           if res?
             @context.addNamespaces(res)
-            posibilities = posibilities.concat(new Codewave.CmdFinder(res,{parent: this,mustExecute: false,useFallbacks: false}).findPosibilities())
+            posibilities = posibilities.concat(new Codewave.CmdFinder(res, {parent: this, mustExecute: false, useFallbacks: false}).findPosibilities())
         i++
   findIn: (cmd,path = null) ->
     unless cmd?

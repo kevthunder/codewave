@@ -1,6 +1,9 @@
+# [pawa python]
+#   replace /data.(\w+)/ data['$1']
+#   replace codewave.editor.text() codewave.editor.text
+
 class @Codewave.Detector
   constructor: (@data={}) ->
-    #
   detect: (finder) ->
     if @detected(finder)
       return @data.result if @data.result?
@@ -22,5 +25,5 @@ class @Codewave.PairDetector extends Codewave.Detector
       pair = new Codewave.util.Pair(@data.opener, @data.closer, @data)
       if pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())
         return true
-    false
+    return false
       

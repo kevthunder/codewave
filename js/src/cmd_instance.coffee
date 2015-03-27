@@ -1,3 +1,6 @@
+# [pawa]
+#   replace 'replace(/\t/g' 'replace("\t"'
+
 class @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
   
@@ -9,7 +12,7 @@ class @Codewave.CmdInstance
       @_findClosing()
       @_checkElongated()
   init: ->
-    unless @isEmpty() || @inited
+    unless @isEmpty() or @inited
       @inited = true
       @getCmd()
       @_checkBox()
@@ -18,7 +21,7 @@ class @Codewave.CmdInstance
       @_parseParams(@rawParams)
       if @cmdObj?
         @cmdObj.init()
-    this
+    return this
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
     if noBracket.substring(0,@codewave.closeChar.length) == @codewave.closeChar and f = @_findOpeningPos()
@@ -40,7 +43,7 @@ class @Codewave.CmdInstance
     @params = []
     @named = {}
     if @cmd?
-      @named = Codewave.util.merge(@named,@cmd.getDefaults(this))
+      @named = Codewave.util.merge(@named,@cmd.getDefaults(this)) # [pawa python] replace '@named = Codewave.util.merge(@named,' self.named.update(
       nameToParam = @cmd.getOption('nameToParam',this)
       if nameToParam? 
         @named[nameToParam] = @cmdName
@@ -80,7 +83,7 @@ class @Codewave.CmdInstance
     closing = @codewave.brakets + @codewave.closeChar + @cmdName + @codewave.brakets
     opening = @codewave.brakets + @cmdName
     if f = @codewave.findMatchingPair(@pos+@str.length,opening,closing)
-      @closingPos = f
+      return @closingPos = f
   _checkElongated: ->
     endPos = @getEndPos()
     max = @codewave.editor.textLen()
@@ -104,7 +107,7 @@ class @Codewave.CmdInstance
       ecl = Codewave.util.escapeRegExp(@context.wrapCommentLeft())
       ecr = Codewave.util.escapeRegExp(@context.wrapCommentRight())
       ed = Codewave.util.escapeRegExp(@codewave.deco)
-      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
+      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm") # [pawa python] replace '"gm"' re.M
       re2 = new RegExp("^\\s*(?:#{ed})*#{ecr}\r?\n")
       re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*\\s*$")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
@@ -113,23 +116,23 @@ class @Codewave.CmdInstance
   prevEOL: ->
     unless @_prevEOL?
       @_prevEOL = @codewave.findLineStart(@pos)
-    @_prevEOL
+    return @_prevEOL
   nextEOL: ->
     unless @_nextEOL?
       @_nextEOL = @codewave.findLineEnd(@getEndPos())
-    @_nextEOL
+    return @_nextEOL
   rawWithFullLines: ->
     unless @_rawWithFullLines?
       @_rawWithFullLines = @codewave.editor.textSubstr(@prevEOL(),@nextEOL())
-    @_rawWithFullLines
+    return @_rawWithFullLines
   sameLinesPrefix: ->
     unless @_sameLinesPrefix?
       @_sameLinesPrefix = @codewave.editor.textSubstr(@prevEOL(),@pos)
-    @_sameLinesPrefix
+    return @_sameLinesPrefix
   sameLinesSuffix: ->
     unless @_sameLinesSuffix?
       @_sameLinesSuffix = @codewave.editor.textSubstr(@getEndPos(),@nextEOL())
-    @_sameLinesSuffix
+    return @_sameLinesSuffix
   getCmd: ->
     unless @cmd?
       @_getParentCmds()
@@ -142,11 +145,11 @@ class @Codewave.CmdInstance
         @cmd = @finder.find()
         if @cmd?
           @context.addNameSpace(@cmd.fullName)
-    @cmd
+    return @cmd
   _getFinder: (cmdName)->
     finder = @codewave.context.getFinder(cmdName,@_getParentNamespaces())
     finder.instance = this
-    finder
+    return finder
   _getCmdObj: ->
     if @cmd?
       @cmdObj = @cmd.getExecutableObj(this)
@@ -156,20 +159,20 @@ class @Codewave.CmdInstance
     while obj.parent?
       obj = obj.parent
       nspcs.push(obj.cmd.fullName) if obj.cmd? and obj.cmd.fullName?
-    nspcs
+    return nspcs
   _removeBracket: (str)->
-    str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
+    return str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
   isEmpty: ->
-    @str == @codewave.brakets + @codewave.closeChar + @codewave.brakets or @str == @codewave.brakets + @codewave.brakets
+    return @str == @codewave.brakets + @codewave.closeChar + @codewave.brakets or @str == @codewave.brakets + @codewave.brakets
   getParam: (names, defVal = null) ->
     names = [names] if (typeof names == 'string')
     for n in names
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
-    defVal
+    return defVal
   execute: ->
     if @isEmpty()
-      if @codewave.closingPromp? && @codewave.closingPromp.whithinOpenBounds(@pos+@codewave.brakets.length)?
+      if @codewave.closingPromp? and @codewave.closingPromp.whithinOpenBounds(@pos + @codewave.brakets.length)?
         @codewave.closingPromp.cancel()
       else
         @replaceWith('')
@@ -192,13 +195,13 @@ class @Codewave.CmdInstance
     if @cmd.resultIsAvailable()
       @formatIndent(@cmd.result(this))
   getParserForText: (txt='') ->
-    parser = new Codewave(new Codewave.TextParser(txt),{inInstance:this})
+    parser = new Codewave(new Codewave.TextParser(txt), {inInstance:this})
     parser.checkCarret = false
     return parser
   getEndPos: ->
-    @pos+@str.length
+    return @pos+@str.length
   getPos: ->
-    new Codewave.util.Pos(@pos,@pos+@str.length)
+    return new Codewave.util.Pos(@pos,@pos+@str.length)
   getIndent: ->
     unless @indentLen?
       if @inBox?
@@ -206,24 +209,24 @@ class @Codewave.CmdInstance
         @indentLen = helper.removeComment(@sameLinesPrefix()).length
       else
         @indentLen = @pos - @codewave.findLineStart(@pos)
-    @indentLen
+    return @indentLen
   formatIndent: (text) ->
     if text?
-      text.replace(/\t/g,'  ')
+      return text.replace(/\t/g,'  ')
     else
-      text
+      return text
   applyIndent: (text) ->
     if text?
-      reg = /\n/g
+      reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
       text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", @getIndent()))
     else
       text
   removeIndentFromContent: (text) ->
     if text?
       reg = new RegExp('^\\s{'+@getIndent()+'}','gm')
-      text.replace(reg,'')
+      return text.replace(reg,'')
     else
-      text
+      return text
   alterResultForBox: (repl) ->
     helper = new Codewave.util.BoxHelper(@context)
     helper.getOptFromLine(@rawWithFullLines(),false)
@@ -238,14 +241,14 @@ class @Codewave.CmdInstance
       repl.end = @nextEOL()
       res = helper.reformatLines(@sameLinesPrefix() + @codewave.marker + repl.text + @codewave.marker + @sameLinesSuffix(), {multiline:false})
       [repl.prefix,repl.text,repl.suffix] = res.split(@codewave.marker)
-    repl
+    return repl
   getCursorFromResult: (repl) ->
     cursorPos = repl.resPosBeforePrefix()
     if @cmd? and @codewave.checkCarret and @cmd.getOption('checkCarret',this)
       if (p = @codewave.getCarretPos(repl.text))? 
         cursorPos = repl.start+repl.prefix.length+p
       repl.text = @codewave.removeCarret(repl.text)
-    cursorPos
+    return cursorPos
   replaceWith: (text) ->
     repl = new Codewave.util.Replacement(@pos,@getEndPos(),text)
     

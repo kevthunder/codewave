@@ -1,4 +1,6 @@
-
+# [pawa python]
+#   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
+#   replace (BaseCommand (command.BaseCommand
 
 initCmds = ->
   core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'))
@@ -333,10 +335,10 @@ setVarCmd = (name) ->
   
 no_execute = (instance) ->
   reg = new RegExp("^("+Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar))
-  instance.str.replace(reg,'$1')
+  return instance.str.replace(reg,'$1')
   
 quote_carret = (instance) ->
-  return instance.content.replace(/\|/g, '||')
+  return instance.content.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
 exec_parent = (instance) ->
   if instance.parent?
     res = instance.parent.execute()
@@ -345,14 +347,14 @@ exec_parent = (instance) ->
     return res
 getContent = (instance) ->
   if instance.codewave.inInstance?
-    instance.codewave.inInstance.content || ''
-wrapWithPhp = (result) ->
+    return instance.codewave.inInstance.content or ''
+wrapWithPhp = (result,instance) ->
   regOpen = /<\?php\s([\\n\\r\s]+)/g
   regClose = /([\n\r\s]+)\s\?>/g
-  '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
+  return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
-class BoxCmd extends @Codewave.BaseCommand
+class BoxCmd extends Codewave.BaseCommand
   init: ->
     @helper = new Codewave.util.BoxHelper(@instance.context)
     @cmd = @instance.getParam(['cmd'])
@@ -385,11 +387,11 @@ class BoxCmd extends @Codewave.BaseCommand
     return @helper.draw(@instance.content)
   minWidth: ->
     if @cmd?
-      @cmd.length
+      return @cmd.length
     else
-      0
+      return 0
   
-class CloseCmd extends @Codewave.BaseCommand
+class CloseCmd extends Codewave.BaseCommand
   init: ->
     @helper = new Codewave.util.BoxHelper(@instance.context)
   execute: ->
@@ -400,7 +402,7 @@ class CloseCmd extends @Codewave.BaseCommand
     else
       @instance.replaceWith('')
           
-class EditCmd extends @Codewave.BaseCommand
+class EditCmd extends Codewave.BaseCommand
   init: ->
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
@@ -416,16 +418,16 @@ class EditCmd extends @Codewave.BaseCommand
     }
   result: ->
     if @content
-      @resultWithContent()
+      return @resultWithContent()
     else
-      @resultWithoutContent()
+      return @resultWithoutContent()
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
       parser.parseAll()
       Codewave.Command.saveCmd(@cmdName, {
         result: parser.vars.source
       })
-      ''
+      return ''
   resultWithoutContent: ->
     if !@cmd or @editable
       source = if @cmd then @cmd.resultStr else ''
@@ -442,10 +444,9 @@ class EditCmd extends @Codewave.BaseCommand
       parser.checkCarret = no
       if @verbalize then parser.getText() else parser.parseAll()
 
-class NameSpaceCmd extends @Codewave.BaseCommand
+class NameSpaceCmd extends Codewave.BaseCommand
   init: ->
     @name = @instance.getParam([0])
-    #
   result: ->
     if @name?
       @instance.codewave.getRoot().context.addNameSpace(@name)

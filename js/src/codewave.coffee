@@ -1,13 +1,15 @@
-
+# [pawa]
+#   replace 'class @Codewave' 'class Codewave():'
+#   replace /cpos.(\w+)/ cpos['$1']
+#   replace 'new Codewave(' Codewave(
+#   replace '@Codewave.init = ->' 'def init():'
 
 
 class @Codewave
-  constructor: (@editor,options = {}) ->
+  constructor: (@editor, options = {}) ->
     @marker = '[[[[codewave_marquer]]]]'
     @vars = {}
     
-    @parent = options['parent'] or null
-    delete options['parent']
     defaults = {
       'brakets' : '~~',
       'deco' : '~',
@@ -17,11 +19,12 @@ class @Codewave
       'checkCarret' : true,
       'inInstance' : null
     }
+    @parent = options['parent']
     
     for key, val of defaults
       if key of options
         this[key] = options[key]
-      else if @parent? 
+      else if @parent? and key != 'parent'
         this[key] = @parent[key]
       else
         this[key] = val
@@ -47,7 +50,7 @@ class @Codewave
     @process = null
   commandOnCursorPos: ->
     cpos = @editor.getCursorPos()
-    @commandOnPos(cpos.end)
+    return @commandOnPos(cpos.end)
   commandOnPos: (pos) ->
     if @precededByBrakets(pos) and @followedByBrakets(pos) and @countPrevBraket(pos) % 2 == 1 
       prev = pos-@brakets.length
@@ -93,9 +96,9 @@ class @Codewave
     i = 0
     while start = @findPrevBraket(start)
       i++
-    i
+    return i
   isEndLine: (pos) -> 
-    @editor.textSubstr(pos,pos+1) == "\n" or pos + 1 >= @editor.textLen()
+    return @editor.textSubstr(pos,pos+1) == "\n" or pos + 1 >= @editor.textLen()
   findLineStart: (pos) -> 
     p = @findAnyNext(pos ,["\n"], -1)
     if p then p.pos+1 else 0
@@ -103,13 +106,13 @@ class @Codewave
     p = @findAnyNext(pos ,["\n","\r"])
     if p then p.pos else @editor.textLen()
   findPrevBraket: (start) -> 
-    @findNextBraket(start,-1)
+    return @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
     f = @findAnyNext(start ,[@brakets,"\n"], direction)
     
     f.pos if f and f.str == @brakets
   findPrev: (start,string) -> 
-    @findNext(start,string,-1)
+    return @findNext(start,string,-1)
   findNext: (start,string,direction = 1) -> 
     f = @findAnyNext(start ,[string], direction)
     f.pos if f
@@ -150,7 +153,7 @@ class @Codewave
     @editor.setCursorPos(end+@brakets.length)
   promptClosingCmd: (start, end) ->
     @closingPromp.stop() if @closingPromp?
-    @closingPromp = (new Codewave.ClosingPromp(this,start, end)).begin()
+    @closingPromp = (new Codewave.ClosingPromp(this,start, end)).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
   parseAll: (recursive = true) ->
     pos = 0
     while cmd = @nextCmd(pos)
@@ -166,18 +169,18 @@ class @Codewave
           pos = cmd.replaceEnd
         else
           pos = @editor.getCursorPos().end
-    @getText()
+    return @getText()
   getText: ->
-    @editor.text()
+    return @editor.text()
   isRoot: ->
     return !@parent? and (!@inInstance? or !@inInstance.finder?)
   getRoot: ->
     if @isRoot
-      this
+      return this
     else if @parent?
-      @parent.getRoot()
+      return @parent.getRoot()
     else if @inInstance?
-      @inInstance.codewave.getRoot()
+      return @inInstance.codewave.getRoot()
   removeCarret: (txt) ->
     tmp = '[[[[quoted_carret]]]]'
     reCarret = new RegExp(Codewave.util.escapeRegExp(@carretChar), "g")
@@ -186,13 +189,13 @@ class @Codewave
     txt.replace(reQuoted,tmp).replace(reCarret,'').replace(reTmp, @carretChar)
   getCarretPos: (txt) ->
     reQuoted = new RegExp(Codewave.util.escapeRegExp(@carretChar+@carretChar), "g")
-    txt = txt.replace(reQuoted, ' ')
+    txt = txt.replace(reQuoted, ' ') # [pawa python] replace reQuoted self.carretChar+self.carretChar
     if (i = txt.indexOf(@carretChar)) > -1
       return i
-  regMarker: (flags="g") ->
-    new RegExp(Codewave.util.escapeRegExp(@marker), flags)
+  regMarker: (flags="g") -> # [pawa python] replace flags="g" flags=0 
+    return new RegExp(Codewave.util.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->
-    text.replace(@regMarker(),'')
+    return text.replace(@regMarker(),'') # [pawa python] replace @regMarker() self.marker 
 
 @Codewave.init = ->
   Codewave.Command.initCmds()

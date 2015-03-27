@@ -21,6 +21,7 @@ syntax:
           - word false False
           - word null  None
           - Math.max   max
+          - Math.min   min
           - /\bof\b/   in
           - Codewave.util.BoxHelper   box_helper.BoxHelper
           - Codewave.util             util
@@ -30,7 +31,14 @@ syntax:
           - Codewave.CmdInstance      cmd_instance.CmdInstance
           - Codewave.TextParser       text_parser.TextParser
           - Codewave.storage          storage
+          - Codewave.ClosingPromp     closing_promp.ClosingPromp
+          - Codewave.Command.initCmds command.initCmds
+          - Codewave.Command.loadCmds command.loadCmds
+          - cmdInitialisers.push(     cmdInitialisers.add(
+          - /Codewave.(\w*)Detector/  detector.$1Detector
           - Codewave.Command.saveCmd( command.saveCmd(
+          - |
+            'throw "Not Implemented"' 'raise NotImplementedError'
           - |
             'new Codewave(' codewave_core.codewave.Codewave(
           - |
@@ -38,20 +46,25 @@ syntax:
           - ++ +=1
           - -- -=1
           - /class (@[\w\.]+\.)?(\w+)$/               'class $2():'
-          - /class (@[\w\.]+\.)?(\w+)\s*extends\s*(?:Codewave.)?([\w.]+)$/ 'class $2($3):'
-          - /(\w)\?(\s|:)/                            '$1 is not None$2'
+          - /class (@[\w\.]+\.)?(\w+)\s*extends\s*(?:@?Codewave.)?([\w.]+)$/ 'class $2($3):'
+          - /([\w\]])\?(\s|:)/                            '$1 is not None$2'
           - /\s!(\w|@)/                               ' not $1'
           - /^(\s*)\[([\s\w,._@]*)\]\s*=\s*\[(.*)\]$/ '$1$2 = $3'
           - /^(\s*)\[([\s\w,._@]*)\]\s*=/             '$1$2 ='
           - /this\[(\w*)\]\s*=\s*(.*)/                'setattr(self,$1,$2)'
           - /\sconstructor:\s*->/                     ' def __init__(self):'
-          - /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,$1):'
+          - |
+            /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,${sarg1}):
+              ${sarg2} = ${sarg3}' 
+            alter:$1,sarg1,/@/,'' 
+            alter:$1,sarg2,/($|,)\s*[^@]\w*(\s*=\s*[^,]*)|\s*=\s*[^,]+/,''
+            alter:${sarg2},sarg3,/@/,'' 
           - /\s([^\s]+):\s*->/                        ' def $1(self):'
           - /\s([^\s]+):\s*\(([^)]*)\)\s*->/          ' def $1(self,$2):'
           - /([^\s]+)\s*=\s*(?:\(([^)]*)\))?\s*->/    'def $1($2):'
           - /^(\s*)for\W(.*,.*)\Wof\W(.*)$/           '$1for $2 in $3.items():'
           - /^(\s*(?:if|while|for)\W.*[^:])$/         '$1:'
-          - /^(\s*)unless\s*(\w*)\?\s*$/              '$1if $2 is None:'
+          - /^(\s*)unless\s*([\w@]*)\?\s*$/              '$1if $2 is None:'
           - /^(\s*)unless(\W.*[^:])$/                 '$1if not$2:'
           - /^(\s*)else if(\W.*[^:]):?$/              '$1elif$2:'
           - /^(\s*else)$/                             '$1:'
@@ -61,16 +74,15 @@ syntax:
           - /(\w*).indexOf\((.*)\) > -1/              '$2 in $1'
           - /typeof\s*([@.\w]*)\s*==\s*['"]string['"]/    'isinstance($1, str)'
           - /typeof\s*(\w*)\s*==\s*['"]function['"]/  "hasattr($1, '__call__')"
-          - /([@\w.]*)\.length/                       'len($1)'
+          - /([@\w.\[\]]*)\.length/                   'len($1)'
           - /\.shift\(/                               '.pop(0'
           - /\.push\(/                                '.append('
           - .toLowerCase(                             .lower(
-          - /([\w.]*)\.join\(([^)]+)\)/               '$2.join($1)'
+          - /([\w.]+)\.join\(([^)]+)\)/               '$2.join($1)'
           - /@(\w)/                                   'self.$1'
-          - /#\{([\w.]+)\}/                           '"+$1+"'
+          - /#\{([\w.@]+)\}/                          '"+$1+"'
           - word this  self
-          # - word new  ''
-          - /\bnew\b/  ''
+          - /\bnew\s/  ''
         replace_parts:
           - | 
             .substring( [ 

@@ -1,3 +1,8 @@
+# [pawa python]
+#   replace Codewave.Command.cmds cmds
+#   replace Codewave.Command Command
+#   replace @Codewave.Command. ''
+
 
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
@@ -240,7 +245,7 @@ class @Codewave.BaseCommand
   init: ->
     #
   resultIsAvailable: ->
-    return this["result"]?
+    return this["result"]? # [pawa] replace this["result"]? 'hasattr(self,"result")'
   getDefaults: ->
     return {}
   getOptions: ->
