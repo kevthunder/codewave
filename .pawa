@@ -28,6 +28,7 @@ syntax:
           - Codewave.Command.cmds     command.cmds
           - Codewave.Command(         command.Command(
           - Codewave.logger.log       logger.log
+          - Codewave.CmdFinder        cmd_finder.CmdFinder
           - Codewave.CmdInstance      cmd_instance.CmdInstance
           - Codewave.TextParser       text_parser.TextParser
           - Codewave.storage          storage

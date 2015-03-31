@@ -1,19 +1,19 @@
+# [pawa python]
+#   replace Codewave.util. ''
+
 class StrPos
   constructor: (@pos,@str) ->
-    #
   end: ->
     @pos + @str.length
 
 class Pos
   constructor: (@start,@end) ->
-    #
   containsPt: (pt) ->
     return @start <= pt and pt <= @end
   containsPos: (pos) ->
     return @start <= pos.start and pos.end <= @end
 class WrappedPos extends Pos
   constructor: (@start,@innerStart,@innerEnd,@end) ->
-    #
   innerContainsPt: (pt) ->
     return @innerStart <= pt and pt <= @innerEnd
   innerContainsPos: (pos) ->
@@ -21,34 +21,31 @@ class WrappedPos extends Pos
 
 class Size
   constructor: (@width,@height) ->
-    #
     
 class Replacement
   constructor: (@start, @end, @text, @prefix ='', @suffix = '') ->
-    #
   resPosBeforePrefix: ->
-    @start+@prefix.length+@text.length
+    return @start+@prefix.length+@text.length
   resEnd: -> 
-    @start+@prefix.length+@text.length+@suffix.length
+    return @start+@prefix.length+@text.length+@suffix.length
   applyToEditor: (editor) ->
     editor.spliceText(@start,@end,@prefix+@text+@suffix)
     
     
 class Pair
-  constructor: (@opener,@closer,@options) ->
-    #
+  constructor: (@opener,@closer,@options = {}) ->
   openerReg: ->
     if typeof @opener == 'string' 
-      new RegExp(Codewave.util.escapeRegExp(@opener))
+      return new RegExp(Codewave.util.escapeRegExp(@opener))
     else
-      @opener
+      return @opener
   closerReg: ->
     if typeof @closer == 'string' 
-      new RegExp(Codewave.util.escapeRegExp(@closer))
+      return new RegExp(Codewave.util.escapeRegExp(@closer))
     else
-      @closer
+      return @closer
   matchAnyParts: ->
-    {
+    return {
       opener: @openerReg()
       closer: @closerReg()
     }
@@ -56,32 +53,32 @@ class Pair
     keys = []
     for key, reg of @matchAnyParts()
       keys.push(key)
-    keys
+    return keys
   matchAnyReg: ->
     groups = []
     for key, reg of @matchAnyParts()
-      groups.push('('+reg.source+')')
-    new RegExp(groups.join('|'))
+      groups.push('('+reg.source+')')  # [pawa python] replace reg.source reg.pattern
+    return new RegExp(groups.join('|'))
   matchAny: (text) ->
-    @matchAnyReg().exec(text)
+    return @matchAnyReg().exec(text)
   matchAnyNamed: (text) ->
-    @_matchAnyGetName(@matchAny(text))
+    return @_matchAnyGetName(@matchAny(text))
   _matchAnyGetName: (match) ->
     if match
       for group, i in match
         if i > 0 and group?
           return @matchAnyPartKeys()[i-1]
-      null
+      return null
   matchAnyLast: (text) ->
     ctext = text
     while match = @matchAny(ctext)
-      ctext = ctext.substr(match.index+1)
+      ctext = ctext.substr(match.index+1)   # [pawa python] replace match.index match.start()
       res = match
-    res
+    return res
   matchAnyLastNamed: (text) ->
-    @_matchAnyGetName(@matchAnyLast(text))
+    return @_matchAnyGetName(@matchAnyLast(text))
   isWapperOf: (pos,text) ->
-    @matchAnyNamed(text.substr(pos.end)) == 'closer' and @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
+    return @matchAnyNamed(text.substr(pos.end)) == 'closer' and @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
     
 
 @Codewave.util = ( 
@@ -89,7 +86,7 @@ class Pair
     if fullname.indexOf(":") == -1 and !isSpace
       return [null,fullname]
     parts = fullname.split(':')
-    [parts.shift(),parts.join(':') || null]
+    return [parts.shift(),parts.join(':') || null]
 
   splitNamespace: (fullname) ->
     if fullname.indexOf(":") == -1
@@ -109,7 +106,7 @@ class Pair
     Array(Math.ceil(length/txt.length)+1).join(txt).substring(0,length)
 
   getTxtSize: (txt) ->
-    lines = txt.replace(/\r/g,'').split("\n")
+    lines = txt.replace(/\r/g,'').split("\n")  # [pawa python] replace '/\r/g' "'\r'"
     w = 0
     for l in lines
       w = Math.max(w,l.length)

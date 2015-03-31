@@ -24,7 +24,7 @@ class @Codewave.Context
     return @_namespaces
   getCmd: (cmdName,nameSpaces = []) ->
     finder = @getFinder(cmdName,nameSpaces)
-    finder.find()
+    return finder.find()
   getFinder: (cmdName,nameSpaces = []) ->
     return new Codewave.CmdFinder(cmdName, {
       namespaces: nameSpaces
@@ -33,26 +33,26 @@ class @Codewave.Context
       parentContext: this
     })
   isRoot: ->
-    !@parent?
+    return !@parent?
   wrapComment: (str) ->
     cc = @getCommentChar()
     if cc.indexOf('%s') > -1
-      cc.replace('%s',str)
+      return cc.replace('%s',str)
     else
-      cc + ' ' + str + ' ' + cc
+      return cc + ' ' + str + ' ' + cc
   wrapCommentLeft: (str = '') ->
     cc = @getCommentChar()
     console.log()
     if (i = cc.indexOf('%s')) > -1
-      cc.substr(0,i) + str
+      return cc.substr(0,i) + str
     else
-      cc + ' ' + str
+      return cc + ' ' + str
   wrapCommentRight: (str = '') ->
     cc = @getCommentChar()
     if (i = cc.indexOf('%s')) > -1
-      str + cc.substr(i+2)
+      return str + cc.substr(i+2)
     else
-      str + ' ' + cc
+      return str + ' ' + cc
   getCommentChar: ->
     if @commentChar?
       return @commentChar
@@ -64,4 +64,4 @@ class @Codewave.Context
         if @process?
           @commentChar = res
         return res
-    '<!-- %s -->'
+    return '<!-- %s -->'
