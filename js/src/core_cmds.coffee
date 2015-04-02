@@ -294,6 +294,7 @@ initCmds = ->
   })
   
   js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
+  # Codewave.Command.cmds.addCmd(new Codewave.Command('javascript',{ aliasOf: 'js' }))
   js.addCmds({
     'comment': '/* ~~content~~ */',
     'if':  'if(|){\n\t~~content~~\n}',

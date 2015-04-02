@@ -86,12 +86,12 @@ class @Codewave.CmdFinder
     @root.init()
     posibilities = []
     for space, names of @getNamesWithPaths()
-      next = @root.getCmd(space)
+      next = @getCmdFollowAlias(space)
       if next? 
         posibilities = posibilities.concat(new Codewave.CmdFinder(names, {parent: this, root: next}).findPosibilities())
     for nspc in @context.getNameSpaces()
       [nspcName,rest] = Codewave.util.splitFirstNamespace(nspc,true)
-      next = @root.getCmd(nspcName)
+      next = @getCmdFollowAlias(nspcName)
       if next? 
         posibilities = posibilities.concat(new Codewave.CmdFinder(@applySpaceOnNames(nspc), {parent: this, root: next}).findPosibilities())
     for name in @getDirectNames()
@@ -103,6 +103,11 @@ class @Codewave.CmdFinder
       if @cmdIsValid(fallback)
         posibilities.push(fallback)
     return posibilities
+  getCmdFollowAlias: (name) ->
+    cmd = @root.getCmd(name)
+    if cmd? and cmd.aliasOf?
+      return cmd.getAliased()
+    return cmd
   cmdIsValid: (cmd) ->
     unless cmd?
       return false

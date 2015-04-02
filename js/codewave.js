@@ -14,8 +14,6 @@
       }
       this.marker = '[[[[codewave_marquer]]]]';
       this.vars = {};
-      this.parent = options['parent'] || null;
-      delete options['parent'];
       defaults = {
         'brakets': '~~',
         'deco': '~',
@@ -25,11 +23,12 @@
         'checkCarret': true,
         'inInstance': null
       };
+      this.parent = options['parent'];
       for (key in defaults) {
         val = defaults[key];
         if (key in options) {
           this[key] = options[key];
-        } else if (this.parent != null) {
+        } else if ((this.parent != null) && key !== 'parent') {
           this[key] = this.parent[key];
         } else {
           this[key] = val;
@@ -440,7 +439,7 @@
     function Pair(opener, closer, options1) {
       this.opener = opener;
       this.closer = closer;
-      this.options = options1;
+      this.options = options1 != null ? options1 : {};
     }
 
     Pair.prototype.openerReg = function() {
@@ -734,6 +733,7 @@
 
     function TextParser(_text) {
       this._text = _text;
+      self.namespace = 'text_parser';
     }
 
     TextParser.prototype.text = function(val) {
@@ -906,7 +906,6 @@
       }
       rStart = new RegExp("(\\s*)(" + Codewave.util.escapeRegExp(this.context.wrapCommentLeft(this.deco)) + ")(\\s*)");
       rEnd = new RegExp("(\\s*)(" + Codewave.util.escapeRegExp(this.context.wrapCommentRight(this.deco)) + ")");
-      console.log(rStart, rEnd);
       resStart = rStart.exec(line);
       resEnd = rEnd.exec(line);
       if ((resStart != null) && (resEnd != null)) {
@@ -944,7 +943,7 @@
         flag = options['multiline'] ? 'gm' : '';
         re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")*\\s{0," + this.pad + "}", flag);
         re2 = new RegExp("\\s*(?:" + ed + ")*" + ecr + "\\s*$", flag);
-        return text = text.replace(re1, '').replace(re2, '');
+        return text.replace(re1, '').replace(re2, '');
       }
     };
 
@@ -1200,7 +1199,7 @@
       ref = this.getNamesWithPaths();
       for (space in ref) {
         names = ref[space];
-        next = this.root.getCmd(space);
+        next = this.getCmdFollowAlias(space);
         if (next != null) {
           posibilities = posibilities.concat(new Codewave.CmdFinder(names, {
             parent: this,
@@ -1212,7 +1211,7 @@
       for (q = 0, len1 = ref1.length; q < len1; q++) {
         nspc = ref1[q];
         ref2 = Codewave.util.splitFirstNamespace(nspc, true), nspcName = ref2[0], rest = ref2[1];
-        next = this.root.getCmd(nspcName);
+        next = this.getCmdFollowAlias(nspcName);
         if (next != null) {
           posibilities = posibilities.concat(new Codewave.CmdFinder(this.applySpaceOnNames(nspc), {
             parent: this,
@@ -1235,6 +1234,15 @@
         }
       }
       return posibilities;
+    };
+
+    CmdFinder.prototype.getCmdFollowAlias = function(name) {
+      var cmd;
+      cmd = this.root.getCmd(name);
+      if ((cmd != null) && (cmd.aliasOf != null)) {
+        return cmd.getAliased();
+      }
+      return cmd;
     };
 
     CmdFinder.prototype.cmdIsValid = function(cmd) {
@@ -1867,11 +1875,11 @@
         if (instance != null) {
           aliasOf = aliasOf.replace('%name%', instance.cmdName);
           this.finder = instance._getFinder(aliasOf);
-          this.finder.useFallbacks = false;
-          aliased = this.finder.find();
         } else {
-          aliased = context.getCmd(aliasOf);
+          this.finder = context.getFinder(aliasOf);
         }
+        this.finder.useFallbacks = false;
+        aliased = this.finder.find();
         if (instance != null) {
           instance.aliasedCmd = aliased || false;
         }
@@ -2452,7 +2460,7 @@
     }
   };
 
-  wrapWithPhp = function(result) {
+  wrapWithPhp = function(result, instance) {
     var regClose, regOpen;
     regOpen = /<\?php\s([\\n\\r\s]+)/g;
     regClose = /([\n\r\s]+)\s\?>/g;
@@ -2515,7 +2523,7 @@
 
     return BoxCmd;
 
-  })(this.Codewave.BaseCommand);
+  })(Codewave.BaseCommand);
 
   CloseCmd = (function(superClass) {
     extend(CloseCmd, superClass);
@@ -2541,7 +2549,7 @@
 
     return CloseCmd;
 
-  })(this.Codewave.BaseCommand);
+  })(Codewave.BaseCommand);
 
   EditCmd = (function(superClass) {
     extend(EditCmd, superClass);
@@ -2604,7 +2612,7 @@
 
     return EditCmd;
 
-  })(this.Codewave.BaseCommand);
+  })(Codewave.BaseCommand);
 
   NameSpaceCmd = (function(superClass) {
     extend(NameSpaceCmd, superClass);
@@ -2639,7 +2647,7 @@
 
     return NameSpaceCmd;
 
-  })(this.Codewave.BaseCommand);
+  })(Codewave.BaseCommand);
 
   EmmetCmd = (function(superClass) {
     extend(EmmetCmd, superClass);

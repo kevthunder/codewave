@@ -114,10 +114,10 @@ class @Codewave.Command
       if instance?
         aliasOf = aliasOf.replace('%name%',instance.cmdName)
         @finder = instance._getFinder(aliasOf)
-        @finder.useFallbacks = false
-        aliased = @finder.find()
       else
-        aliased = context.getCmd(aliasOf)
+        @finder = context.getFinder(aliasOf)
+      @finder.useFallbacks = false
+      aliased = @finder.find()
       if instance?
         instance.aliasedCmd = aliased or false
       return aliased
