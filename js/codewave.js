@@ -1239,8 +1239,11 @@
     CmdFinder.prototype.getCmdFollowAlias = function(name) {
       var cmd;
       cmd = this.root.getCmd(name);
-      if ((cmd != null) && (cmd.aliasOf != null)) {
-        return cmd.getAliased();
+      if (cmd != null) {
+        cmd.init();
+        if (cmd.aliasOf != null) {
+          return cmd.getAliased();
+        }
       }
       return cmd;
     };
@@ -1764,8 +1767,12 @@
     };
 
     Command.prototype.isExecutable = function() {
-      var len1, p, q, ref;
-      ref = ['resultStr', 'resultFunct', 'aliasOf', 'cls', 'executeFunct'];
+      var aliased, len1, p, q, ref;
+      aliased = this.getAliased();
+      if (aliased != null) {
+        return aliased.isExecutable();
+      }
+      ref = ['resultStr', 'resultFunct', 'cls', 'executeFunct'];
       for (q = 0, len1 = ref.length; q < len1; q++) {
         p = ref[q];
         if (this[p] != null) {
@@ -1879,6 +1886,7 @@
           this.finder = context.getFinder(aliasOf);
         }
         this.finder.useFallbacks = false;
+        this.finder.mustExecute = false;
         aliased = this.finder.find();
         if (instance != null) {
           instance.aliasedCmd = aliased || false;
@@ -2391,6 +2399,9 @@
       'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
     });
     js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
+    Codewave.Command.cmds.addCmd(new Codewave.Command('javascript', {
+      aliasOf: 'js'
+    }));
     return js.addCmds({
       'comment': '/* ~~content~~ */',
       'if': 'if(|){\n\t~~content~~\n}',

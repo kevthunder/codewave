@@ -26,9 +26,12 @@ You may need to put it on a web server to be able to use the localstorage
 ```
 
 ## ToDo
-* namespace alias
+* rename command
+* remove command
+* command options for edit command
 * comment styles
   * php outer
+* command instance that is not inside a codwave object
 * Create some default commands
 
 ## devloppement

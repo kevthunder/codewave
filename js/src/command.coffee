@@ -54,7 +54,10 @@ class @Codewave.Command
   isEditable: ->
     @resultStr?
   isExecutable: ->
-    for p in ['resultStr','resultFunct','aliasOf','cls','executeFunct']
+    aliased = @getAliased()
+    if aliased?
+      return aliased.isExecutable()
+    for p in ['resultStr','resultFunct','cls','executeFunct']
       if this[p]?
         return true
     false
@@ -117,6 +120,7 @@ class @Codewave.Command
       else
         @finder = context.getFinder(aliasOf)
       @finder.useFallbacks = false
+      @finder.mustExecute = false
       aliased = @finder.find()
       if instance?
         instance.aliasedCmd = aliased or false

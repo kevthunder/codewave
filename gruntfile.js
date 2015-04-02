@@ -36,6 +36,9 @@ module.exports = function (grunt) {
         }
     },
     watch: {
+        options: {
+          atBegin: true
+        },
         // js:  { files: 'js/*.js', tasks: [ 'uglify' ] },
         sass:  { files: 'sass/*.sass', tasks: [ 'sass' ] },
         coffee:  { files: 'js/src/*.coffee', tasks: [ 'coffee','uglify' ] },

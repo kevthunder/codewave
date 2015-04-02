@@ -105,8 +105,10 @@ class @Codewave.CmdFinder
     return posibilities
   getCmdFollowAlias: (name) ->
     cmd = @root.getCmd(name)
-    if cmd? and cmd.aliasOf?
-      return cmd.getAliased()
+    if cmd? 
+      cmd.init()
+      if cmd.aliasOf?
+        return cmd.getAliased()
     return cmd
   cmdIsValid: (cmd) ->
     unless cmd?
