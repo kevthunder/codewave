@@ -181,6 +181,7 @@ class @Codewave.CmdInstance
         beforeFunct(this)
       if @cmd.resultIsAvailable(this)
         if (res = @cmd.result(this))?
+          console.log(res)
           res = @formatIndent(res)
           if @cmd.getOption('parse',this) 
             parser = @getParserForText(res)

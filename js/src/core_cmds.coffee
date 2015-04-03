@@ -205,6 +205,9 @@ initCmds = ->
       },
       'cls' : EditCmd
     },
+    'rename':{
+      'result' : renameCommand
+    },
     'namespace':{
       'cls' : NameSpaceCmd
     },
@@ -353,6 +356,23 @@ wrapWithPhp = (result,instance) ->
   regOpen = /<\?php\s([\\n\\r\s]+)/g
   regClose = /([\n\r\s]+)\s\?>/g
   return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
+renameCommand = (instance) ->
+  savedCmds = Codewave.storage.load('cmds')
+  from = instance.getParam([0,'from'])
+  to = instance.getParam([1,'to'])
+  if from? and to?
+    if savedCmds[from]?
+      savedCmds[to] = savedCmds[from]
+      delete savedCmds[from]
+      Codewave.storage.save('cmds',savedCmds)
+      return ""
+    else
+      return """
+        ~~box~~
+        You cant rename a command you did not create yourself.
+        ~~!close~~
+        ~~/box~~
+        """
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends Codewave.BaseCommand

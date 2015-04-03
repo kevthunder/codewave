@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, setVarCmd, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, renameCommand, setVarCmd, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -1571,6 +1571,7 @@
         }
         if (this.cmd.resultIsAvailable(this)) {
           if ((res = this.cmd.result(this)) != null) {
+            console.log(res);
             res = this.formatIndent(res);
             if (this.cmd.getOption('parse', this)) {
               parser = this.getParserForText(res);
@@ -2316,6 +2317,9 @@
         },
         'cls': EditCmd
       },
+      'rename': {
+        'result': renameCommand
+      },
       'namespace': {
         'cls': NameSpaceCmd
       },
@@ -2476,6 +2480,23 @@
     regOpen = /<\?php\s([\\n\\r\s]+)/g;
     regClose = /([\n\r\s]+)\s\?>/g;
     return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
+  };
+
+  renameCommand = function(instance) {
+    var from, savedCmds, to;
+    savedCmds = Codewave.storage.load('cmds');
+    from = instance.getParam([0, 'from']);
+    to = instance.getParam([1, 'to']);
+    if ((from != null) && (to != null)) {
+      if (savedCmds[from] != null) {
+        savedCmds[to] = savedCmds[from];
+        delete savedCmds[from];
+        Codewave.storage.save('cmds', savedCmds);
+        return "";
+      } else {
+        return "~~box~~\nYou cant rename a command you did not create yourself.\n~~!close~~\n~~/box~~";
+      }
+    }
   };
 
   closePhpForContent = function(instance) {
