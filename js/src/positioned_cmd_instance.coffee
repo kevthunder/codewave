@@ -3,9 +3,6 @@
 
 class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
-    # Codewave.logger.toMonitor(this,'replaceWith')
-    # Codewave.logger.toMonitor(this,'getCursorFromResult')
-    # Codewave.logger.toMonitor(this,'alterResultForBox')
     unless @isEmpty()
       @_checkCloser()
       @opening = @str

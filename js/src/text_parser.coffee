@@ -5,7 +5,6 @@
 class @Codewave.TextParser extends @Codewave.Editor
   constructor: (@_text) ->
     self.namespace = 'text_parser'
-    # Codewave.logger.toMonitor(this,'spliceText')
   text: (val) ->
     @_text = val if val?
     @_text

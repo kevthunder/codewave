@@ -7,11 +7,7 @@
 
 class @Codewave
   constructor: (@editor, options = {}) ->
-    Codewave.logger.toMonitor(this,'runAtCursorPos')
-    Codewave.logger.toMonitor(this,'findAnyNext')
-    Codewave.logger.toMonitor(this,'findAnyNext1')
-    Codewave.logger.toMonitor(this,'findAnyNext2')
-    Codewave.logger.toMonitor(this,'findAnyNext2Rev')
+    # Codewave.logger.toMonitor(this,'runAtCursorPos')
     @marker = '[[[[codewave_marquer]]]]'
     @vars = {}
     
@@ -42,7 +38,7 @@ class @Codewave
     @process = new Codewave.Process()
     Codewave.logger.log('activation key')
     @runAtCursorPos()
-    Codewave.logger.resume()
+    # Codewave.logger.resume()
     @process = null
   runAtCursorPos: ->
     if(cmd = @commandOnCursorPos()?.init())
@@ -124,28 +120,6 @@ class @Codewave
     f.pos if f
   
   findAnyNext: (start,strings,direction = 1) -> 
-    f1 = @findAnyNext1(start,strings,direction)
-    f2 = @findAnyNext2(start,strings,direction)
-    if f1? != f2? or (f1? and f2? and (f1.pos != f2.pos or f1.str != f2.str))
-      console.log(f1,f2,[start,strings,direction])
-      throw "Not same result" 
-    return f2
-  findAnyNext1: (start,strings,direction = 1) -> 
-    pos = start
-    while true  
-    
-      return null unless 0 <= pos < @editor.textLen()
-      for stri in strings
-        [start, end] = [pos, pos + stri.length * direction]
-        
-        [start, end] = [end, start] if end < start
-        if stri == @editor.textSubstr(start,end)
-          return new Codewave.util.StrPos(
-            if direction < 0 then pos-stri.length else pos,
-            stri
-          )
-      pos += direction
-  findAnyNext2: (start,strings,direction = 1) ->
     if direction > 0
       text = @editor.textSubstr(start,@editor.textLen())
     else
@@ -159,26 +133,6 @@ class @Codewave
           bestStr = stri
     if bestStr?
       return new Codewave.util.StrPos((if direction > 0 then bestPos + start else bestPos),bestStr)
-    return null
-  findAnyNext3: (start,strings,direction = 1) ->
-    if direction > 0
-      text = @editor.textSubstr(start,@editor.textLen())
-    else
-      text = Codewave.util.reverseStr(@editor.textSubstr(0,start))
-    groups = []
-    for stri in strings
-      if direction < 0
-        stri = Codewave.util.reverseStr(stri)
-      groups.push('('+Codewave.util.escapeRegExp(stri)+')')
-    matchAnyReg = new RegExp(groups.join('|'))
-    match = matchAnyReg.exec(text)
-    if match
-      for group, i in match
-        if i > 0 and group?
-          if direction > 0
-            return new Codewave.util.StrPos(start+match.index,group)
-          else
-            return new Codewave.util.StrPos(start-match.index-group.length,Codewave.util.reverseStr(group))
     return null
   findMatchingPair: (startPos,opening,closing,direction = 1) ->
     pos = startPos
