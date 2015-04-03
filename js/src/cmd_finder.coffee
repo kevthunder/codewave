@@ -3,6 +3,8 @@
 
 class @Codewave.CmdFinder
   constructor: (names, options) ->
+    # Codewave.logger.toMonitor(this,'findIn')
+    # Codewave.logger.toMonitor(this,'triggerDetectors')
     if typeof names == 'string'
       names = [names]
     defaults = {

@@ -14,6 +14,9 @@ class @Codewave.DomKeyListener
 
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
+    # Codewave.logger.toMonitor(this,'spliceText','TextAreaEditor.')
+    # Codewave.logger.toMonitor(this,'setCursorPos','TextAreaEditor.')
+    # Codewave.logger.toMonitor(this,'textEventChange')
     @obj = document.getElementById(@target)
   bindedTo: (codewave) ->
     @onActivationKey = -> codewave.onActivationKey()

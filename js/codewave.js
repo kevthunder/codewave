@@ -12,6 +12,11 @@
       if (options == null) {
         options = {};
       }
+      Codewave.logger.toMonitor(this, 'runAtCursorPos');
+      Codewave.logger.toMonitor(this, 'findAnyNext');
+      Codewave.logger.toMonitor(this, 'findAnyNext1');
+      Codewave.logger.toMonitor(this, 'findAnyNext2');
+      Codewave.logger.toMonitor(this, 'findAnyNext2Rev');
       this.marker = '[[[[codewave_marquer]]]]';
       this.vars = {};
       defaults = {
@@ -47,6 +52,7 @@
       this.process = new Codewave.Process();
       Codewave.logger.log('activation key');
       this.runAtCursorPos();
+      Codewave.logger.resume();
       return this.process = null;
     };
 
@@ -205,6 +211,20 @@
     };
 
     Codewave.prototype.findAnyNext = function(start, strings, direction) {
+      var f1, f2;
+      if (direction == null) {
+        direction = 1;
+      }
+      f1 = this.findAnyNext1(start, strings, direction);
+      f2 = this.findAnyNext2(start, strings, direction);
+      if ((f1 != null) !== (f2 != null) || ((f1 != null) && (f2 != null) && (f1.pos !== f2.pos || f1.str !== f2.str))) {
+        console.log(f1, f2, [start, strings, direction]);
+        throw "Not same result";
+      }
+      return f2;
+    };
+
+    Codewave.prototype.findAnyNext1 = function(start, strings, direction) {
       var end, len1, pos, q, ref, ref1, stri;
       if (direction == null) {
         direction = 1;
@@ -226,6 +246,68 @@
         }
         pos += direction;
       }
+    };
+
+    Codewave.prototype.findAnyNext2 = function(start, strings, direction) {
+      var bestPos, bestStr, len1, pos, q, stri, text;
+      if (direction == null) {
+        direction = 1;
+      }
+      if (direction > 0) {
+        text = this.editor.textSubstr(start, this.editor.textLen());
+      } else {
+        text = this.editor.textSubstr(0, start);
+      }
+      bestPos = null;
+      for (q = 0, len1 = strings.length; q < len1; q++) {
+        stri = strings[q];
+        pos = direction > 0 ? text.indexOf(stri) : text.lastIndexOf(stri);
+        if (pos !== -1) {
+          if ((bestPos == null) || bestPos * direction > pos * direction) {
+            bestPos = pos;
+            bestStr = stri;
+          }
+        }
+      }
+      if (bestStr != null) {
+        return new Codewave.util.StrPos((direction > 0 ? bestPos + start : bestPos), bestStr);
+      }
+      return null;
+    };
+
+    Codewave.prototype.findAnyNext3 = function(start, strings, direction) {
+      var group, groups, i, len1, len2, match, matchAnyReg, q, r, stri, text;
+      if (direction == null) {
+        direction = 1;
+      }
+      if (direction > 0) {
+        text = this.editor.textSubstr(start, this.editor.textLen());
+      } else {
+        text = Codewave.util.reverseStr(this.editor.textSubstr(0, start));
+      }
+      groups = [];
+      for (q = 0, len1 = strings.length; q < len1; q++) {
+        stri = strings[q];
+        if (direction < 0) {
+          stri = Codewave.util.reverseStr(stri);
+        }
+        groups.push('(' + Codewave.util.escapeRegExp(stri) + ')');
+      }
+      matchAnyReg = new RegExp(groups.join('|'));
+      match = matchAnyReg.exec(text);
+      if (match) {
+        for (i = r = 0, len2 = match.length; r < len2; i = ++r) {
+          group = match[i];
+          if (i > 0 && (group != null)) {
+            if (direction > 0) {
+              return new Codewave.util.StrPos(start + match.index, group);
+            } else {
+              return new Codewave.util.StrPos(start - match.index - group.length, Codewave.util.reverseStr(group));
+            }
+          }
+        }
+      }
+      return null;
     };
 
     Codewave.prototype.findMatchingPair = function(startPos, opening, closing, direction) {
