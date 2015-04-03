@@ -53,15 +53,18 @@ class @Codewave.Context
       return str + cc.substr(i+2)
     else
       return str + ' ' + cc
+  cmdInstanceFor: (cmd) ->
+    return new Codewave.CmdInstance(cmd,this)
   getCommentChar: ->
     if @commentChar?
       return @commentChar
     cmd = @getCmd('comment')
+    char = '<!-- %s -->'
     if cmd?
-      res = cmd.result()
+      inst = @cmdInstanceFor(cmd)
+      inst.content = '%s'
+      res = inst.result()
       if res?
-        res = res.replace('~~content~~','%s')
-        if @process?
-          @commentChar = res
-        return res
-    return '<!-- %s -->'
+        char = res
+    @commentChar = char
+    return @commentChar

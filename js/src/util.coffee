@@ -112,6 +112,9 @@ class Pair
       w = Math.max(w,l.length)
     return new Size(w,lines.length-1)
 
+  reverseStr: (txt) ->
+    return txt.split("").reverse().join("")
+    
   StrPos: StrPos
   Pos: Pos
   WrappedPos: WrappedPos

@@ -36,7 +36,9 @@ class @Codewave
   onActivationKey: ->
     @process = new Codewave.Process()
     Codewave.logger.log('activation key')
-    
+    @runAtCursorPos()
+    @process = null
+  runAtCursorPos: ->
     if(cmd = @commandOnCursorPos()?.init())
       Codewave.logger.log(cmd)
       cmd.execute()
@@ -46,8 +48,6 @@ class @Codewave
         @addBrakets(cpos.start,cpos.end)
       else
         @promptClosingCmd(cpos.start,cpos.end)
-        
-    @process = null
   commandOnCursorPos: ->
     cpos = @editor.getCursorPos()
     return @commandOnPos(cpos.end)
@@ -64,14 +64,14 @@ class @Codewave
       next = @findNextBraket(pos-1)
       if next is null or @countPrevBraket(prev) % 2 != 0 
         return null
-    return new Codewave.CmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
+    return new Codewave.PositionedCmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
   nextCmd: (start = 0) ->
     pos = start
     while f = @findAnyNext(pos ,[@brakets,"\n"])
       pos = f.pos + f.str.length
       if f.str == @brakets
         if beginning?
-          return new Codewave.CmdInstance(this, beginning, @editor.textSubstr(beginning, f.pos+@brakets.length))
+          return new Codewave.PositionedCmdInstance(this, beginning, @editor.textSubstr(beginning, f.pos+@brakets.length))
         else
           beginning = f.pos
       else
@@ -119,7 +119,6 @@ class @Codewave
   findAnyNext: (start,strings,direction = 1) -> 
     pos = start
     while true  
-    
       return null unless 0 <= pos < @editor.textLen()
       for stri in strings
         [start, end] = [pos, pos + stri.length * direction]
@@ -159,11 +158,10 @@ class @Codewave
     while cmd = @nextCmd(pos)
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
-      if recursive and cmd.content? and (!cmd.getCmd()? or !cmd.cmd.getOption('preventParseAll'))
+      if recursive and cmd.content? and (!cmd.getCmd()? or !cmd.getOption('preventParseAll'))
         parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
       cmd.init()
-      # console.log(cmd)
       if cmd.execute()?
         if cmd.replaceEnd?
           pos = cmd.replaceEnd

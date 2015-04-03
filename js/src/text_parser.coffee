@@ -23,6 +23,6 @@ class @Codewave.TextParser extends @Codewave.Editor
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
     @target = (
-        start: end
+        start: start
         end: end
       )

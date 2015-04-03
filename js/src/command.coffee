@@ -61,90 +61,43 @@ class @Codewave.Command
       if this[p]?
         return true
     false
-  resultIsAvailable: (instance = null) ->
-    if instance? and instance.cmdObj?
-      return instance.cmdObj.resultIsAvailable()
-    aliased = @getAliased(instance)
+  resultIsAvailable: () ->
+    aliased = @getAliased()
     if aliased?
-      return aliased.resultIsAvailable(instance)
+      return aliased.resultIsAvailable()
     for p in ['resultStr','resultFunct']
       if this[p]?
         return true
     false
-  getDefaults: (instance = null) ->
+  getDefaults: () ->
     res = {}
-    aliased = @getAliased(instance)
+    aliased = @getAliased()
     if aliased?
-      res = Codewave.util.merge(res,aliased.getDefaults(instance))
+      res = Codewave.util.merge(res,aliased.getDefaults())
     res = Codewave.util.merge(res,@defaults)
-    if instance? and instance.cmdObj?
-      res = Codewave.util.merge(res,instance.cmdObj.getDefaults())
     res
-  result: (instance) ->
-    if instance? && instance.cmdObj?
-      return instance.cmdObj.result()
-    aliased = @getAliased(instance)
-    if aliased?
-      return aliased.result(instance)
-    if @resultFunct?
-      return @resultFunct(instance)
-    if @resultStr?
-      @resultStr
-  execute: (instance) ->
-    if instance? && instance.cmdObj?
-      return instance.cmdObj.execute()
-    aliased = @getAliased(instance)
-    if aliased?
-      return aliased.execute(instance)
-    if @executeFunct?
-      return @executeFunct(instance)
-  getExecutableObj: (instance) ->
-    @init()
-    if @cls?
-      return new @cls(instance)
-    aliased = @getAliased(instance)
-    if aliased?
-      return aliased.getExecutableObj(instance)
-  getAliased: (instance = null) ->
-    if instance? and instance.cmd == this and instance.aliasedCmd?
-      return instance.aliasedCmd or null
+  _aliasedFromFinder: (finder) ->
+      finder.useFallbacks = false
+      finder.mustExecute = false
+      return finder.find()
+  getAliased: () ->
     if @aliasOf?
-      if instance?
-        context = instance.context
-      else
-        context = new Codewave.Context()
-      aliasOf = @aliasOf
-      if instance?
-        aliasOf = aliasOf.replace('%name%',instance.cmdName)
-        @finder = instance._getFinder(aliasOf)
-      else
-        @finder = context.getFinder(aliasOf)
-      @finder.useFallbacks = false
-      @finder.mustExecute = false
-      aliased = @finder.find()
-      if instance?
-        instance.aliasedCmd = aliased or false
-      return aliased
+      context = new Codewave.Context()
+      return @_aliasedFromFinder(context.getFinder(@aliasOf))
   setOptions: (data) ->
     for key, val of data
       if key of @defaultOptions
         @options[key] = val
-  getOptions: (instance = null) ->
-    if instance? and instance.cmdOptions?
-      return instance.cmdOptions
+  _optionsForAliased: (aliased) ->
     opt = {}
     opt = Codewave.util.merge(opt,@defaultOptions)
-    aliased = @getAliased(instance)
     if aliased?
-      opt = Codewave.util.merge(opt,aliased.getOptions(instance))
-    opt = Codewave.util.merge(opt,@options)
-    if instance? and instance.cmdObj?
-      opt = Codewave.util.merge(opt,instance.cmdObj.getOptions())
-    if instance?
-      instance.cmdOptions = opt
-    return opt
-  getOption: (key,instance = null) ->
-    options = @getOptions(instance)
+      opt = Codewave.util.merge(opt,aliased.getOptions())
+    return Codewave.util.merge(opt,@options)
+  getOptions: () ->
+    return @_optionsForAliased(@getAliased())
+  getOption: (key) ->
+    options = @getOptions()
     if key of options
       return options[key]
   parseData: (data) ->
