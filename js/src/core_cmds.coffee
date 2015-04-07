@@ -361,15 +361,29 @@ renameCommand = (instance) ->
   from = instance.getParam([0,'from'])
   to = instance.getParam([1,'to'])
   if from? and to?
-    if savedCmds[from]?
-      savedCmds[to] = savedCmds[from]
+    cmd = instance.context.getCmd(from)
+    console.log(cmd)
+    if savedCmds[from]? and cmd?
+      unless to.indexOf(':') > -1
+        to = cmd.fullName.replace(from,'') + to
+      cmdData = savedCmds[from]
+      Codewave.Command.cmds.setCmdData(to,cmdData)
+      cmd.unregister()
+      savedCmds[to] = cmdData
       delete savedCmds[from]
       Codewave.storage.save('cmds',savedCmds)
       return ""
-    else
+    else if cmd? 
       return """
         ~~box~~
         You cant rename a command you did not create yourself.
+        ~~!close~~
+        ~~/box~~
+        """
+    else 
+      return """
+        ~~box~~
+        Command not found
         ~~!close~~
         ~~/box~~
         """

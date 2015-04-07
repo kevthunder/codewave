@@ -1365,7 +1365,7 @@
         if (aliased != null) {
           return aliased.resultIsAvailable();
         }
-        return this.cmd.resultIsAvailable;
+        return this.cmd.resultIsAvailable();
       }
       return false;
     };
@@ -1568,6 +1568,10 @@
       this.finalOptions = null;
     }
 
+    Command.prototype.parent = function() {
+      return this._parent;
+    };
+
     Command.prototype.setParent = function(value) {
       if (this._parent !== value) {
         this._parent = value;
@@ -1582,6 +1586,10 @@
         this.parseData(this.data);
       }
       return this;
+    };
+
+    Command.prototype.unregister = function() {
+      return this._parent.removeCmd(this);
     };
 
     Command.prototype.isEditable = function() {
@@ -1767,6 +1775,10 @@
       }
     };
 
+    Command.prototype.setCmdData = function(fullname, data) {
+      return this.setCmd(fullname, new Codewave.Command(fullname.split(':').pop(), data));
+    };
+
     Command.prototype.setCmd = function(fullname, cmd) {
       var name, next, ref, space;
       ref = Codewave.util.splitFirstNamespace(fullname), space = ref[0], name = ref[1];
@@ -1810,7 +1822,7 @@
 
   this.Codewave.Command.saveCmd = function(fullname, data) {
     var savedCmds;
-    Codewave.Command.cmds.setCmd(fullname, new Codewave.Command(fullname.split(':').pop(), data));
+    Codewave.Command.cmds.setCmdData(fullname, data);
     savedCmds = Codewave.storage.load('cmds');
     if (savedCmds == null) {
       savedCmds = {};
@@ -1826,7 +1838,7 @@
       results = [];
       for (fullname in savedCmds) {
         data = savedCmds[fullname];
-        results.push(Codewave.Command.cmds.setCmd(fullname, new Codewave.Command(fullname.split(':').pop(), data)));
+        results.push(Codewave.Command.cmds.setCmdData(fullname, data));
       }
       return results;
     }
@@ -2223,18 +2235,28 @@
   };
 
   renameCommand = function(instance) {
-    var from, savedCmds, to;
+    var cmd, cmdData, from, savedCmds, to;
     savedCmds = Codewave.storage.load('cmds');
     from = instance.getParam([0, 'from']);
     to = instance.getParam([1, 'to']);
     if ((from != null) && (to != null)) {
-      if (savedCmds[from] != null) {
-        savedCmds[to] = savedCmds[from];
+      cmd = instance.context.getCmd(from);
+      console.log(cmd);
+      if ((savedCmds[from] != null) && (cmd != null)) {
+        if (!(to.indexOf(':') > -1)) {
+          to = cmd.fullName.replace(from, '') + to;
+        }
+        cmdData = savedCmds[from];
+        Codewave.Command.cmds.setCmdData(to, cmdData);
+        cmd.unregister();
+        savedCmds[to] = cmdData;
         delete savedCmds[from];
         Codewave.storage.save('cmds', savedCmds);
         return "";
-      } else {
+      } else if (cmd != null) {
         return "~~box~~\nYou cant rename a command you did not create yourself.\n~~!close~~\n~~/box~~";
+      } else {
+        return "~~box~~\nCommand not found\n~~!close~~\n~~/box~~";
       }
     }
   };

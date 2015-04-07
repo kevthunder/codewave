@@ -45,7 +45,7 @@ class @Codewave.CmdInstance
       aliased = @getAliased()
       if aliased?
         return aliased.resultIsAvailable()
-      return @cmd.resultIsAvailable
+      return @cmd.resultIsAvailable()
     return false
   getDefaults: () ->
     if @cmd?

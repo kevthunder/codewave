@@ -32,6 +32,8 @@ class @Codewave.Command
     }
     @options = {}
     @finalOptions = null
+  parent: ->
+    return @_parent
   setParent: (value) ->
     if @_parent != value
       @_parent = value
@@ -51,6 +53,8 @@ class @Codewave.Command
       @_inited = true
       @parseData(@data)
     this
+  unregister: ->
+    @_parent.removeCmd(this)
   isEditable: ->
     @resultStr?
   isExecutable: ->
@@ -155,6 +159,8 @@ class @Codewave.Command
     for cmd in @cmds
       if cmd.name == name
         return cmd
+  setCmdData: (fullname,data) ->
+    @setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
   setCmd: (fullname,cmd) ->
     [space,name] = Codewave.util.splitFirstNamespace(fullname)
     if space?
@@ -180,7 +186,7 @@ class @Codewave.Command
     initialiser()
 
 @Codewave.Command.saveCmd = (fullname, data) ->
-  Codewave.Command.cmds.setCmd(fullname,new Codewave.Command(fullname.split(':').pop(),data))
+  Codewave.Command.cmds.setCmdData(fullname,data)
   savedCmds = Codewave.storage.load('cmds')
   unless savedCmds?
     savedCmds = {}
@@ -191,7 +197,7 @@ class @Codewave.Command
   savedCmds = Codewave.storage.load('cmds')
   if savedCmds? 
     for fullname, data of savedCmds
-      Codewave.Command.cmds.setCmd(fullname, new Codewave.Command(fullname.split(':').pop(), data))
+      Codewave.Command.cmds.setCmdData(fullname, data)
 
   
 
