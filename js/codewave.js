@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, renameCommand, setVarCmd, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, setVarCmd, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -286,6 +286,7 @@
           cmd.content = parser.parseAll();
         }
         cmd.init();
+        console.log(cmd);
         if (cmd.execute() != null) {
           if (cmd.replaceEnd != null) {
             pos = cmd.replaceEnd;
@@ -2070,7 +2071,20 @@
         'cls': EditCmd
       },
       'rename': {
-        'result': renameCommand
+        'cmds': {
+          'not_applicable': "~~box~~\nYou cant rename a command you did not create yourself.\n~~!close|~~\n~~/box~~",
+          'not_found': "~~box~~\nCommand not found\n~~!close|~~\n~~/box~~"
+        },
+        'result': renameCommand,
+        'parse': true
+      },
+      'remove': {
+        'cmds': {
+          'not_applicable': "~~box~~\nYou cant remove a command you did not create yourself.\n~~!close|~~\n~~/box~~",
+          'not_found': "~~box~~\nCommand not found\n~~!close|~~\n~~/box~~"
+        },
+        'result': removeCommand,
+        'parse': true
       },
       'namespace': {
         'cls': NameSpaceCmd
@@ -2254,9 +2268,29 @@
         Codewave.storage.save('cmds', savedCmds);
         return "";
       } else if (cmd != null) {
-        return "~~box~~\nYou cant rename a command you did not create yourself.\n~~!close~~\n~~/box~~";
+        return "~~not_applicable~~";
       } else {
-        return "~~box~~\nCommand not found\n~~!close~~\n~~/box~~";
+        return "~~not_found~~";
+      }
+    }
+  };
+
+  removeCommand = function(instance) {
+    var cmd, cmdData, name, savedCmds;
+    savedCmds = Codewave.storage.load('cmds');
+    name = instance.getParam([0, 'name']);
+    if (name != null) {
+      cmd = instance.context.getCmd(name);
+      if ((savedCmds[name] != null) && (cmd != null)) {
+        cmdData = savedCmds[name];
+        cmd.unregister();
+        delete savedCmds[name];
+        Codewave.storage.save('cmds', savedCmds);
+        return "";
+      } else if (cmd != null) {
+        return "~~not_applicable~~";
+      } else {
+        return "~~not_found~~";
       }
     }
   };

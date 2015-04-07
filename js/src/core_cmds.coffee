@@ -206,7 +206,40 @@ initCmds = ->
       'cls' : EditCmd
     },
     'rename':{
-      'result' : renameCommand
+      'cmds' : {
+        'not_applicable' : """
+          ~~box~~
+          You cant rename a command you did not create yourself.
+          ~~!close|~~
+          ~~/box~~
+          """,
+        'not_found' : """
+          ~~box~~
+          Command not found
+          ~~!close|~~
+          ~~/box~~
+          """
+      }
+      'result' : renameCommand,
+      'parse' : true
+    },
+    'remove':{
+      'cmds' : {
+        'not_applicable' : """
+          ~~box~~
+          You cant remove a command you did not create yourself.
+          ~~!close|~~
+          ~~/box~~
+          """,
+        'not_found' : """
+          ~~box~~
+          Command not found
+          ~~!close|~~
+          ~~/box~~
+          """
+      }
+      'result' : removeCommand,
+      'parse' : true
     },
     'namespace':{
       'cls' : NameSpaceCmd
@@ -374,19 +407,24 @@ renameCommand = (instance) ->
       Codewave.storage.save('cmds',savedCmds)
       return ""
     else if cmd? 
-      return """
-        ~~box~~
-        You cant rename a command you did not create yourself.
-        ~~!close~~
-        ~~/box~~
-        """
+      return "~~not_applicable~~"
     else 
-      return """
-        ~~box~~
-        Command not found
-        ~~!close~~
-        ~~/box~~
-        """
+      return "~~not_found~~"
+removeCommand = (instance) ->
+  savedCmds = Codewave.storage.load('cmds')
+  name = instance.getParam([0,'name'])
+  if name?
+    cmd = instance.context.getCmd(name)
+    if savedCmds[name]? and cmd?
+      cmdData = savedCmds[name]
+      cmd.unregister()
+      delete savedCmds[name]
+      Codewave.storage.save('cmds',savedCmds)
+      return ""
+    else if cmd? 
+      return "~~not_applicable~~"
+    else 
+      return "~~not_found~~"
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends Codewave.BaseCommand
