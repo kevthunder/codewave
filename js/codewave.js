@@ -798,9 +798,12 @@
       defaults = {
         'var': null,
         'opt': null,
-        'dataName': null
+        'funct': null,
+        'dataName': null,
+        'showEmpty': false,
+        'carret': false
       };
-      ref = ['var', 'opt'];
+      ref = ['var', 'opt', 'funct'];
       for (q = 0, len1 = ref.length; q < len1; q++) {
         key = ref[q];
         if (key in options) {
@@ -832,14 +835,25 @@
         if (this.opt != null) {
           return cmd.getOption(this.opt);
         }
+        if (this.funct != null) {
+          return cmd[this.funct]();
+        }
         if (this["var"] != null) {
           return cmd[this["var"]];
         }
       }
     };
 
+    EditCmdProp.prototype.showForCmd = function(cmd) {
+      var val;
+      val = this.valFromCmd(cmd);
+      return this.showEmpty || (val != null);
+    };
+
     EditCmdProp.prototype.display = function(cmd) {
-      return "~~!" + this.name + "~~\n" + (this.valFromCmd(cmd) || "") + "\n~~!/" + this.name + "~~";
+      if (this.showForCmd(cmd)) {
+        return "~~!" + this.name + "~~\n" + (this.valFromCmd(cmd) || "") + (this.carret ? "|" : "") + "\n~~!/" + this.name + "~~";
+      }
     };
 
     return EditCmdProp;
@@ -859,6 +873,12 @@
       });
     };
 
+    source.prototype.showForCmd = function(cmd) {
+      var val;
+      val = this.valFromCmd(cmd);
+      return (this.showEmpty && !((cmd != null) && (cmd.aliasOf != null))) || (val != null);
+    };
+
     return source;
 
   })(this.Codewave.EditCmdProp);
@@ -871,9 +891,8 @@
     }
 
     string.prototype.display = function(cmd) {
-      console.log(this, cmd);
       if (this.valFromCmd(cmd) != null) {
-        return "~~!" + this.name + " '" + (this.valFromCmd(cmd)) + "'~~";
+        return "~~!" + this.name + " '" + (this.valFromCmd(cmd)) + (this.carret ? "|" : "") + "'~~";
       }
     };
 
@@ -1406,6 +1425,15 @@
       return !this.mustExecute || cmd.isExecutable();
     };
 
+    CmdFinder.prototype.cmdScore = function(cmd) {
+      var score;
+      score = cmd.depth;
+      if (cmd.name === 'fallback') {
+        score -= 1000;
+      }
+      return score;
+    };
+
     CmdFinder.prototype.bestInPosibilities = function(poss) {
       var best, bestScore, len1, p, q, score;
       if (poss.length > 0) {
@@ -1413,11 +1441,8 @@
         bestScore = null;
         for (q = 0, len1 = poss.length; q < len1; q++) {
           p = poss[q];
-          score = p.depth;
-          if (p.name === 'fallback') {
-            score -= 1000;
-          }
-          if (best === null || score >= bestScore) {
+          score = this.cmdScore(p);
+          if ((best == null) || score >= bestScore) {
             bestScore = score;
             best = p;
           }
@@ -1565,11 +1590,11 @@
     };
 
     CmdInstance.prototype.getParam = function(names, defVal) {
-      var len1, n, q;
+      var len1, n, q, ref;
       if (defVal == null) {
         defVal = null;
       }
-      if (typeof names === 'string') {
+      if (((ref = typeof names) === 'string' || ref === 'number')) {
         names = [names];
       }
       for (q = 0, len1 = names.length; q < len1; q++) {
@@ -1716,7 +1741,7 @@
       if (this._parent !== value) {
         this._parent = value;
         this.fullName = ((this._parent != null) && (this._parent.name != null) ? this._parent.fullName + ':' + this.name : this.name);
-        return this.depth = (this._parent != null ? this._parent.depth + 1 : 0);
+        return this.depth = ((this._parent != null) && (this._parent.depth != null) ? this._parent.depth + 1 : 0);
       }
     };
 
@@ -1826,6 +1851,14 @@
       options = this.getOptions();
       if (key in options) {
         return options[key];
+      }
+    };
+
+    Command.prototype.help = function() {
+      var cmd;
+      cmd = this.getCmd('help');
+      if (cmd != null) {
+        return cmd.init().resultStr;
       }
     };
 
@@ -1985,6 +2018,10 @@
       }
       return results;
     }
+  };
+
+  this.Codewave.Command.resetSaved = function() {
+    return Codewave.storage.save('cmds', {});
   };
 
   this.Codewave.BaseCommand = (function() {
@@ -2203,9 +2240,6 @@
       },
       'edit': {
         'cmds': EditCmd.setCmds({
-          'source': Codewave.Command.setVarCmd('source', {
-            'preventParseAll': true
-          }),
           'save': {
             'aliasOf': 'core:exec_parent'
           }
@@ -2352,6 +2386,7 @@
     base.execute = function(instance) {
       var p, val;
       val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+      console.log(instance, val);
       if (val != null) {
         return instance.codewave.vars[name] = val;
       }
@@ -2575,30 +2610,32 @@
       var data, len1, p, parser, q, ref;
       parser = this.instance.getParserForText(this.content);
       parser.parseAll();
-      data = {
-        result: parser.vars.source
-      };
+      data = {};
       ref = EditCmd.props;
       for (q = 0, len1 = ref.length; q < len1; q++) {
         p = ref[q];
         p.writeFor(parser, data);
       }
+      console.log(parser, data);
       Codewave.Command.saveCmd(this.cmdName, data);
       return '';
     };
 
+    EditCmd.prototype.propsDisplay = function() {
+      var cmd;
+      cmd = this.cmd;
+      return EditCmd.props.map(function(p) {
+        return p.display(cmd);
+      }).filter(function(p) {
+        return p != null;
+      }).join("\n");
+    };
+
     EditCmd.prototype.resultWithoutContent = function() {
-      var cmd, name, parser, props, source;
+      var name, parser;
       if (!this.cmd || this.editable) {
-        cmd = this.cmd;
-        source = this.cmd ? this.cmd.resultStr : '';
         name = this.cmd ? this.cmd.fullName : this.cmdName;
-        props = EditCmd.props.map(function(p) {
-          return p.display(cmd);
-        }).filter(function(p) {
-          return p != null;
-        }).join("\n");
-        parser = this.instance.getParserForText("~~box cmd:\"" + this.instance.cmd.fullName + " " + name + "\"~~\n" + props + "\n~~source~~\n" + source + "|\n~~/source~~\n~~save~~ ~~!close~~\n~~/box~~");
+        parser = this.instance.getParserForText("~~box cmd:\"" + this.instance.cmd.fullName + " " + name + "\"~~\n" + (this.propsDisplay()) + "\n~~save~~ ~~!close~~\n~~/box~~");
         parser.checkCarret = false;
         if (this.verbalize) {
           return parser.getText();
@@ -2634,9 +2671,16 @@
     }), new Codewave.EditCmdProp.string('name_to_param', {
       opt: 'nameToParam'
     }), new Codewave.EditCmdProp.string('alias_of', {
-      "var": 'aliasOf'
+      "var": 'aliasOf',
+      carret: true
     }), new Codewave.EditCmdProp.source('help', {
-      "var": 'help'
+      funct: 'help',
+      showEmpty: true
+    }), new Codewave.EditCmdProp.source('source', {
+      "var": 'resultStr',
+      dataName: 'result',
+      showEmpty: true,
+      carret: true
     })
   ];
 
@@ -2904,7 +2948,7 @@
             }
             param = '';
             name = false;
-          } else if (chr === '"' && (i === 0 || params[i - 1] !== '\\')) {
+          } else if ((chr === '"' || chr === "'") && (i === 0 || params[i - 1] !== '\\')) {
             inStr = !inStr;
           } else if (chr === ':' && !name && !inStr && ((allowedNamed == null) || indexOf.call(allowedNamed, name) >= 0)) {
             name = param;

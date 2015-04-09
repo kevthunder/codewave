@@ -44,7 +44,7 @@ class @Codewave.Command
           @name
       )
       @depth = (
-        if @_parent?
+        if @_parent? and @_parent.depth?
         then @_parent.depth + 1
         else 0
       )
@@ -104,6 +104,10 @@ class @Codewave.Command
     options = @getOptions()
     if key of options
       return options[key]
+  help: ->
+    cmd = @getCmd('help')
+    if cmd?
+      return cmd.init().resultStr
   parseData: (data) ->
     @data = data
     if typeof data == 'string'
@@ -206,6 +210,8 @@ class @Codewave.Command
     for fullname, data of savedCmds
       Codewave.Command.cmds.setCmdData(fullname, data)
 
+@Codewave.Command.resetSaved = ->
+  Codewave.storage.save('cmds',{})
   
 
 

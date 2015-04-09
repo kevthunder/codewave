@@ -117,15 +117,18 @@ class @Codewave.CmdFinder
       return false
     cmd.init()
     return !@mustExecute or cmd.isExecutable()
+  cmdScore: (cmd) ->
+    score = cmd.depth
+    if cmd.name == 'fallback' 
+        score -= 1000
+    return score
   bestInPosibilities: (poss) ->
     if poss.length > 0
       best = null
       bestScore = null
       for p in poss
-        score = p.depth
-        if p.name == 'fallback' 
-            score -= 1000
-        if best is null or score >= bestScore
+        score = @cmdScore(p)
+        if !best? or score >= bestScore
           bestScore = score
           best = p
       return best;

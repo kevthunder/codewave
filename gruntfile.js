@@ -38,7 +38,8 @@ module.exports = function (grunt) {
     },
     watch: {
         options: {
-          atBegin: true
+          atBegin: true,
+          livereload: true
         },
         // js:  { files: 'js/*.js', tasks: [ 'uglify' ] },
         sass:  { files: 'sass/*.sass', tasks: [ 'sass' ] },

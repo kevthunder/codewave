@@ -196,9 +196,6 @@ initCmds = ->
     },
     'edit':{
       'cmds' : EditCmd.setCmds({
-        'source': Codewave.Command.setVarCmd('source',{
-          'preventParseAll' : true
-        }),
         'save':{
           'aliasOf': 'core:exec_parent'
         }
@@ -366,6 +363,7 @@ initCmds = ->
       p
     else if instance.content
       instance.content
+    console.log(instance,val)
     instance.codewave.vars[name] = val if val?
   return base
 
@@ -506,26 +504,22 @@ class EditCmd extends Codewave.BaseCommand
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
       parser.parseAll()
-      data = {
-        result: parser.vars.source
-      }
+      data = {}
       for p in EditCmd.props
         p.writeFor(parser,data)
+      console.log(parser,data)
       Codewave.Command.saveCmd(@cmdName, data)
       return ''
+  propsDisplay: ->
+      cmd = @cmd
+      return EditCmd.props.map( (p)-> p.display(cmd) ).filter( (p)-> p? ).join("\n")
   resultWithoutContent: ->
     if !@cmd or @editable
-      cmd = @cmd
-      source = if @cmd then @cmd.resultStr else ''
       name = if @cmd then @cmd.fullName else @cmdName
-      props = EditCmd.props.map( (p)-> p.display(cmd) ).filter( (p)-> p? ).join("\n")
       parser = @instance.getParserForText(
         """
         ~~box cmd:"#{@instance.cmd.fullName} #{name}"~~
-        #{props}
-        ~~source~~
-        #{source}|
-        ~~/source~~
+        #{@propsDisplay()}
         ~~save~~ ~~!close~~
         ~~/box~~
         """)
@@ -541,8 +535,9 @@ EditCmd.props = [
   new Codewave.EditCmdProp.bool(   'prevent_parse_all', {opt:'preventParseAll'}),
   new Codewave.EditCmdProp.bool(   'replace_box',       {opt:'replaceBox'}),
   new Codewave.EditCmdProp.string( 'name_to_param',     {opt:'nameToParam'}),
-  new Codewave.EditCmdProp.string( 'alias_of',          {var:'aliasOf'}),
-  new Codewave.EditCmdProp.source( 'help',              {var:'help'}),
+  new Codewave.EditCmdProp.string( 'alias_of',          {var:'aliasOf', carret:true}),
+  new Codewave.EditCmdProp.source( 'help',              {funct:'help', showEmpty:true}),
+  new Codewave.EditCmdProp.source( 'source',            {var:'resultStr', dataName:'result', showEmpty:true, carret:true}),
 ]
 class NameSpaceCmd extends Codewave.BaseCommand
   init: ->

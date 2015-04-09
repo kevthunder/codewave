@@ -80,7 +80,7 @@ class @Codewave.CmdInstance
     if options? and key of options
       return options[key]
   getParam: (names, defVal = null) ->
-    names = [names] if (typeof names == 'string')
+    names = [names] if (typeof names in ['string','number'])
     for n in names
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?

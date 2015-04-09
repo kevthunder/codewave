@@ -50,7 +50,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
             @params.push(param)
           param = ''
           name = false
-        else if chr == '"' and (i == 0 or params[i-1] != '\\')
+        else if chr in ['"',"'"] and (i == 0 or params[i-1] != '\\')
           inStr = !inStr
         else if chr == ':' and !name and !inStr and (!allowedNamed? or name in allowedNamed)
           name = param

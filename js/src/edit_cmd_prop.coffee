@@ -3,9 +3,12 @@ class @Codewave.EditCmdProp
     defaults = {
       'var' : null,
       'opt' : null,
+      'funct' : null,
       'dataName' : null,
+      'showEmpty' : false,
+      'carret' : false,
     }
-    for key in ['var','opt']
+    for key in ['var','opt','funct']
       if key of options
         defaults['dataName'] = options[key]
     for key, val of defaults
@@ -24,26 +27,34 @@ class @Codewave.EditCmdProp
     if cmd?
       if @opt?
         return cmd.getOption(@opt)
+      if @funct?
+        return cmd[@funct]()
       if @var?
         return cmd[@var]
+  showForCmd: (cmd) ->
+    val = @valFromCmd(cmd)
+    return @showEmpty or val?
   display: (cmd) ->
-    """
-    ~~!#{@name}~~
-    #{@valFromCmd(cmd) or ""}
-    ~~!/#{@name}~~
-    """
+    if @showForCmd(cmd)
+      """
+      ~~!#{@name}~~
+      #{@valFromCmd(cmd) or ""}#{if @carret then "|" else ""}
+      ~~!/#{@name}~~
+      """
     
     
 class @Codewave.EditCmdProp.source extends @Codewave.EditCmdProp 
   setCmd: (cmds)->
     cmds[@name] = Codewave.Command.setVarCmd(@name,{'preventParseAll' : true})
+  showForCmd: (cmd) ->
+    val = @valFromCmd(cmd)
+    return (@showEmpty and !(cmd? and cmd.aliasOf?)) or val?
     
     
 class @Codewave.EditCmdProp.string extends @Codewave.EditCmdProp
   display: (cmd) ->
-    console.log(this,cmd)
     if @valFromCmd(cmd)?
-      return "~~!#{@name} '#{@valFromCmd(cmd)}'~~"
+      return "~~!#{@name} '#{@valFromCmd(cmd)}#{if @carret then "|" else ""}'~~"
     
     
 class @Codewave.EditCmdProp.revBool extends @Codewave.EditCmdProp
