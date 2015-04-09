@@ -238,6 +238,18 @@ initCmds = ->
       'result' : removeCommand,
       'parse' : true
     },
+    'alias':{
+      'cmds' : {
+        'not_found' : """
+          ~~box~~
+          Command not found
+          ~~!close|~~
+          ~~/box~~
+          """
+      }
+      'result' : aliasCommand,
+      'parse' : true
+    },
     'namespace':{
       'cls' : NameSpaceCmd
     },
@@ -418,9 +430,9 @@ renameCommand = (instance) ->
     else 
       return "~~not_found~~"
 removeCommand = (instance) ->
-  savedCmds = Codewave.storage.load('cmds')
   name = instance.getParam([0,'name'])
   if name?
+    savedCmds = Codewave.storage.load('cmds')
     cmd = instance.context.getCmd(name)
     if savedCmds[name]? and cmd?
       cmdData = savedCmds[name]
@@ -430,6 +442,19 @@ removeCommand = (instance) ->
       return ""
     else if cmd? 
       return "~~not_applicable~~"
+    else 
+      return "~~not_found~~"
+aliasCommand = (instance) ->
+  name = instance.getParam([0,'name'])
+  alias = instance.getParam([1,'alias'])
+  if name? and alias?
+    cmd = instance.context.getCmd(name)
+    if cmd?
+      cmd = cmd.getAliased() or cmd
+      # unless alias.indexOf(':') > -1
+        # alias = cmd.fullName.replace(name,'') + alias
+      Codewave.Command.saveCmd(alias, { aliasOf: cmd.fullName })
+      return ""
     else 
       return "~~not_found~~"
 closePhpForContent = (instance) ->

@@ -90,6 +90,7 @@ class @Codewave.CmdInstance
       if @cmdObj?
         return @cmdObj.execute()
       cmd = @getAliased() or @cmd
+      cmd.init()
       if cmd.executeFunct?
         return cmd.executeFunct(this)
   rawResult: ->
@@ -97,6 +98,7 @@ class @Codewave.CmdInstance
       if @cmdObj?
         return @cmdObj.result()
       cmd = @getAliased() or @cmd
+      cmd.init()
       if cmd.resultFunct?
         return cmd.resultFunct(this)
       if cmd.resultStr?

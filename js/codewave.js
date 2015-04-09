@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -1616,6 +1616,7 @@
           return this.cmdObj.execute();
         }
         cmd = this.getAliased() || this.cmd;
+        cmd.init();
         if (cmd.executeFunct != null) {
           return cmd.executeFunct(this);
         }
@@ -1629,6 +1630,7 @@
           return this.cmdObj.result();
         }
         cmd = this.getAliased() || this.cmd;
+        cmd.init();
         if (cmd.resultFunct != null) {
           return cmd.resultFunct(this);
         }
@@ -2262,6 +2264,13 @@
         'result': removeCommand,
         'parse': true
       },
+      'alias': {
+        'cmds': {
+          'not_found': "~~box~~\nCommand not found\n~~!close|~~\n~~/box~~"
+        },
+        'result': aliasCommand,
+        'parse': true
+      },
       'namespace': {
         'cls': NameSpaceCmd
       },
@@ -2470,9 +2479,9 @@
 
   removeCommand = function(instance) {
     var cmd, cmdData, name, savedCmds;
-    savedCmds = Codewave.storage.load('cmds');
     name = instance.getParam([0, 'name']);
     if (name != null) {
+      savedCmds = Codewave.storage.load('cmds');
       cmd = instance.context.getCmd(name);
       if ((savedCmds[name] != null) && (cmd != null)) {
         cmdData = savedCmds[name];
@@ -2482,6 +2491,24 @@
         return "";
       } else if (cmd != null) {
         return "~~not_applicable~~";
+      } else {
+        return "~~not_found~~";
+      }
+    }
+  };
+
+  aliasCommand = function(instance) {
+    var alias, cmd, name;
+    name = instance.getParam([0, 'name']);
+    alias = instance.getParam([1, 'alias']);
+    if ((name != null) && (alias != null)) {
+      cmd = instance.context.getCmd(name);
+      if (cmd != null) {
+        cmd = cmd.getAliased() || cmd;
+        Codewave.Command.saveCmd(alias, {
+          aliasOf: cmd.fullName
+        });
+        return "";
       } else {
         return "~~not_found~~";
       }
