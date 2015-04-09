@@ -166,7 +166,6 @@ class @Codewave
         parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
       cmd.init()
-      console.log(cmd)
       if cmd.execute()?
         if cmd.replaceEnd?
           pos = cmd.replaceEnd

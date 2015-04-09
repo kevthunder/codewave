@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, setVarCmd, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -286,7 +286,6 @@
           cmd.content = parser.parseAll();
         }
         cmd.init();
-        console.log(cmd);
         if (cmd.execute() != null) {
           if (cmd.replaceEnd != null) {
             pos = cmd.replaceEnd;
@@ -791,6 +790,146 @@
     return TextParser;
 
   })(this.Codewave.Editor);
+
+  this.Codewave.EditCmdProp = (function() {
+    function EditCmdProp(name1, options) {
+      var defaults, key, len1, q, ref, val;
+      this.name = name1;
+      defaults = {
+        'var': null,
+        'opt': null,
+        'dataName': null
+      };
+      ref = ['var', 'opt'];
+      for (q = 0, len1 = ref.length; q < len1; q++) {
+        key = ref[q];
+        if (key in options) {
+          defaults['dataName'] = options[key];
+        }
+      }
+      for (key in defaults) {
+        val = defaults[key];
+        if (key in options) {
+          this[key] = options[key];
+        } else {
+          this[key] = val;
+        }
+      }
+    }
+
+    EditCmdProp.prototype.setCmd = function(cmds) {
+      return cmds[this.name] = Codewave.Command.setVarCmd(this.name);
+    };
+
+    EditCmdProp.prototype.writeFor = function(parser, obj) {
+      if (parser.vars[this.name] != null) {
+        return obj[this.dataName] = parser.vars[this.name];
+      }
+    };
+
+    EditCmdProp.prototype.valFromCmd = function(cmd) {
+      if (cmd != null) {
+        if (this.opt != null) {
+          return cmd.getOption(this.opt);
+        }
+        if (this["var"] != null) {
+          return cmd[this["var"]];
+        }
+      }
+    };
+
+    EditCmdProp.prototype.display = function(cmd) {
+      return "~~!" + this.name + "~~\n" + (this.valFromCmd(cmd) || "") + "\n~~!/" + this.name + "~~";
+    };
+
+    return EditCmdProp;
+
+  })();
+
+  this.Codewave.EditCmdProp.source = (function(superClass) {
+    extend(source, superClass);
+
+    function source() {
+      return source.__super__.constructor.apply(this, arguments);
+    }
+
+    source.prototype.setCmd = function(cmds) {
+      return cmds[this.name] = Codewave.Command.setVarCmd(this.name, {
+        'preventParseAll': true
+      });
+    };
+
+    return source;
+
+  })(this.Codewave.EditCmdProp);
+
+  this.Codewave.EditCmdProp.string = (function(superClass) {
+    extend(string, superClass);
+
+    function string() {
+      return string.__super__.constructor.apply(this, arguments);
+    }
+
+    string.prototype.display = function(cmd) {
+      console.log(this, cmd);
+      if (this.valFromCmd(cmd) != null) {
+        return "~~!" + this.name + " '" + (this.valFromCmd(cmd)) + "'~~";
+      }
+    };
+
+    return string;
+
+  })(this.Codewave.EditCmdProp);
+
+  this.Codewave.EditCmdProp.revBool = (function(superClass) {
+    extend(revBool, superClass);
+
+    function revBool() {
+      return revBool.__super__.constructor.apply(this, arguments);
+    }
+
+    revBool.prototype.setCmd = function(cmds) {
+      return cmds[this.name] = Codewave.Command.setBoolVarCmd(this.name);
+    };
+
+    revBool.prototype.writeFor = function(parser, obj) {
+      if (parser.vars[this.name] != null) {
+        return obj[this.dataName] = !parser.vars[this.name];
+      }
+    };
+
+    revBool.prototype.display = function(cmd) {
+      var val;
+      val = this.valFromCmd(cmd);
+      if ((val != null) && !val) {
+        return "~~!" + this.name + "~~";
+      }
+    };
+
+    return revBool;
+
+  })(this.Codewave.EditCmdProp);
+
+  this.Codewave.EditCmdProp.bool = (function(superClass) {
+    extend(bool, superClass);
+
+    function bool() {
+      return bool.__super__.constructor.apply(this, arguments);
+    }
+
+    bool.prototype.setCmd = function(cmds) {
+      return cmds[this.name] = Codewave.Command.setBoolVarCmd(this.name);
+    };
+
+    bool.prototype.display = function(cmd) {
+      if (this.valFromCmd(cmd)) {
+        return "~~!" + this.name + "~~";
+      }
+    };
+
+    return bool;
+
+  })(this.Codewave.EditCmdProp);
 
   this.Codewave.util.BoxHelper = (function() {
     function BoxHelper(context1, options) {
@@ -1594,7 +1733,7 @@
     };
 
     Command.prototype.isEditable = function() {
-      return this.resultStr != null;
+      return (this.resultStr != null) || (this.aliasOf != null);
     };
 
     Command.prototype.isExecutable = function() {
@@ -1720,10 +1859,10 @@
       this.defaults = _optKey('defaults', data, this.defaults);
       this.setOptions(data);
       if ('help' in data) {
-        this.addCmd(this, new Command('help', data['help'], this));
+        this.addCmd(new Command('help', data['help'], this));
       }
       if ('fallback' in data) {
-        this.addCmd(this, new Command('fallback', data['fallback'], this));
+        this.addCmd(new Command('fallback', data['fallback'], this));
       }
       if ('cmds' in data) {
         this.addCmds(data['cmds']);
@@ -1809,7 +1948,10 @@
     var initialiser, len1, q, ref, results;
     Codewave.Command.cmds = new Codewave.Command(null, {
       'cmds': {
-        'hello': 'Hello, World!'
+        'hello': {
+          help: "\"Hello, world!\" is typically one of the simplest programs possible in\nmost programming languages, it is by tradition often (...) used to\nverify that a language or system is operating correctly -wikipedia",
+          result: 'Hello, World!'
+        }
       }
     });
     ref = Codewave.Command.cmdInitialisers;
@@ -2060,14 +2202,14 @@
         'cls': CloseCmd
       },
       'edit': {
-        'cmds': {
-          'source': Codewave.util.merge(setVarCmd('source'), {
+        'cmds': EditCmd.setCmds({
+          'source': Codewave.Command.setVarCmd('source', {
             'preventParseAll': true
           }),
           'save': {
             'aliasOf': 'core:exec_parent'
           }
-        },
+        }),
         'cls': EditCmd
       },
       'rename': {
@@ -2203,16 +2345,32 @@
 
   this.Codewave.Command.cmdInitialisers.push(initCmds);
 
-  setVarCmd = function(name) {
-    return {
-      execute: function(instance) {
-        var p, val;
-        val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
-        if (val != null) {
-          return instance.codewave.vars[name] = val;
-        }
+  this.Codewave.Command.setVarCmd = function(name, base) {
+    if (base == null) {
+      base = {};
+    }
+    base.execute = function(instance) {
+      var p, val;
+      val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+      if (val != null) {
+        return instance.codewave.vars[name] = val;
       }
     };
+    return base;
+  };
+
+  this.Codewave.Command.setBoolVarCmd = function(name, base) {
+    if (base == null) {
+      base = {};
+    }
+    base.execute = function(instance) {
+      var p, val;
+      val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+      if (!((val != null) && (val === '0' || val === 'false' || val === 'no'))) {
+        return instance.codewave.vars[name] = true;
+      }
+    };
+    return base;
   };
 
   no_execute = function(instance) {
@@ -2414,21 +2572,33 @@
     };
 
     EditCmd.prototype.resultWithContent = function() {
-      var parser;
+      var data, len1, p, parser, q, ref;
       parser = this.instance.getParserForText(this.content);
       parser.parseAll();
-      Codewave.Command.saveCmd(this.cmdName, {
+      data = {
         result: parser.vars.source
-      });
+      };
+      ref = EditCmd.props;
+      for (q = 0, len1 = ref.length; q < len1; q++) {
+        p = ref[q];
+        p.writeFor(parser, data);
+      }
+      Codewave.Command.saveCmd(this.cmdName, data);
       return '';
     };
 
     EditCmd.prototype.resultWithoutContent = function() {
-      var name, parser, source;
+      var cmd, name, parser, props, source;
       if (!this.cmd || this.editable) {
+        cmd = this.cmd;
         source = this.cmd ? this.cmd.resultStr : '';
         name = this.cmd ? this.cmd.fullName : this.cmdName;
-        parser = this.instance.getParserForText("~~box cmd:\"" + this.instance.cmd.fullName + " " + name + "\"~~\n~~source~~\n" + source + "|\n~~/source~~\n~~save~~ ~~!close~~\n~~/box~~");
+        props = EditCmd.props.map(function(p) {
+          return p.display(cmd);
+        }).filter(function(p) {
+          return p != null;
+        }).join("\n");
+        parser = this.instance.getParserForText("~~box cmd:\"" + this.instance.cmd.fullName + " " + name + "\"~~\n" + props + "\n~~source~~\n" + source + "|\n~~/source~~\n~~save~~ ~~!close~~\n~~/box~~");
         parser.checkCarret = false;
         if (this.verbalize) {
           return parser.getText();
@@ -2441,6 +2611,34 @@
     return EditCmd;
 
   })(Codewave.BaseCommand);
+
+  EditCmd.setCmds = function(base) {
+    var len1, p, q, ref;
+    ref = EditCmd.props;
+    for (q = 0, len1 = ref.length; q < len1; q++) {
+      p = ref[q];
+      p.setCmd(base);
+    }
+    return base;
+  };
+
+  EditCmd.props = [
+    new Codewave.EditCmdProp.revBool('no_carret', {
+      opt: 'checkCarret'
+    }), new Codewave.EditCmdProp.revBool('no_parse', {
+      opt: 'parse'
+    }), new Codewave.EditCmdProp.bool('prevent_parse_all', {
+      opt: 'preventParseAll'
+    }), new Codewave.EditCmdProp.bool('replace_box', {
+      opt: 'replaceBox'
+    }), new Codewave.EditCmdProp.string('name_to_param', {
+      opt: 'nameToParam'
+    }), new Codewave.EditCmdProp.string('alias_of', {
+      "var": 'aliasOf'
+    }), new Codewave.EditCmdProp.source('help', {
+      "var": 'help'
+    })
+  ];
 
   NameSpaceCmd = (function(superClass) {
     extend(NameSpaceCmd, superClass);

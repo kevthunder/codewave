@@ -56,7 +56,7 @@ class @Codewave.Command
   unregister: ->
     @_parent.removeCmd(this)
   isEditable: ->
-    @resultStr?
+    @resultStr? or @aliasOf?
   isExecutable: ->
     aliased = @getAliased()
     if aliased?
@@ -130,9 +130,9 @@ class @Codewave.Command
     @setOptions(data)
     
     if 'help' of data
-      @addCmd(this,new Command('help',data['help'],this))
+      @addCmd(new Command('help',data['help'],this))
     if 'fallback' of data
-      @addCmd(this,new Command('fallback',data['fallback'],this))
+      @addCmd(new Command('fallback',data['fallback'],this))
       
     if 'cmds' of data
       @addCmds(data['cmds'])
@@ -179,7 +179,14 @@ class @Codewave.Command
 @Codewave.Command.initCmds = ->
   Codewave.Command.cmds = new Codewave.Command(null,{
     'cmds':{
-      'hello':'Hello, World!'
+      'hello':{
+        help: """
+        "Hello, world!" is typically one of the simplest programs possible in
+        most programming languages, it is by tradition often (...) used to
+        verify that a language or system is operating correctly -wikipedia
+        """
+        result: 'Hello, World!'
+      }
     }
   })
   for initialiser in Codewave.Command.cmdInitialisers

@@ -195,14 +195,14 @@ initCmds = ->
       'cls' : CloseCmd
     },
     'edit':{
-      'cmds' : {
-        'source': Codewave.util.merge(setVarCmd('source'),{
+      'cmds' : EditCmd.setCmds({
+        'source': Codewave.Command.setVarCmd('source',{
           'preventParseAll' : true
         }),
         'save':{
           'aliasOf': 'core:exec_parent'
         }
-      },
+      }),
       'cls' : EditCmd
     },
     'rename':{
@@ -360,15 +360,24 @@ initCmds = ->
 
 @Codewave.Command.cmdInitialisers.push(initCmds)
 
-setVarCmd = (name) -> 
-  (
-    execute: (instance) ->
-      val = if (p = instance.getParam(0))?
-        p
-      else if instance.content
-        instance.content
-      instance.codewave.vars[name] = val if val?
-  )
+@Codewave.Command.setVarCmd = (name,base={}) -> 
+  base.execute = (instance) ->
+    val = if (p = instance.getParam(0))?
+      p
+    else if instance.content
+      instance.content
+    instance.codewave.vars[name] = val if val?
+  return base
+
+@Codewave.Command.setBoolVarCmd = (name,base={}) -> 
+  base.execute = (instance) ->
+    val = if (p = instance.getParam(0))?
+      p
+    else if instance.content
+      instance.content
+    unless val? and val in ['0','false','no']
+      instance.codewave.vars[name] = true
+  return base
   
 no_execute = (instance) ->
   reg = new RegExp("^("+Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar))
@@ -497,17 +506,23 @@ class EditCmd extends Codewave.BaseCommand
   resultWithContent: ->
       parser = @instance.getParserForText(@content)
       parser.parseAll()
-      Codewave.Command.saveCmd(@cmdName, {
+      data = {
         result: parser.vars.source
-      })
+      }
+      for p in EditCmd.props
+        p.writeFor(parser,data)
+      Codewave.Command.saveCmd(@cmdName, data)
       return ''
   resultWithoutContent: ->
     if !@cmd or @editable
+      cmd = @cmd
       source = if @cmd then @cmd.resultStr else ''
       name = if @cmd then @cmd.fullName else @cmdName
+      props = EditCmd.props.map( (p)-> p.display(cmd) ).filter( (p)-> p? ).join("\n")
       parser = @instance.getParserForText(
         """
         ~~box cmd:"#{@instance.cmd.fullName} #{name}"~~
+        #{props}
         ~~source~~
         #{source}|
         ~~/source~~
@@ -516,7 +531,19 @@ class EditCmd extends Codewave.BaseCommand
         """)
       parser.checkCarret = no
       if @verbalize then parser.getText() else parser.parseAll()
-
+EditCmd.setCmds = (base) ->
+  for p in EditCmd.props
+    p.setCmd(base)
+  return base
+EditCmd.props = [
+  new Codewave.EditCmdProp.revBool('no_carret',         {opt:'checkCarret'}),
+  new Codewave.EditCmdProp.revBool('no_parse',          {opt:'parse'}),
+  new Codewave.EditCmdProp.bool(   'prevent_parse_all', {opt:'preventParseAll'}),
+  new Codewave.EditCmdProp.bool(   'replace_box',       {opt:'replaceBox'}),
+  new Codewave.EditCmdProp.string( 'name_to_param',     {opt:'nameToParam'}),
+  new Codewave.EditCmdProp.string( 'alias_of',          {var:'aliasOf'}),
+  new Codewave.EditCmdProp.source( 'help',              {var:'help'}),
+]
 class NameSpaceCmd extends Codewave.BaseCommand
   init: ->
     @name = @instance.getParam([0])

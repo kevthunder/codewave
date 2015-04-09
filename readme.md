@@ -26,6 +26,7 @@ You may need to put it on a web server to be able to use the localstorage
 ```
 
 ## ToDo
+* alias command
 * command options for edit command
 * comment styles
   * php outer
