@@ -1,3 +1,6 @@
+# [pawa]
+#   replace Codewave.Command.set codewave_core.core_cmds.set
+
 class @Codewave.EditCmdProp
   constructor: (@name,options) ->
     defaults = {
@@ -37,13 +40,18 @@ class @Codewave.EditCmdProp
   display: (cmd) ->
     if @showForCmd(cmd)
       """
-      ~~!#{@name}~~
+      ~~#{@name}~~
       #{@valFromCmd(cmd) or ""}#{if @carret then "|" else ""}
-      ~~!/#{@name}~~
+      ~~/#{@name}~~
       """
     
     
 class @Codewave.EditCmdProp.source extends @Codewave.EditCmdProp 
+	valFromCmd: (cmd)->
+		res = super(cmd)
+		if res?
+			res = res.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
+		return res
   setCmd: (cmds)->
     cmds[@name] = Codewave.Command.setVarCmd(@name,{'preventParseAll' : true})
   showForCmd: (cmd) ->

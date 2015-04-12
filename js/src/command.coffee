@@ -52,11 +52,11 @@ class @Codewave.Command
     if !@_inited
       @_inited = true
       @parseData(@data)
-    this
+    return this
   unregister: ->
     @_parent.removeCmd(this)
   isEditable: ->
-    @resultStr? or @aliasOf?
+    return @resultStr? or @aliasOf?
   isExecutable: ->
     aliased = @getAliased()
     if aliased?
@@ -64,27 +64,27 @@ class @Codewave.Command
     for p in ['resultStr','resultFunct','cls','executeFunct']
       if this[p]?
         return true
-    false
-  resultIsAvailable: () ->
+    return false
+  resultIsAvailable: ->
     aliased = @getAliased()
     if aliased?
       return aliased.resultIsAvailable()
     for p in ['resultStr','resultFunct']
       if this[p]?
         return true
-    false
-  getDefaults: () ->
+    return false
+  getDefaults: ->
     res = {}
     aliased = @getAliased()
     if aliased?
       res = Codewave.util.merge(res,aliased.getDefaults())
     res = Codewave.util.merge(res,@defaults)
-    res
+    return res
   _aliasedFromFinder: (finder) ->
       finder.useFallbacks = false
       finder.mustExecute = false
       return finder.find()
-  getAliased: () ->
+  getAliased: ->
     if @aliasOf?
       context = new Codewave.Context()
       return @_aliasedFromFinder(context.getFinder(@aliasOf))
@@ -98,7 +98,7 @@ class @Codewave.Command
     if aliased?
       opt = Codewave.util.merge(opt,aliased.getOptions())
     return Codewave.util.merge(opt,@options)
-  getOptions: () ->
+  getOptions: ->
     return @_optionsForAliased(@getAliased())
   getOption: (key) ->
     options = @getOptions()
@@ -114,7 +114,7 @@ class @Codewave.Command
       @resultStr = data
       @options['parse'] = true
       return true
-    else if data?
+    else if data? # [pawa python] replace data? "isinstance(data,dict)"
       return @parseDictData(data)
     return false
   parseDictData: (data) ->
@@ -150,7 +150,7 @@ class @Codewave.Command
       @removeCmd(exists)
     cmd.setParent(this)
     @cmds.push(cmd)
-    cmd
+    return cmd
   removeCmd: (cmd) ->
     if (i = @cmds.indexOf(cmd)) > -1
       @cmds.splice(i, 1)
@@ -217,7 +217,6 @@ class @Codewave.Command
 
 class @Codewave.BaseCommand
   constructor: (@instance) ->
-    #
   init: ->
     #
   resultIsAvailable: ->

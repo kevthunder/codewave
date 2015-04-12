@@ -15,7 +15,7 @@ class @Codewave.Context
   removeNameSpace: (name) ->
     @nameSpaces = @nameSpaces.filter (n) -> n isnt name
 
-  getNameSpaces: () ->
+  getNameSpaces: ->
     unless @_namespaces?
       npcs = ['core'].concat(@nameSpaces)
       if @parent?
@@ -42,7 +42,6 @@ class @Codewave.Context
       return cc + ' ' + str + ' ' + cc
   wrapCommentLeft: (str = '') ->
     cc = @getCommentChar()
-    console.log()
     if (i = cc.indexOf('%s')) > -1
       return cc.substr(0,i) + str
     else

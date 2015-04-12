@@ -1,6 +1,8 @@
 # [pawa python]
 #   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
 #   replace (BaseCommand (command.BaseCommand
+#   replace EditCmd.props editCmdProps
+#   replace EditCmd.setCmds editCmdSetCmds reparse
 
 initCmds = ->
   core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'))
@@ -375,7 +377,6 @@ initCmds = ->
       p
     else if instance.content
       instance.content
-    console.log(instance,val)
     instance.codewave.vars[name] = val if val?
   return base
 
@@ -410,19 +411,19 @@ wrapWithPhp = (result,instance) ->
   return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
 renameCommand = (instance) ->
   savedCmds = Codewave.storage.load('cmds')
-  from = instance.getParam([0,'from'])
-  to = instance.getParam([1,'to'])
-  if from? and to?
-    cmd = instance.context.getCmd(from)
+  origninalName = instance.getParam([0,'from'])
+  newName = instance.getParam([1,'to'])
+  if origninalName? and newName?
+    cmd = instance.context.getCmd(origninalName)
     console.log(cmd)
-    if savedCmds[from]? and cmd?
-      unless to.indexOf(':') > -1
-        to = cmd.fullName.replace(from,'') + to
-      cmdData = savedCmds[from]
-      Codewave.Command.cmds.setCmdData(to,cmdData)
+    if savedCmds[origninalName]? and cmd?
+      unless newName.indexOf(':') > -1
+        newName = cmd.fullName.replace(origninalName,'') + newName
+      cmdData = savedCmds[origninalName]
+      Codewave.Command.cmds.setCmdData(newName,cmdData)
       cmd.unregister()
-      savedCmds[to] = cmdData
-      delete savedCmds[from]
+      savedCmds[newName] = cmdData
+      delete savedCmds[origninalName]
       Codewave.storage.save('cmds',savedCmds)
       return ""
     else if cmd? 
@@ -532,7 +533,6 @@ class EditCmd extends Codewave.BaseCommand
       data = {}
       for p in EditCmd.props
         p.writeFor(parser,data)
-      console.log(parser,data)
       Codewave.Command.saveCmd(@cmdName, data)
       return ''
   propsDisplay: ->

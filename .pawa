@@ -26,10 +26,14 @@ syntax:
           - Codewave.util.BoxHelper   box_helper.BoxHelper
           - Codewave.util             util
           - Codewave.Command.cmds     command.cmds
+          - Codewave.EditCmdProp.     edit_cmd_prop.
           - Codewave.Command(         command.Command(
           - Codewave.logger.log       logger.log
           - Codewave.CmdFinder        cmd_finder.CmdFinder
+          - Codewave.Context          context.Context
+          - Codewave.Process          process.Process
           - Codewave.CmdInstance      cmd_instance.CmdInstance
+          - Codewave.PositionedCmdInstance positioned_cmd_instance.PositionedCmdInstance
           - Codewave.TextParser       text_parser.TextParser
           - Codewave.storage          storage
           - Codewave.ClosingPromp     closing_promp.ClosingPromp
@@ -55,7 +59,7 @@ syntax:
           - /this\[(\w*)\]\s*=\s*(.*)/                'setattr(self,$1,$2)'
           - /\sconstructor:\s*->/                     ' def __init__(self):'
           - |
-            /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self,${sarg1}):
+            /\sconstructor:\s*\(([^)]*)\)\s*->/       ' def __init__(self, ${sarg1}):
               ${sarg2} = ${sarg3}' 
             alter:$1,sarg1,/@/,'' 
             alter:$1,sarg2,/($|,)\s*[^@]\w*(\s*=\s*[^,]*)|\s*=\s*[^,]+/,''
