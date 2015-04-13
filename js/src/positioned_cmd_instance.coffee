@@ -32,12 +32,12 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     @named = {}
     if @cmd?
       @named = Codewave.util.merge(@named,@cmd.getDefaults(this)) # [pawa python] replace '@named = Codewave.util.merge(@named,' self.named.update(
-      nameToParam = @getOption('nameToParam',this)
+      nameToParam = @getOption('nameToParam')
       if nameToParam? 
         @named[nameToParam] = @cmdName
     if params.length
       if @cmd?
-        allowedNamed = @getOption('allowedNamed',this) 
+        allowedNamed = @getOption('allowedNamed') 
       inStr = false
       param = ''
       name = false
@@ -70,7 +70,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     return @closingPos if @closingPos?
     closing = @codewave.brakets + @codewave.closeChar + @cmdName + @codewave.brakets
     opening = @codewave.brakets + @cmdName
-    if f = @codewave.findMatchingPair(@pos+@str.length,opening,closing)
+    if f = @codewave.findMatchingPair(@pos+@str.length, opening, closing)
       return @closingPos = f
   _checkElongated: ->
     endPos = @getEndPos()
@@ -169,7 +169,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
       else
         @replaceWith('')
     else if @cmd?
-      if beforeFunct = @getOption('beforeExecute',this)
+      if beforeFunct = @getOption('beforeExecute')
         beforeFunct(this)
       if @resultIsAvailable()
         if (res = @result())?
@@ -198,7 +198,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
   alterResultForBox: (repl) ->
     helper = new Codewave.util.BoxHelper(@context)
     helper.getOptFromLine(@rawWithFullLines(),false)
-    if @getOption('replaceBox',this)
+    if @getOption('replaceBox')
       box = helper.getBoxForPos(@getPos())
       [repl.start, repl.end] = [box.start, box.end]
       @indentLen = helper.indent
@@ -212,7 +212,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     return repl
   getCursorFromResult: (repl) ->
     cursorPos = repl.resPosBeforePrefix()
-    if @cmd? and @codewave.checkCarret and @getOption('checkCarret',this)
+    if @cmd? and @codewave.checkCarret and @getOption('checkCarret')
       if (p = @codewave.getCarretPos(repl.text))? 
         cursorPos = repl.start+repl.prefix.length+p
       repl.text = @codewave.removeCarret(repl.text)

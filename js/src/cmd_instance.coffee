@@ -20,7 +20,7 @@ class @Codewave.CmdInstance
     unless @context?
       @context = new Codewave.Context()
     return @context or new Codewave.Context()
-  getFinder: (cmdName,context)->
+  getFinder: (cmdName)->
     finder = @getContext().getFinder(cmdName,@_getParentNamespaces())
     finder.instance = this
     return finder
@@ -47,7 +47,7 @@ class @Codewave.CmdInstance
         return aliased.resultIsAvailable()
       return @cmd.resultIsAvailable()
     return false
-  getDefaults: () ->
+  getDefaults: ->
     if @cmd?
       res = {}
       aliased = @getAliased()
@@ -56,8 +56,8 @@ class @Codewave.CmdInstance
       res = Codewave.util.merge(res,cmd.defaults)
       if @cmdObj?
         res = Codewave.util.merge(res,@cmdObj.getDefaults())
-      res
-  getAliased: () ->
+      return res
+  getAliased: ->
     if @cmd?
       if @aliasedCmd?
         return @aliasedCmd or null
@@ -66,7 +66,7 @@ class @Codewave.CmdInstance
         aliased = @cmd._aliasedFromFinder(@getFinder(aliasOf))
         @aliasedCmd = aliased or false
         return aliased
-  getOptions: () ->
+  getOptions: ->
     if @cmd?
       if @cmdOptions?
         return @cmdOptions
@@ -85,7 +85,7 @@ class @Codewave.CmdInstance
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
     return defVal
-  runExecuteFunct: () ->
+  runExecuteFunct: ->
     if @cmd?
       if @cmdObj?
         return @cmdObj.execute()
@@ -128,6 +128,6 @@ class @Codewave.CmdInstance
   applyIndent: (text) ->
     if text?
       reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
-      text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", @getIndent()))
+      return text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", @getIndent()))
     else
-      text
+      return text
