@@ -41,18 +41,26 @@ class @Codewave
     # Codewave.logger.resume()
     @process = null
   runAtCursorPos: ->
-    if(cmd = @commandOnCursorPos()?.init())
-      Codewave.logger.log(cmd)
-      cmd.execute()
+    if @editor.allowMultiSelection()
+      @runAtMultiPos(@editor.getMultiSel())
     else
-      cpos = @editor.getCursorPos()
-      if cpos.start == cpos.end
-        @addBrakets(cpos.start,cpos.end)
+      @runAtPos(@editor.getCursorPos())
+  runAtPos: (pos)->
+    @runAtMultiPos([pos])
+  runAtMultiPos: (multiPos)->
+    if multiPos.length > 0
+      cmd = @commandOnPos(multiPos[0].end)
+      if cmd?
+        if multiPos.length > 1
+          cmd.setMultiPos(multiPos)
+        cmd.init()
+        Codewave.logger.log(cmd)
+        cmd.execute()
       else
-        @promptClosingCmd(cpos.start,cpos.end)
-  commandOnCursorPos: ->
-    cpos = @editor.getCursorPos()
-    return @commandOnPos(cpos.end)
+        if multiPos[0].start == multiPos[0].end
+          @addBrakets(multiPos)
+        else
+          @promptClosingCmd(multiPos[0].start, multiPos[0].end)
   commandOnPos: (pos) ->
     if @precededByBrakets(pos) and @followedByBrakets(pos) and @countPrevBraket(pos) % 2 == 1 
       prev = pos-@brakets.length
@@ -147,13 +155,10 @@ class @Codewave
       else
         nested++
     null
-  addBrakets: (start, end) ->
-    if start == end
-      @editor.insertTextAt(@brakets+@brakets,start)
-    else
-      @editor.insertTextAt(@brakets,end)
-      @editor.insertTextAt(@brakets,start)
-    @editor.setCursorPos(end+@brakets.length)
+  addBrakets: (pos) ->
+    pos = Codewave.util.posCollection(pos)
+    replacements = pos.wrap(@brakets,@brakets).map( (r)->r.selectContent() )
+    @editor.applyReplacements(replacements)
   promptClosingCmd: (start, end) ->
     @closingPromp.stop() if @closingPromp?
     @closingPromp = (new Codewave.ClosingPromp(this,start, end)).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse

@@ -12,25 +12,56 @@ class Pos
     return @start <= pt and pt <= @end
   containsPos: (pos) ->
     return @start <= pos.start and pos.end <= @end
+  copy: ->
+    return new Pos(@start,@end)
+    
 class WrappedPos extends Pos
   constructor: (@start,@innerStart,@innerEnd,@end) ->
   innerContainsPt: (pt) ->
     return @innerStart <= pt and pt <= @innerEnd
   innerContainsPos: (pos) ->
     return @innerStart <= pos.start and pos.end <= @innerEnd
+  copy: ->
+    return new WrappedPos(@start,@innerStart,@innerEnd,@end)
 
 class Size
   constructor: (@width,@height) ->
     
 class Replacement
   constructor: (@start, @end, @text, @prefix ='', @suffix = '') ->
+    @selections = []
   resPosBeforePrefix: ->
     return @start+@prefix.length+@text.length
   resEnd: -> 
     return @start+@prefix.length+@text.length+@suffix.length
   applyToEditor: (editor) ->
-    editor.spliceText(@start,@end,@prefix+@text+@suffix)
-    
+    editor.spliceText(@start, @end, @finalTextWith(editor))
+  originalTextWith: (editor) ->
+    editor.textSubstr(@start, @end)
+  finalTextWith: (editor = null) ->
+    text = @prefix+@text+@suffix
+    if editor?
+      text = text.replace('%original%', @originalTextWith(editor))
+    else
+      text = text.replace('%original%', '')
+    return text
+  offsetAfter: (editor = null) -> 
+    return @finalTextWith(editor).length - (@end - @start)
+  applyOffset: (offset)->
+    if offset != 0
+      @start += offset
+      @end += offset
+      for sel in @selections
+        sel.start += offset
+        sel.end += offset
+    return this
+  selectContent: -> 
+    @selections = [new Pos(@prefix.length+@start, @prefix.length+@end)]
+    return this
+  copy: -> 
+    res = new Replacement(@start, @end, @text, @prefix, @suffix)
+    res.selections = @selections.map( (s)->s.copy() )
+    return res
     
 class Pair
   constructor: (@opener,@closer,@options = {}) ->
@@ -114,6 +145,16 @@ class Pair
 
   reverseStr: (txt) ->
     return txt.split("").reverse().join("")
+  
+  isArray: (arr) ->
+    return Object.prototype.toString.call( arr ) == '[object Array]'
+  
+  posCollection: (arr) ->
+    if !Codewave.util.isArray(arr)
+      arr == [arr]
+    arr.wrap = (prefix,suffix)->
+      return @map( (p) -> new Replacement(p.start, p.end, '%original%', prefix, suffix))
+    return arr
     
   StrPos: StrPos
   Pos: Pos

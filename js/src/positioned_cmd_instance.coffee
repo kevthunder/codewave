@@ -103,6 +103,8 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')
   _getParentCmds: ->
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
+  setMultiPos: (multiPos) ->
+    @multiPos = multiPos
   prevEOL: ->
     unless @_prevEOL?
       @_prevEOL = @codewave.findLineStart(@pos)
@@ -215,6 +217,20 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
         cursorPos = repl.start+repl.prefix.length+p
       repl.text = @codewave.removeCarret(repl.text)
     return cursorPos
+  checkMulti: (repl) ->
+    if @multiPos? and @multiPos.length > 1
+      replacements = [repl]
+      originalText = repl.originalTextWith(@codewave.editor)
+      for pos, i in @multiPos
+        if i == 0
+          originalPos = pos.start
+        else
+          newRepl = repl.copy().applyOffset(pos.start-originalPos)
+          if newRepl.originalTextWith(@codewave.editor) == originalText
+            replacements.push(newRepl)
+      return replacements
+    else
+      return [repl]
   replaceWith: (text) ->
     repl = new Codewave.util.Replacement(@pos,@getEndPos(),text)
     
@@ -224,8 +240,10 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
       repl.text = @applyIndent(repl.text)
       
     cursorPos = @getCursorFromResult(repl)
-      
-    repl.applyToEditor(@codewave.editor)
-    @codewave.editor.setCursorPos(cursorPos)
+    repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)]
+    
+    replacements = @checkMulti(repl)
+    @codewave.editor.applyReplacements(replacements)
+    
     @replaceStart = repl.start
     @replaceEnd = repl.resEnd()

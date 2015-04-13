@@ -40,3 +40,18 @@ class @Codewave.Editor
     throw "Not Implemented"
   removeChangeListener: (callback) ->
     throw "Not Implemented"
+  
+  applyReplacements: (replacements) ->
+    selections = []
+    offset = 0
+    for repl in replacements
+      repl.applyOffset(offset)
+      repl.applyToEditor(this)
+      offset += repl.offsetAfter(this)
+      
+      selections = selections.concat(repl.selections)
+      
+    if @allowMultiSelection()
+      @setMultiSel(selections)
+    else
+      @setCursorPos(selections[0])

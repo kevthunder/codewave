@@ -15,6 +15,7 @@ module.exports = function (grunt) {
             'js/src/editor.coffee',
             'js/src/text_parser.coffee',
             'js/src/edit_cmd_prop.coffee',
+            'js/src/text_area_editor.coffee',
             'js/src/*.coffee'
           ] // concat then compile into single file
         }

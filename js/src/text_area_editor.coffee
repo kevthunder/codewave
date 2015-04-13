@@ -45,10 +45,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     return @tmpCursorPos if @tmpCursorPos?
     if @hasFocus
       if @selectionPropExists
-        (
-          start: @obj.selectionStart
-          end: @obj.selectionEnd
-        )
+        new Codewave.util.Pos(@obj.selectionStart,@obj.selectionEnd)
       else
         @getCursorPosFallback()
   getCursorPosFallback: ->
@@ -63,9 +60,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
           len++
           rng.moveEnd("character", -1)
         rng.setEndPoint "StartToStart", @obj.createTextRange()
-        pos =
-          start: 0
-          end: len
+        pos = new Codewave.util.Pos(0,len)
         while rng.compareEndPoints("EndToStart", rng) > 0
           pos.start++
           pos.end++
