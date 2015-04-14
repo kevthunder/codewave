@@ -470,26 +470,40 @@ class BoxCmd extends Codewave.BaseCommand
     @helper.deco = @instance.codewave.deco
     @helper.pad = 2
     
-    if @instance.content
-      bounds = @helper.textBounds(@instance.content)
-      [width, height] = [bounds.width, bounds.height]
+  height: ->
+    if @bounds()?
+      height = @bounds().height
     else
-      width = 50
       height = 3
-    
-    params = ['width']
-    if @instance.params.length > 1 
-      params.push(0)
-    @helper.width = Math.max(@minWidth(), @instance.getParam(params, width))
       
     params = ['height']
     if @instance.params.length > 1 
       params.push(1)
     else if @instance.params.length > 0
       params.push(0)
-    @helper.height = @instance.getParam(params,height)
-    
+    return @instance.getParam(params,height)
+      
+  width: ->
+    if @bounds()?
+      width = @bounds().width
+    else
+      width = 3
+      
+    params = ['width']
+    if @instance.params.length > 1 
+      params.push(0)
+    return Math.max(@minWidth(), @instance.getParam(params, width))
+
+  
+  bounds: ->
+    if @instance.content
+      unless @_bounds?
+        @_bounds = @helper.textBounds(@instance.content)
+      return @_bounds
+      
   result: ->
+    @helper.height = @height()
+    @helper.width = @width()
     return @helper.draw(@instance.content)
   minWidth: ->
     if @cmd?
@@ -517,18 +531,17 @@ class EditCmd extends Codewave.BaseCommand
       @finder.useFallbacks = false
       @cmd = @finder.find()
     @editable = if @cmd? then @cmd.isEditable() else true
-    @content = @instance.content
   getOptions: ->
     return {
       allowedNamed: ['cmd']
     }
   result: ->
-    if @content
+    if @instance.content
       return @resultWithContent()
     else
       return @resultWithoutContent()
   resultWithContent: ->
-      parser = @instance.getParserForText(@content)
+      parser = @instance.getParserForText(@instance.content)
       parser.parseAll()
       data = {}
       for p in EditCmd.props

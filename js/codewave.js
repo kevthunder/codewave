@@ -2817,7 +2817,6 @@
     }
 
     BoxCmd.prototype.init = function() {
-      var bounds, height, params, ref, width;
       this.helper = new Codewave.util.BoxHelper(this.instance.context);
       this.cmd = this.instance.getParam(['cmd']);
       if (this.cmd != null) {
@@ -2825,29 +2824,51 @@
         this.helper.closeText = this.instance.codewave.brakets + this.instance.codewave.closeChar + this.cmd.split(" ")[0] + this.instance.codewave.brakets;
       }
       this.helper.deco = this.instance.codewave.deco;
-      this.helper.pad = 2;
-      if (this.instance.content) {
-        bounds = this.helper.textBounds(this.instance.content);
-        ref = [bounds.width, bounds.height], width = ref[0], height = ref[1];
+      return this.helper.pad = 2;
+    };
+
+    BoxCmd.prototype.height = function() {
+      var height, params;
+      if (this.bounds() != null) {
+        height = this.bounds().height;
       } else {
-        width = 50;
         height = 3;
       }
-      params = ['width'];
-      if (this.instance.params.length > 1) {
-        params.push(0);
-      }
-      this.helper.width = Math.max(this.minWidth(), this.instance.getParam(params, width));
       params = ['height'];
       if (this.instance.params.length > 1) {
         params.push(1);
       } else if (this.instance.params.length > 0) {
         params.push(0);
       }
-      return this.helper.height = this.instance.getParam(params, height);
+      return this.instance.getParam(params, height);
+    };
+
+    BoxCmd.prototype.width = function() {
+      var params, width;
+      if (this.bounds() != null) {
+        width = this.bounds().width;
+      } else {
+        width = 3;
+      }
+      params = ['width'];
+      if (this.instance.params.length > 1) {
+        params.push(0);
+      }
+      return Math.max(this.minWidth(), this.instance.getParam(params, width));
+    };
+
+    BoxCmd.prototype.bounds = function() {
+      if (this.instance.content) {
+        if (this._bounds == null) {
+          this._bounds = this.helper.textBounds(this.instance.content);
+        }
+        return this._bounds;
+      }
     };
 
     BoxCmd.prototype.result = function() {
+      this.helper.height = this.height();
+      this.helper.width = this.width();
       return this.helper.draw(this.instance.content);
     };
 
@@ -2905,8 +2926,7 @@
         this.finder.useFallbacks = false;
         this.cmd = this.finder.find();
       }
-      this.editable = this.cmd != null ? this.cmd.isEditable() : true;
-      return this.content = this.instance.content;
+      return this.editable = this.cmd != null ? this.cmd.isEditable() : true;
     };
 
     EditCmd.prototype.getOptions = function() {
@@ -2916,7 +2936,7 @@
     };
 
     EditCmd.prototype.result = function() {
-      if (this.content) {
+      if (this.instance.content) {
         return this.resultWithContent();
       } else {
         return this.resultWithoutContent();
@@ -2925,7 +2945,7 @@
 
     EditCmd.prototype.resultWithContent = function() {
       var data, len1, p, parser, q, ref;
-      parser = this.instance.getParserForText(this.content);
+      parser = this.instance.getParserForText(this.instance.content);
       parser.parseAll();
       data = {};
       ref = EditCmd.props;
@@ -3573,6 +3593,7 @@
       repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)];
       replacements = this.checkMulti(repl);
       this.codewave.editor.applyReplacements(replacements);
+      console.log([text, repl, this, this.codewave.editor.text()]);
       this.replaceStart = repl.start;
       return this.replaceEnd = repl.resEnd();
     };
