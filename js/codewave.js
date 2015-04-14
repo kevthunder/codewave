@@ -455,32 +455,37 @@
     };
 
     Replacement.prototype.applyToEditor = function(editor) {
-      return editor.spliceText(this.start, this.end, this.finalTextWith(editor));
+      return editor.spliceText(this.start, this.end, this.finalText(editor));
     };
 
     Replacement.prototype.originalTextWith = function(editor) {
       return editor.textSubstr(this.start, this.end);
     };
 
-    Replacement.prototype.finalTextWith = function(editor) {
+    Replacement.prototype.finalText = function(editor) {
       var text;
       if (editor == null) {
         editor = null;
       }
-      text = this.prefix + this.text + this.suffix;
-      if (editor != null) {
-        text = text.replace('%original%', this.originalTextWith(editor));
+      if (this.text === '%original%') {
+        if (editor != null) {
+          text = this.originalTextWith(editor);
+        } else {
+          text = '';
+        }
       } else {
-        text = text.replace('%original%', '');
+        text = this.text;
       }
+      text = this.prefix + text + this.suffix;
       return text;
     };
 
-    Replacement.prototype.offsetAfter = function(editor) {
-      if (editor == null) {
-        editor = null;
+    Replacement.prototype.offsetAfter = function() {
+      if (this.text === '%original%') {
+        return this.prefix.length + this.suffix.length;
+      } else {
+        return this.finalText().length - (this.end - this.start);
       }
-      return this.finalTextWith(editor).length - (this.end - this.start);
     };
 
     Replacement.prototype.applyOffset = function(offset) {

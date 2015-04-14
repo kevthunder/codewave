@@ -35,18 +35,24 @@ class Replacement
   resEnd: -> 
     return @start+@prefix.length+@text.length+@suffix.length
   applyToEditor: (editor) ->
-    editor.spliceText(@start, @end, @finalTextWith(editor))
+    editor.spliceText(@start, @end, @finalText(editor))
   originalTextWith: (editor) ->
     editor.textSubstr(@start, @end)
-  finalTextWith: (editor = null) ->
-    text = @prefix+@text+@suffix
-    if editor?
-      text = text.replace('%original%', @originalTextWith(editor))
+  finalText: (editor = null) ->
+    if @text == '%original%'
+      if editor?
+        text = @originalTextWith(editor)
+      else
+        text = ''
     else
-      text = text.replace('%original%', '')
+      text = @text
+    text = @prefix+text+@suffix
     return text
-  offsetAfter: (editor = null) -> 
-    return @finalTextWith(editor).length - (@end - @start)
+  offsetAfter: () -> 
+    if @text == '%original%'
+      return @prefix.length+@suffix.length
+    else
+      return @finalText().length - (@end - @start)
   applyOffset: (offset)->
     if offset != 0
       @start += offset
