@@ -60,7 +60,7 @@ class @Codewave
         if multiPos[0].start == multiPos[0].end
           @addBrakets(multiPos)
         else
-          @promptClosingCmd(multiPos[0].start, multiPos[0].end)
+          @promptClosingCmd(multiPos)
   commandOnPos: (pos) ->
     if @precededByBrakets(pos) and @followedByBrakets(pos) and @countPrevBraket(pos) % 2 == 1 
       prev = pos-@brakets.length
@@ -159,9 +159,9 @@ class @Codewave
     pos = Codewave.util.posCollection(pos)
     replacements = pos.wrap(@brakets,@brakets).map( (r)->r.selectContent() )
     @editor.applyReplacements(replacements)
-  promptClosingCmd: (start, end) ->
+  promptClosingCmd: (selections) ->
     @closingPromp.stop() if @closingPromp?
-    @closingPromp = (new Codewave.ClosingPromp(this,start, end)).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
+    @closingPromp = (new Codewave.ClosingPromp(this,selections)).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
   parseAll: (recursive = true) ->
     pos = 0
     while cmd = @nextCmd(pos)
@@ -189,16 +189,9 @@ class @Codewave
     else if @inInstance?
       return @inInstance.codewave.getRoot()
   removeCarret: (txt) ->
-    tmp = '[[[[quoted_carret]]]]'
-    reCarret = new RegExp(Codewave.util.escapeRegExp(@carretChar), "g")
-    reQuoted = new RegExp(Codewave.util.escapeRegExp(@carretChar+@carretChar), "g")
-    reTmp = new RegExp(Codewave.util.escapeRegExp(tmp), "g")
-    txt.replace(reQuoted,tmp).replace(reCarret,'').replace(reTmp, @carretChar)
+    return CodeWave.util.removeCarret(txt,@carretChar)
   getCarretPos: (txt) ->
-    reQuoted = new RegExp(Codewave.util.escapeRegExp(@carretChar+@carretChar), "g")
-    txt = txt.replace(reQuoted, ' ') # [pawa python] replace reQuoted self.carretChar+self.carretChar
-    if (i = txt.indexOf(@carretChar)) > -1
-      return i
+    return CodeWave.util.getCarretPos(txt,@carretChar)
   regMarker: (flags="g") -> # [pawa python] replace flags="g" flags=0 
     return new RegExp(Codewave.util.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->

@@ -1,23 +1,42 @@
 class @Codewave.ClosingPromp
-  constructor: (@codewave,@start,@end) ->
+  constructor: (@codewave,selections) ->
     @timeout = null
-    @len = @end - @start
-    @codewave.editor.insertTextAt("\n"+@codewave.brakets+@codewave.closeChar+@codewave.brakets,@end)
-    @codewave.editor.insertTextAt(@codewave.brakets+@codewave.brakets+"\n",@start)
-    @codewave.editor.setCursorPos(@start+@codewave.brakets.length)
-    @codewave.editor.onAnyChange = => @onAnyChange()
-  onAnyChange: ->
-    clearTimeout(@timeout) if @timeout?
-    @timeout = setTimeout (=>
-      cpos = @codewave.editor.getCursorPos()
-      if (openBounds = @whithinOpenBounds(cpos.end))?
-        cmd = @codewave.editor.textSubstr(openBounds.innerStart,openBounds.innerEnd).split(' ')[0]
-        if (closeBounds = @whithinCloseBounds(openBounds))? and @codewave.editor.textSubstr(closeBounds.innerStart,closeBounds.innerEnd) != cmd
-          @codewave.editor.spliceText(closeBounds.innerStart,closeBounds.innerEnd,cmd)
-          @codewave.editor.setCursorPos(cpos.start,cpos.end)
-      else
-        @stop()
-    ), 2
+    @selections = Codewave.util.posCollection(selections)
+  begin: ->
+    @typed = ''
+    @replacements = @selections.wrap(
+      @codewave.brakets+@codewave.carretChar+@codewave.brakets+"\n",
+      "\n"+@codewave.brakets+@codewave.closeChar+@codewave.carretChar+@codewave.brakets
+    ).map( (p) -> p.carretToSel() )
+    @codewave.editor.applyReplacements(@replacements)
+    
+    if @codewave.editor.canListenToChange()
+      @codewave.editor.addChangeListener( (ch=null)=> @onChange(ch) )
+    
+    return this
+  onChange: (ch = null)->
+		if !ch? or ch.charCodeAt(0) == 32
+			if self.shouldStop()
+				self.stop()
+				self.cleanClose()
+        
+	shouldStop: ->
+    cpos = @codewave.editor.getCursorPos()
+    return !whithinOpenFirstBounds()? or @typed.indexOf(' ') != -1
+  
+        
+        
+    # clearTimeout(@timeout) if @timeout?
+    # @timeout = setTimeout (=>
+      # cpos = @codewave.editor.getCursorPos()
+      # if (openBounds = @whithinOpenBounds(cpos.end))?
+        # cmd = @codewave.editor.textSubstr(openBounds.innerStart,openBounds.innerEnd).split(' ')[0]
+        # if (closeBounds = @whithinCloseBounds(openBounds))? and @codewave.editor.textSubstr(closeBounds.innerStart,closeBounds.innerEnd) != cmd
+          # @codewave.editor.spliceText(closeBounds.innerStart,closeBounds.innerEnd,cmd)
+          # @codewave.editor.setCursorPos(cpos.start,cpos.end)
+      # else
+        # @stop()
+    # ), 2
   stop: ->
     clearTimeout(@timeout) if @timeout?
     @codewave.editor.onAnyChange = null
@@ -28,10 +47,10 @@ class @Codewave.ClosingPromp
       @codewave.editor.spliceText(openBounds.start,openBounds.end+1,'')
       @codewave.editor.setCursorPos(@start,@end)
     @stop()
-  whithinOpenBounds: (pos) ->
-    innerStart = @start+@codewave.brakets.length
-    if @codewave.findPrevBraket(pos) == @start and @codewave.editor.textSubstr(@start,innerStart) == @codewave.brakets and (innerEnd = @codewave.findNextBraket(innerStart))?
-      ( start: @start, innerStart:innerStart, innerEnd:innerEnd, end: innerEnd+@codewave.brakets.length)
+  whithinOpenFirstBounds: (pos) ->
+    innerStart = @replacements[0].start+@codewave.brakets.length
+    if @codewave.findPrevBraket(pos) == @replacements[0].start and (innerEnd = @codewave.findNextBraket(innerStart))?
+      @typed = editor.textSubstr(innerStart,innerEnd)
   whithinCloseBounds: (openBounds) ->
     start = openBounds.end+@len+2
     innerStart = start+@codewave.brakets.length+@codewave.closeChar.length

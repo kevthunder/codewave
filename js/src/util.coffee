@@ -32,27 +32,17 @@ class Replacement
     @selections = []
   resPosBeforePrefix: ->
     return @start+@prefix.length+@text.length
-  resEnd: -> 
-    return @start+@prefix.length+@text.length+@suffix.length
+  resEnd: (editor = null) -> 
+    return @start+@finalText(editor).length
   applyToEditor: (editor) ->
+    @adjustSelFor(editor)
     editor.spliceText(@start, @end, @finalText(editor))
   originalTextWith: (editor) ->
     editor.textSubstr(@start, @end)
   finalText: (editor = null) ->
-    if @text == '%original%'
-      if editor?
-        text = @originalTextWith(editor)
-      else
-        text = ''
-    else
-      text = @text
-    text = @prefix+text+@suffix
-    return text
+    return @prefix+@text+@suffix
   offsetAfter: () -> 
-    if @text == '%original%'
-      return @prefix.length+@suffix.length
-    else
-      return @finalText().length - (@end - @start)
+    return @finalText().length - (@end - @start)
   applyOffset: (offset)->
     if offset != 0
       @start += offset
@@ -64,8 +54,49 @@ class Replacement
   selectContent: -> 
     @selections = [new Pos(@prefix.length+@start, @prefix.length+@end)]
     return this
+  carretToSel: ->
+    @selections = []
+    text = @finalText()
+    @prefix = Codewave.util.removeCarret(@prefix)
+    @text = Codewave.util.removeCarret(@text)
+    @suffix = Codewave.util.removeCarret(@suffix)
+    start = @start
+    
+    while (res = Codewave.util.getAndRemoveFirstCarret(text))?
+      [pos,text] = res
+      @selections.push(new Pos(start+pos, start+pos))
+      
+    return this
   copy: -> 
     res = new Replacement(@start, @end, @text, @prefix, @suffix)
+    res.selections = @selections.map( (s)->s.copy() )
+    return res
+    
+class Wrapping extends Replacement
+  constructor: (@start, @end, @prefix ='', @suffix = '') ->
+    @text = ''
+    @selections = []
+  applyToEditor: (editor) ->
+    @adjustSelFor(editor)
+    super(editor)
+  adjustSelFor: (editor) ->
+    offset = @originalTextWith(editor).length
+    for sel in @selections
+      if sel.start > @start+@prefix.length
+        sel.start += offset
+      if sel.end >= @start+@prefix.length
+        sel.end += offset
+  finalText: (editor = null) ->
+    if editor?
+      text = @originalTextWith(editor)
+    else
+      text = ''
+    return @prefix+text+@suffix
+  offsetAfter: () -> 
+    return @prefix.length+@suffix.length
+          
+  copy: -> 
+    res = new Wrapping(@start, @end, @prefix, @suffix)
     res.selections = @selections.map( (s)->s.copy() )
     return res
     
@@ -152,6 +183,26 @@ class Pair
   reverseStr: (txt) ->
     return txt.split("").reverse().join("")
   
+  
+  removeCarret: (txt, carretChar = '|') ->
+    tmp = '[[[[quoted_carret]]]]'
+    reCarret = new RegExp(Codewave.util.escapeRegExp(carretChar), "g")
+    reQuoted = new RegExp(Codewave.util.escapeRegExp(carretChar+carretChar), "g")
+    reTmp = new RegExp(Codewave.util.escapeRegExp(tmp), "g")
+    txt.replace(reQuoted,tmp).replace(reCarret,'').replace(reTmp, carretChar)
+    
+  getAndRemoveFirstCarret: (txt, carretChar = '|') ->
+    pos = Codewave.util.getCarretPos(txt,carretChar)
+    if pos?
+      txt = txt.substr(0,pos) + txt.substr(pos+carretChar.length)
+      return [pos,txt]
+      
+  getCarretPos: (txt, carretChar = '|') ->
+    reQuoted = new RegExp(Codewave.util.escapeRegExp(carretChar+carretChar), "g")
+    txt = txt.replace(reQuoted, ' ') # [pawa python] replace reQuoted carretChar+carretChar
+    if (i = txt.indexOf(carretChar)) > -1
+      return i
+  
   isArray: (arr) ->
     return Object.prototype.toString.call( arr ) == '[object Array]'
   
@@ -159,7 +210,7 @@ class Pair
     if !Codewave.util.isArray(arr)
       arr == [arr]
     arr.wrap = (prefix,suffix)->
-      return @map( (p) -> new Replacement(p.start, p.end, '%original%', prefix, suffix))
+      return @map( (p) -> new Wrapping(p.start, p.end, prefix, suffix))
     return arr
     
   StrPos: StrPos

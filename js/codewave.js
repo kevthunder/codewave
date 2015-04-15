@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -77,7 +77,7 @@
           if (multiPos[0].start === multiPos[0].end) {
             return this.addBrakets(multiPos);
           } else {
-            return this.promptClosingCmd(multiPos[0].start, multiPos[0].end);
+            return this.promptClosingCmd(multiPos);
           }
         }
       }
@@ -274,11 +274,11 @@
       return this.editor.applyReplacements(replacements);
     };
 
-    Codewave.prototype.promptClosingCmd = function(start, end) {
+    Codewave.prototype.promptClosingCmd = function(selections) {
       if (this.closingPromp != null) {
         this.closingPromp.stop();
       }
-      return this.closingPromp = (new Codewave.ClosingPromp(this, start, end)).begin();
+      return this.closingPromp = (new Codewave.ClosingPromp(this, selections)).begin();
     };
 
     Codewave.prototype.parseAll = function(recursive) {
@@ -327,21 +327,11 @@
     };
 
     Codewave.prototype.removeCarret = function(txt) {
-      var reCarret, reQuoted, reTmp, tmp;
-      tmp = '[[[[quoted_carret]]]]';
-      reCarret = new RegExp(Codewave.util.escapeRegExp(this.carretChar), "g");
-      reQuoted = new RegExp(Codewave.util.escapeRegExp(this.carretChar + this.carretChar), "g");
-      reTmp = new RegExp(Codewave.util.escapeRegExp(tmp), "g");
-      return txt.replace(reQuoted, tmp).replace(reCarret, '').replace(reTmp, this.carretChar);
+      return CodeWave.util.removeCarret(txt, this.carretChar);
     };
 
     Codewave.prototype.getCarretPos = function(txt) {
-      var i, reQuoted;
-      reQuoted = new RegExp(Codewave.util.escapeRegExp(this.carretChar + this.carretChar), "g");
-      txt = txt.replace(reQuoted, ' ');
-      if ((i = txt.indexOf(this.carretChar)) > -1) {
-        return i;
-      }
+      return CodeWave.util.getCarretPos(txt, this.carretChar);
     };
 
     Codewave.prototype.regMarker = function(flags) {
@@ -450,11 +440,15 @@
       return this.start + this.prefix.length + this.text.length;
     };
 
-    Replacement.prototype.resEnd = function() {
-      return this.start + this.prefix.length + this.text.length + this.suffix.length;
+    Replacement.prototype.resEnd = function(editor) {
+      if (editor == null) {
+        editor = null;
+      }
+      return this.start + this.finalText(editor).length;
     };
 
     Replacement.prototype.applyToEditor = function(editor) {
+      this.adjustSelFor(editor);
       return editor.spliceText(this.start, this.end, this.finalText(editor));
     };
 
@@ -463,29 +457,14 @@
     };
 
     Replacement.prototype.finalText = function(editor) {
-      var text;
       if (editor == null) {
         editor = null;
       }
-      if (this.text === '%original%') {
-        if (editor != null) {
-          text = this.originalTextWith(editor);
-        } else {
-          text = '';
-        }
-      } else {
-        text = this.text;
-      }
-      text = this.prefix + text + this.suffix;
-      return text;
+      return this.prefix + this.text + this.suffix;
     };
 
     Replacement.prototype.offsetAfter = function() {
-      if (this.text === '%original%') {
-        return this.prefix.length + this.suffix.length;
-      } else {
-        return this.finalText().length - (this.end - this.start);
-      }
+      return this.finalText().length - (this.end - this.start);
     };
 
     Replacement.prototype.applyOffset = function(offset) {
@@ -508,6 +487,21 @@
       return this;
     };
 
+    Replacement.prototype.carretToSel = function() {
+      var pos, res, start, text;
+      this.selections = [];
+      text = this.finalText();
+      this.prefix = Codewave.util.removeCarret(this.prefix);
+      this.text = Codewave.util.removeCarret(this.text);
+      this.suffix = Codewave.util.removeCarret(this.suffix);
+      start = this.start;
+      while ((res = Codewave.util.getAndRemoveFirstCarret(text)) != null) {
+        pos = res[0], text = res[1];
+        this.selections.push(new Pos(start + pos, start + pos));
+      }
+      return this;
+    };
+
     Replacement.prototype.copy = function() {
       var res;
       res = new Replacement(this.start, this.end, this.text, this.prefix, this.suffix);
@@ -520,6 +514,72 @@
     return Replacement;
 
   })();
+
+  Wrapping = (function(superClass) {
+    extend(Wrapping, superClass);
+
+    function Wrapping(start1, end1, prefix1, suffix1) {
+      this.start = start1;
+      this.end = end1;
+      this.prefix = prefix1 != null ? prefix1 : '';
+      this.suffix = suffix1 != null ? suffix1 : '';
+      this.text = '';
+      this.selections = [];
+    }
+
+    Wrapping.prototype.applyToEditor = function(editor) {
+      this.adjustSelFor(editor);
+      return Wrapping.__super__.applyToEditor.call(this, editor);
+    };
+
+    Wrapping.prototype.adjustSelFor = function(editor) {
+      var len1, offset, q, ref, results, sel;
+      offset = this.originalTextWith(editor).length;
+      ref = this.selections;
+      results = [];
+      for (q = 0, len1 = ref.length; q < len1; q++) {
+        sel = ref[q];
+        if (sel.start > this.start + this.prefix.length) {
+          sel.start += offset;
+        }
+        if (sel.end >= this.start + this.prefix.length) {
+          results.push(sel.end += offset);
+        } else {
+          results.push(void 0);
+        }
+      }
+      return results;
+    };
+
+    Wrapping.prototype.finalText = function(editor) {
+      var text;
+      if (editor == null) {
+        editor = null;
+      }
+      if (editor != null) {
+        text = this.originalTextWith(editor);
+      } else {
+        text = '';
+      }
+      return this.prefix + text + this.suffix;
+    };
+
+    Wrapping.prototype.offsetAfter = function() {
+      return this.prefix.length + this.suffix.length;
+    };
+
+    Wrapping.prototype.copy = function() {
+      var res;
+      res = new Wrapping(this.start, this.end, this.prefix, this.suffix);
+      res.selections = this.selections.map(function(s) {
+        return s.copy();
+      });
+      return res;
+    };
+
+    return Wrapping;
+
+  })(Replacement);
 
   Pair = (function() {
     function Pair(opener, closer, options1) {
@@ -662,6 +722,39 @@
     reverseStr: function(txt) {
       return txt.split("").reverse().join("");
     },
+    removeCarret: function(txt, carretChar) {
+      var reCarret, reQuoted, reTmp, tmp;
+      if (carretChar == null) {
+        carretChar = '|';
+      }
+      tmp = '[[[[quoted_carret]]]]';
+      reCarret = new RegExp(Codewave.util.escapeRegExp(carretChar), "g");
+      reQuoted = new RegExp(Codewave.util.escapeRegExp(carretChar + carretChar), "g");
+      reTmp = new RegExp(Codewave.util.escapeRegExp(tmp), "g");
+      return txt.replace(reQuoted, tmp).replace(reCarret, '').replace(reTmp, carretChar);
+    },
+    getAndRemoveFirstCarret: function(txt, carretChar) {
+      var pos;
+      if (carretChar == null) {
+        carretChar = '|';
+      }
+      pos = Codewave.util.getCarretPos(txt, carretChar);
+      if (pos != null) {
+        txt = txt.substr(0, pos) + txt.substr(pos + carretChar.length);
+        return [pos, txt];
+      }
+    },
+    getCarretPos: function(txt, carretChar) {
+      var i, reQuoted;
+      if (carretChar == null) {
+        carretChar = '|';
+      }
+      reQuoted = new RegExp(Codewave.util.escapeRegExp(carretChar + carretChar), "g");
+      txt = txt.replace(reQuoted, ' ');
+      if ((i = txt.indexOf(carretChar)) > -1) {
+        return i;
+      }
+    },
     isArray: function(arr) {
       return Object.prototype.toString.call(arr) === '[object Array]';
     },
@@ -671,7 +764,7 @@
       }
       arr.wrap = function(prefix, suffix) {
         return this.map(function(p) {
-          return new Replacement(p.start, p.end, '%original%', prefix, suffix);
+          return new Wrapping(p.start, p.end, prefix, suffix);
         });
       };
       return arr;
@@ -1418,44 +1511,55 @@
   })();
 
   this.Codewave.ClosingPromp = (function() {
-    function ClosingPromp(codewave1, start1, end1) {
+    function ClosingPromp(codewave1, selections) {
       this.codewave = codewave1;
-      this.start = start1;
-      this.end = end1;
       this.timeout = null;
-      this.len = this.end - this.start;
-      this.codewave.editor.insertTextAt("\n" + this.codewave.brakets + this.codewave.closeChar + this.codewave.brakets, this.end);
-      this.codewave.editor.insertTextAt(this.codewave.brakets + this.codewave.brakets + "\n", this.start);
-      this.codewave.editor.setCursorPos(this.start + this.codewave.brakets.length);
-      this.codewave.editor.onAnyChange = (function(_this) {
-        return function() {
-          return _this.onAnyChange();
-        };
-      })(this);
+      this.selections = Codewave.util.posCollection(selections);
     }
 
-    ClosingPromp.prototype.onAnyChange = function() {
-      if (this.timeout != null) {
-        clearTimeout(this.timeout);
-      }
-      return this.timeout = setTimeout(((function(_this) {
-        return function() {
-          var closeBounds, cmd, cpos, openBounds;
-          cpos = _this.codewave.editor.getCursorPos();
-          if ((openBounds = _this.whithinOpenBounds(cpos.end)) != null) {
-            cmd = _this.codewave.editor.textSubstr(openBounds.innerStart, openBounds.innerEnd).split(' ')[0];
-            if (((closeBounds = _this.whithinCloseBounds(openBounds)) != null) && _this.codewave.editor.textSubstr(closeBounds.innerStart, closeBounds.innerEnd) !== cmd) {
-              _this.codewave.editor.spliceText(closeBounds.innerStart, closeBounds.innerEnd, cmd);
-              return _this.codewave.editor.setCursorPos(cpos.start, cpos.end);
+    ClosingPromp.prototype.begin = function() {
+      this.typed = '';
+      this.replacements = this.selections.wrap(this.codewave.brakets + this.codewave.carretChar + this.codewave.brakets + "\n", "\n" + this.codewave.brakets + this.codewave.closeChar + this.codewave.carretChar + this.codewave.brakets).map(function(p) {
+        return p.carretToSel();
+      });
+      this.codewave.editor.applyReplacements(this.replacements);
+      if (this.codewave.editor.canListenToChange()) {
+        this.codewave.editor.addChangeListener((function(_this) {
+          return function(ch) {
+            if (ch == null) {
+              ch = null;
             }
-          } else {
-            return _this.stop();
-          }
-        };
-      })(this)), 2);
+            return _this.onChange(ch);
+          };
+        })(this));
+      }
+      return this;
     };
 
-    ClosingPromp.prototype.stop = function() {
+    ClosingPromp.prototype.onChange = function(ch) {
+      if (ch == null) {
+        ch = null;
+      }
+    };
+
+    if ((typeof ch === "undefined" || ch === null) || ch.charCodeAt(0) === 32) {
+      if (self.shouldStop()) {
+        self.stop();
+        self.cleanClose();
+      }
+    }
+
+    return ClosingPromp;
+
+  })();
+
+  ({
+    shouldStop: function() {
+      var cpos;
+      cpos = this.codewave.editor.getCursorPos();
+      return (whithinOpenFirstBounds() == null) || this.typed.indexOf(' ') !== -1;
+    },
+    stop: function() {
       if (this.timeout != null) {
         clearTimeout(this.timeout);
       }
@@ -1463,9 +1567,8 @@
       if (this.codewave.closingPromp === this) {
         return this.codewave.closingPromp = null;
       }
-    };
-
-    ClosingPromp.prototype.cancel = function() {
+    },
+    cancel: function() {
       var closeBounds, openBounds;
       if (((openBounds = this.whithinOpenBounds(this.start + this.codewave.brakets.length)) != null) && ((closeBounds = this.whithinCloseBounds(openBounds)) != null)) {
         this.codewave.editor.spliceText(closeBounds.start - 1, closeBounds.end, '');
@@ -1473,22 +1576,15 @@
         this.codewave.editor.setCursorPos(this.start, this.end);
       }
       return this.stop();
-    };
-
-    ClosingPromp.prototype.whithinOpenBounds = function(pos) {
+    },
+    whithinOpenFirstBounds: function(pos) {
       var innerEnd, innerStart;
-      innerStart = this.start + this.codewave.brakets.length;
-      if (this.codewave.findPrevBraket(pos) === this.start && this.codewave.editor.textSubstr(this.start, innerStart) === this.codewave.brakets && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null)) {
-        return {
-          start: this.start,
-          innerStart: innerStart,
-          innerEnd: innerEnd,
-          end: innerEnd + this.codewave.brakets.length
-        };
+      innerStart = this.replacements[0].start + this.codewave.brakets.length;
+      if (this.codewave.findPrevBraket(pos) === this.replacements[0].start && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null)) {
+        return this.typed = editor.textSubstr(innerStart, innerEnd);
       }
-    };
-
-    ClosingPromp.prototype.whithinCloseBounds = function(openBounds) {
+    },
+    whithinCloseBounds: function(openBounds) {
       var innerEnd, innerStart, start;
       start = openBounds.end + this.len + 2;
       innerStart = start + this.codewave.brakets.length + this.codewave.closeChar.length;
@@ -1500,11 +1596,8 @@
           end: innerEnd + this.codewave.brakets.length
         };
       }
-    };
-
-    return ClosingPromp;
-
-  })();
+    }
+  });
 
   this.Codewave.CmdFinder = (function() {
     function CmdFinder(names, options) {
