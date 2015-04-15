@@ -12,6 +12,15 @@ class Pos
     return @start <= pt and pt <= @end
   containsPos: (pos) ->
     return @start <= pos.start and pos.end <= @end
+  wrappedBy: (prefix,suffix) ->
+    return new WrappedPos(@start-prefix.length,@start,@end,@end+suffix.length)
+  textFromEditor: (editor) ->
+    editor.textSubstr(@start, @end)
+  applyOffset: (offset)->
+    if offset != 0
+      @start += offset
+      @end += offset
+    return this
   copy: ->
     return new Pos(@start,@end)
     
@@ -21,6 +30,14 @@ class WrappedPos extends Pos
     return @innerStart <= pt and pt <= @innerEnd
   innerContainsPos: (pos) ->
     return @innerStart <= pos.start and pos.end <= @innerEnd
+  innerTextFromEditor: (editor) ->
+    editor.textSubstr(@innerStart, @innerEnd)
+  setInnerLen: (len) ->
+    @moveSufix(@innerStart + len)
+  moveSuffix: (pt) ->
+    suffixLen = @end - @innerEnd
+    @innerEnd = pt
+    @end = @innerEnd + suffixLen
   copy: ->
     return new WrappedPos(@start,@innerStart,@innerEnd,@end)
 
@@ -35,7 +52,6 @@ class Replacement
   resEnd: (editor = null) -> 
     return @start+@finalText(editor).length
   applyToEditor: (editor) ->
-    @adjustSelFor(editor)
     editor.spliceText(@start, @end, @finalText(editor))
   originalTextWith: (editor) ->
     editor.textSubstr(@start, @end)
@@ -52,7 +68,7 @@ class Replacement
         sel.end += offset
     return this
   selectContent: -> 
-    @selections = [new Pos(@prefix.length+@start, @prefix.length+@end)]
+    @selections = [new Pos(@prefix.length+@start, @prefix.length+@start+@text.length)]
     return this
   carretToSel: ->
     @selections = []
@@ -211,6 +227,8 @@ class Pair
       arr == [arr]
     arr.wrap = (prefix,suffix)->
       return @map( (p) -> new Wrapping(p.start, p.end, prefix, suffix))
+    arr.replace = (txt)->
+      return @map( (p) -> new Replacement(p.start, p.end, txt))
     return arr
     
   StrPos: StrPos

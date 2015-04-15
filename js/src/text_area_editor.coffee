@@ -1,25 +1,41 @@
 class @Codewave.DomKeyListener
   startListening: (target) ->
-    target.onkeydown = (e) => 
+
+    onkeydown = (e) => 
       if e.keyCode == 69 && e.ctrlKey
         e.preventDefault()
         if @onActivationKey?
           @onActivationKey()
-    target.onkeyup = (e) => 
+    onkeyup = (e) => 
       if @onAnyChange?
         @onAnyChange(e)
-    target.onkeypress = (e) => 
+    onkeypress = (e) => 
       if @onAnyChange?
         @onAnyChange(e)
+            
+    if target.addEventListener
+        target.addEventListener("keydown", onkeydown)
+        target.addEventListener("keyup", onkeyup)
+        target.addEventListener("keypress", onkeypress)
+    else if target.attachEvent
+        target.attachEvent("onkeydown", onkeydown)
+        target.attachEvent("onkeyup", onkeyup)
+        target.attachEvent("onkeypress", onkeypress)
 
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
     # Codewave.logger.toMonitor(this,'textEventChange')
     @obj = document.getElementById(@target)
+    @namespace = 'textarea'
+    @changeListeners = []
+  startListening: Codewave.DomKeyListener.prototype.startListening
+  onAnyChange: (e) ->
+    for callback in @changeListeners
+      callback()
+    
   bindedTo: (codewave) ->
     @onActivationKey = -> codewave.onActivationKey()
     @startListening(document)
-  startListening: Codewave.DomKeyListener.prototype.startListening
   selectionPropExists: ->
     "selectionStart" of @obj
   hasFocus: -> 
@@ -89,4 +105,11 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
       rng.select()
   getLang: ->
     @obj.getAttribute('data-lang') if @obj.hasAttribute('data-lang')
+  canListenToChange: ->
+    return true
+  addChangeListener: (callback) ->
+    @changeListeners.push(callback)
+  removeChangeListener: (callback) ->
+    if (i = @changeListeners.indexOf(callback)) > -1
+      @changeListeners.splice(i, 1)
       

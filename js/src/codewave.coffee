@@ -161,7 +161,7 @@ class @Codewave
     @editor.applyReplacements(replacements)
   promptClosingCmd: (selections) ->
     @closingPromp.stop() if @closingPromp?
-    @closingPromp = (new Codewave.ClosingPromp(this,selections)).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
+    @closingPromp = Codewave.ClosingPromp.newFor(this,selections).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
   parseAll: (recursive = true) ->
     pos = 0
     while cmd = @nextCmd(pos)

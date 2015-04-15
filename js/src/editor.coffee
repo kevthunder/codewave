@@ -51,7 +51,8 @@ class @Codewave.Editor
       
       selections = selections.concat(repl.selections)
       
-    if @allowMultiSelection()
-      @setMultiSel(selections)
-    else
-      @setCursorPos(selections[0])
+    if selections.length > 0
+      if @allowMultiSelection()
+        @setMultiSel(selections)
+      else
+        @setCursorPos(selections[0].start,selections[0].end)

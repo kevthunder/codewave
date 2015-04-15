@@ -278,7 +278,7 @@
       if (this.closingPromp != null) {
         this.closingPromp.stop();
       }
-      return this.closingPromp = (new Codewave.ClosingPromp(this, selections)).begin();
+      return this.closingPromp = Codewave.ClosingPromp.newFor(this, selections).begin();
     };
 
     Codewave.prototype.parseAll = function(recursive) {
@@ -382,6 +382,22 @@
       return this.start <= pos.start && pos.end <= this.end;
     };
 
+    Pos.prototype.wrappedBy = function(prefix, suffix) {
+      return new WrappedPos(this.start - prefix.length, this.start, this.end, this.end + suffix.length);
+    };
+
+    Pos.prototype.textFromEditor = function(editor) {
+      return editor.textSubstr(this.start, this.end);
+    };
+
+    Pos.prototype.applyOffset = function(offset) {
+      if (offset !== 0) {
+        this.start += offset;
+        this.end += offset;
+      }
+      return this;
+    };
+
     Pos.prototype.copy = function() {
       return new Pos(this.start, this.end);
     };
@@ -406,6 +422,21 @@
 
     WrappedPos.prototype.innerContainsPos = function(pos) {
       return this.innerStart <= pos.start && pos.end <= this.innerEnd;
+    };
+
+    WrappedPos.prototype.innerTextFromEditor = function(editor) {
+      return editor.textSubstr(this.innerStart, this.innerEnd);
+    };
+
+    WrappedPos.prototype.setInnerLen = function(len) {
+      return this.moveSufix(this.innerStart + len);
+    };
+
+    WrappedPos.prototype.moveSuffix = function(pt) {
+      var suffixLen;
+      suffixLen = this.end - this.innerEnd;
+      this.innerEnd = pt;
+      return this.end = this.innerEnd + suffixLen;
     };
 
     WrappedPos.prototype.copy = function() {
@@ -448,7 +479,6 @@
     };
 
     Replacement.prototype.applyToEditor = function(editor) {
-      this.adjustSelFor(editor);
       return editor.spliceText(this.start, this.end, this.finalText(editor));
     };
 
@@ -483,7 +513,7 @@
     };
 
     Replacement.prototype.selectContent = function() {
-      this.selections = [new Pos(this.prefix.length + this.start, this.prefix.length + this.end)];
+      this.selections = [new Pos(this.prefix.length + this.start, this.prefix.length + this.start + this.text.length)];
       return this;
     };
 
@@ -767,6 +797,11 @@
           return new Wrapping(p.start, p.end, prefix, suffix);
         });
       };
+      arr.replace = function(txt) {
+        return this.map(function(p) {
+          return new Replacement(p.start, p.end, txt);
+        });
+      };
       return arr;
     },
     StrPos: StrPos,
@@ -931,10 +966,12 @@
         offset += repl.offsetAfter(this);
         selections = selections.concat(repl.selections);
       }
-      if (this.allowMultiSelection()) {
-        return this.setMultiSel(selections);
-      } else {
-        return this.setCursorPos(selections[0]);
+      if (selections.length > 0) {
+        if (this.allowMultiSelection()) {
+          return this.setMultiSel(selections);
+        } else {
+          return this.setCursorPos(selections[0].start, selections[0].end);
+        }
       }
     };
 
@@ -1167,7 +1204,8 @@
     function DomKeyListener() {}
 
     DomKeyListener.prototype.startListening = function(target) {
-      target.onkeydown = (function(_this) {
+      var onkeydown, onkeypress, onkeyup;
+      onkeydown = (function(_this) {
         return function(e) {
           if (e.keyCode === 69 && e.ctrlKey) {
             e.preventDefault();
@@ -1177,20 +1215,29 @@
           }
         };
       })(this);
-      target.onkeyup = (function(_this) {
+      onkeyup = (function(_this) {
         return function(e) {
           if (_this.onAnyChange != null) {
             return _this.onAnyChange(e);
           }
         };
       })(this);
-      return target.onkeypress = (function(_this) {
+      onkeypress = (function(_this) {
         return function(e) {
           if (_this.onAnyChange != null) {
             return _this.onAnyChange(e);
           }
         };
       })(this);
+      if (target.addEventListener) {
+        target.addEventListener("keydown", onkeydown);
+        target.addEventListener("keyup", onkeyup);
+        return target.addEventListener("keypress", onkeypress);
+      } else if (target.attachEvent) {
+        target.attachEvent("onkeydown", onkeydown);
+        target.attachEvent("onkeyup", onkeyup);
+        return target.attachEvent("onkeypress", onkeypress);
+      }
     };
 
     return DomKeyListener;
@@ -1203,7 +1250,22 @@
     function TextAreaEditor(target1) {
       this.target = target1;
       this.obj = document.getElementById(this.target);
+      this.namespace = 'textarea';
+      this.changeListeners = [];
     }
+
+    TextAreaEditor.prototype.startListening = Codewave.DomKeyListener.prototype.startListening;
+
+    TextAreaEditor.prototype.onAnyChange = function(e) {
+      var callback, len1, q, ref, results;
+      ref = this.changeListeners;
+      results = [];
+      for (q = 0, len1 = ref.length; q < len1; q++) {
+        callback = ref[q];
+        results.push(callback());
+      }
+      return results;
+    };
 
     TextAreaEditor.prototype.bindedTo = function(codewave) {
       this.onActivationKey = function() {
@@ -1211,8 +1273,6 @@
       };
       return this.startListening(document);
     };
-
-    TextAreaEditor.prototype.startListening = Codewave.DomKeyListener.prototype.startListening;
 
     TextAreaEditor.prototype.selectionPropExists = function() {
       return "selectionStart" in this.obj;
@@ -1333,6 +1393,21 @@
     TextAreaEditor.prototype.getLang = function() {
       if (this.obj.hasAttribute('data-lang')) {
         return this.obj.getAttribute('data-lang');
+      }
+    };
+
+    TextAreaEditor.prototype.canListenToChange = function() {
+      return true;
+    };
+
+    TextAreaEditor.prototype.addChangeListener = function(callback) {
+      return this.changeListeners.push(callback);
+    };
+
+    TextAreaEditor.prototype.removeChangeListener = function(callback) {
+      var i;
+      if ((i = this.changeListeners.indexOf(callback)) > -1) {
+        return this.changeListeners.splice(i, 1);
       }
     };
 
@@ -1514,90 +1589,243 @@
     function ClosingPromp(codewave1, selections) {
       this.codewave = codewave1;
       this.timeout = null;
+      this._typed = null;
+      this.started = false;
       this.selections = Codewave.util.posCollection(selections);
     }
 
     ClosingPromp.prototype.begin = function() {
-      this.typed = '';
-      this.replacements = this.selections.wrap(this.codewave.brakets + this.codewave.carretChar + this.codewave.brakets + "\n", "\n" + this.codewave.brakets + this.codewave.closeChar + this.codewave.carretChar + this.codewave.brakets).map(function(p) {
-        return p.carretToSel();
-      });
-      this.codewave.editor.applyReplacements(this.replacements);
+      this.started = true;
+      this.addCarrets();
       if (this.codewave.editor.canListenToChange()) {
-        this.codewave.editor.addChangeListener((function(_this) {
+        this.proxyOnChange = (function(_this) {
           return function(ch) {
             if (ch == null) {
               ch = null;
             }
             return _this.onChange(ch);
           };
-        })(this));
+        })(this);
+        this.codewave.editor.addChangeListener(this.proxyOnChange);
       }
       return this;
+    };
+
+    ClosingPromp.prototype.addCarrets = function() {
+      this.replacements = this.selections.wrap(this.codewave.brakets + this.codewave.carretChar + this.codewave.brakets + "\n", "\n" + this.codewave.brakets + this.codewave.closeChar + this.codewave.carretChar + this.codewave.brakets).map(function(p) {
+        return p.carretToSel();
+      });
+      return this.codewave.editor.applyReplacements(this.replacements);
     };
 
     ClosingPromp.prototype.onChange = function(ch) {
       if (ch == null) {
         ch = null;
       }
+      this._typed = null;
+      if (this.skipEvent(ch)) {
+        return;
+      }
+      if (this.shouldStop()) {
+        this.stop();
+        return this.cleanClose();
+      } else {
+        return this["continue"]();
+      }
     };
 
-    if ((typeof ch === "undefined" || ch === null) || ch.charCodeAt(0) === 32) {
-      if (self.shouldStop()) {
-        self.stop();
-        self.cleanClose();
+    ClosingPromp.prototype.skipEvent = function(ch) {
+      return (ch != null) && ch.charCodeAt(0) !== 32;
+    };
+
+    ClosingPromp.prototype["continue"] = function() {};
+
+    ClosingPromp.prototype.shouldStop = function() {
+      return this.typed() === false || this.typed().indexOf(' ') !== -1;
+    };
+
+    ClosingPromp.prototype.cleanClose = function() {
+      var end, len1, pos, q, repl, replacements, res, sel, selections, start;
+      replacements = [];
+      selections = this.getSelections();
+      for (q = 0, len1 = selections.length; q < len1; q++) {
+        sel = selections[q];
+        if (pos = this.whithinOpenBounds(sel)) {
+          start = sel;
+        } else if ((end = this.whithinCloseBounds(sel)) && (start != null)) {
+          res = end.innerTextFromEditor(this.codewave.editor).split(' ')[0];
+          repl = new Codewave.util.Replacement(end.innerStart, end.innerEnd, res);
+          console.log(repl, end, selections);
+          repl.selections = [start];
+          replacements.push(repl);
+          start = null;
+        }
       }
-    }
+      return this.codewave.editor.applyReplacements(replacements);
+    };
+
+    ClosingPromp.prototype.getSelections = function() {
+      return this.codewave.editor.getMultiSel();
+    };
+
+    ClosingPromp.prototype.stop = function() {
+      console.log(this);
+      throw "Nope";
+      this.started = false;
+      if (this.timeout != null) {
+        clearTimeout(this.timeout);
+      }
+      if (this.codewave.closingPromp === this) {
+        this.codewave.closingPromp = null;
+      }
+      if (this.proxyOnChange != null) {
+        return this.codewave.editor.removeChangeListener(this.proxyOnChange);
+      }
+    };
+
+    ClosingPromp.prototype.cancel = function() {
+      if (this.typed() !== false) {
+        this.cancelSelections(this.getSelections());
+      }
+      return this.stop();
+    };
+
+    ClosingPromp.prototype.cancelSelections = function(selections) {
+      var end, len1, pos, q, replacements, sel, start;
+      replacements = [];
+      start = null;
+      for (q = 0, len1 = selections.length; q < len1; q++) {
+        sel = selections[q];
+        if (pos = this.whithinOpenBounds(sel)) {
+          start = pos;
+        } else if ((end = this.whithinCloseBounds(sel)) && (start != null)) {
+          start = null;
+          replacements.push(new Codewave.util.Replacement(start.start, end.end, this.codewave.editor.textSubstr(start.end + 1, end.start - 1)).selectContent());
+        }
+      }
+      return this.codewave.editor.applyReplacements(this.replacements);
+    };
+
+    ClosingPromp.prototype.typed = function() {
+      var cpos, innerEnd, innerStart;
+      if (this._typed == null) {
+        cpos = this.codewave.editor.getCursorPos();
+        innerStart = this.replacements[0].start + this.codewave.brakets.length;
+        if (this.codewave.findPrevBraket(cpos.start) === this.replacements[0].start && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null) && innerEnd >= cpos.end) {
+          this._typed = this.codewave.editor.textSubstr(innerStart, innerEnd);
+        } else {
+          this._typed = false;
+        }
+      }
+      return this._typed;
+    };
+
+    ClosingPromp.prototype.whithinOpenBounds = function(pos) {
+      var i, len1, q, ref, repl, targetPos, targetText;
+      ref = this.replacements;
+      for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
+        repl = ref[i];
+        targetPos = this.startPosAt(i);
+        targetText = this.codewave.brakets + this.typed() + this.codewave.brakets;
+        if (targetPos.innerContainsPos(pos) && targetPos.textFromEditor(this.codewave.editor) === targetText) {
+          return targetPos;
+        }
+      }
+      return false;
+    };
+
+    ClosingPromp.prototype.whithinCloseBounds = function(pos) {
+      var i, len1, q, ref, repl, targetPos, targetText;
+      ref = this.replacements;
+      for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
+        repl = ref[i];
+        targetPos = this.endPosAt(i);
+        targetText = this.codewave.brakets + this.codewave.closeChar + this.typed() + this.codewave.brakets;
+        if (targetPos.innerContainsPos(pos) && targetPos.textFromEditor(this.codewave.editor) === targetText) {
+          return targetPos;
+        }
+      }
+      return false;
+    };
+
+    ClosingPromp.prototype.startPosAt = function(index) {
+      return new Codewave.util.Pos(this.replacements[index].selections[0].start + this.typed().length * (index * 2), this.replacements[index].selections[0].end + this.typed().length * (index * 2 + 1)).wrappedBy(this.codewave.brakets, this.codewave.brakets);
+    };
+
+    ClosingPromp.prototype.endPosAt = function(index) {
+      return new Codewave.util.Pos(this.replacements[index].selections[1].start + this.typed().length * (index * 2 + 1), this.replacements[index].selections[1].end + this.typed().length * (index * 2 + 2)).wrappedBy(this.codewave.brakets + this.codewave.closeChar, this.codewave.brakets);
+    };
 
     return ClosingPromp;
 
   })();
 
-  ({
-    shouldStop: function() {
-      var cpos;
-      cpos = this.codewave.editor.getCursorPos();
-      return (whithinOpenFirstBounds() == null) || this.typed.indexOf(' ') !== -1;
-    },
-    stop: function() {
+  this.Codewave.SimulatedClosingPromp = (function(superClass) {
+    extend(SimulatedClosingPromp, superClass);
+
+    function SimulatedClosingPromp() {
+      return SimulatedClosingPromp.__super__.constructor.apply(this, arguments);
+    }
+
+    SimulatedClosingPromp.prototype["continue"] = function() {
+      return this.simulateType();
+    };
+
+    SimulatedClosingPromp.prototype.simulateType = function() {
       if (this.timeout != null) {
         clearTimeout(this.timeout);
       }
-      this.codewave.editor.onAnyChange = null;
-      if (this.codewave.closingPromp === this) {
-        return this.codewave.closingPromp = null;
-      }
-    },
-    cancel: function() {
-      var closeBounds, openBounds;
-      if (((openBounds = this.whithinOpenBounds(this.start + this.codewave.brakets.length)) != null) && ((closeBounds = this.whithinCloseBounds(openBounds)) != null)) {
-        this.codewave.editor.spliceText(closeBounds.start - 1, closeBounds.end, '');
-        this.codewave.editor.spliceText(openBounds.start, openBounds.end + 1, '');
-        this.codewave.editor.setCursorPos(this.start, this.end);
-      }
-      return this.stop();
-    },
-    whithinOpenFirstBounds: function(pos) {
-      var innerEnd, innerStart;
-      innerStart = this.replacements[0].start + this.codewave.brakets.length;
-      if (this.codewave.findPrevBraket(pos) === this.replacements[0].start && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null)) {
-        return this.typed = editor.textSubstr(innerStart, innerEnd);
-      }
-    },
-    whithinCloseBounds: function(openBounds) {
-      var innerEnd, innerStart, start;
-      start = openBounds.end + this.len + 2;
-      innerStart = start + this.codewave.brakets.length + this.codewave.closeChar.length;
-      if (this.codewave.editor.textSubstr(start, innerStart) === this.codewave.brakets + this.codewave.closeChar && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null)) {
-        return {
-          start: start,
-          innerStart: innerStart,
-          innerEnd: innerEnd,
-          end: innerEnd + this.codewave.brakets.length
+      return this.timeout = setTimeout(((function(_this) {
+        return function() {
+          var curClose, repl, targetText;
+          targetText = _this.codewave.brakets + _this.codewave.closeChar + _this.typed() + _this.codewave.brakets;
+          curClose = _this.whithinCloseBounds(_this.replacements[0].selections[1].applyOffset(_this.typed().length));
+          if (curClose) {
+            repl = new Codewave.util.Replacement(curClose.start, curClose.end, targetText);
+            return repl.applyToEditor(_this.codewave.editor);
+          } else {
+            return _this.stop();
+          }
         };
+      })(this)), 2);
+    };
+
+    SimulatedClosingPromp.prototype.skipEvent = function() {
+      return false;
+    };
+
+    SimulatedClosingPromp.prototype.getSelections = function() {
+      return [this.codewave.editor.getCursorPos(), this.replacements[0].selections[1] + this.typed().length];
+    };
+
+    SimulatedClosingPromp.prototype.whithinCloseBounds = function(pos) {
+      var i, len1, next, q, ref, repl, targetPos;
+      ref = this.replacements;
+      for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
+        repl = ref[i];
+        targetPos = this.endPosAt(i);
+        next = this.codewave.findNextBraket(targetPos.innerStart);
+        if (next != null) {
+          targetPos.moveSuffix(next);
+          if (targetPos.innerContainsPos(pos)) {
+            return targetPos;
+          }
+        }
       }
+      return false;
+    };
+
+    return SimulatedClosingPromp;
+
+  })(Codewave.ClosingPromp);
+
+  this.Codewave.ClosingPromp.newFor = function(codewave, selections) {
+    if (codewave.editor.allowMultiSelection()) {
+      return new Codewave.ClosingPromp(codewave, selections);
+    } else {
+      return new Codewave.SimulatedClosingPromp(codewave, selections);
     }
-  });
+  };
 
   this.Codewave.CmdFinder = (function() {
     function CmdFinder(names, options) {
