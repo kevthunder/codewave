@@ -53,6 +53,8 @@ class Replacement
     return @start+@finalText(editor).length
   applyToEditor: (editor) ->
     editor.spliceText(@start, @end, @finalText(editor))
+  necessaryFor: (editor) ->
+    return @finalText(editor) != editor.textSubstr(@start, @end)
   originalTextWith: (editor) ->
     editor.textSubstr(@start, @end)
   finalText: (editor = null) ->

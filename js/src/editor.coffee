@@ -50,8 +50,11 @@ class @Codewave.Editor
       offset += repl.offsetAfter(this)
       
       selections = selections.concat(repl.selections)
+    @applyReplacementsSelections(selections)
       
+  applyReplacementsSelections: (selections) ->
     if selections.length > 0
+      console.log(selections)
       if @allowMultiSelection()
         @setMultiSel(selections)
       else

@@ -1,6 +1,8 @@
 class @Codewave.DomKeyListener
   startListening: (target) ->
-
+  
+    timeout = null
+    
     onkeydown = (e) => 
       if e.keyCode == 69 && e.ctrlKey
         e.preventDefault()
@@ -10,8 +12,11 @@ class @Codewave.DomKeyListener
       if @onAnyChange?
         @onAnyChange(e)
     onkeypress = (e) => 
-      if @onAnyChange?
-        @onAnyChange(e)
+      clearTimeout(timeout) if timeout?
+      timeout = setTimeout (=>
+        if @onAnyChange?
+          @onAnyChange(e)
+      ), 100
             
     if target.addEventListener
         target.addEventListener("keydown", onkeydown)
@@ -30,6 +35,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     @changeListeners = []
   startListening: Codewave.DomKeyListener.prototype.startListening
   onAnyChange: (e) ->
+    console.log('onAnyChange')
     for callback in @changeListeners
       callback()
     
@@ -52,7 +58,9 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     if event? and event.initTextEvent?
       end = @textLen() unless end?
       event.initTextEvent('textInput', true, true, null, text || "\0", 9)
-      @setCursorPos(start,end)
+      # @setCursorPos(start,end)
+      @obj.selectionStart = start
+      @obj.selectionEnd = end
       @obj.dispatchEvent(event)
       true
     else 
@@ -83,6 +91,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
           rng.moveEnd("character", -1)
         return pos
   setCursorPos: (start, end) ->
+    console.log([start, end])
     end = start if arguments.length < 2
     if @selectionPropExists
       @tmpCursorPos = ( start: start, end: end )
@@ -112,4 +121,10 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
   removeChangeListener: (callback) ->
     if (i = @changeListeners.indexOf(callback)) > -1
       @changeListeners.splice(i, 1)
+      
+      
+  applyReplacements: (replacements) ->
+    if replacements.length > 0 and replacements[0].selections.length < 1
+      replacements[0].selections = [@getCursorPos()]
+    super(replacements);
       

@@ -9,7 +9,10 @@ class @Codewave.ClosingPromp
     @addCarrets()
     if @codewave.editor.canListenToChange()
       @proxyOnChange = (ch=null)=> @onChange(ch)
-      @codewave.editor.addChangeListener( @proxyOnChange )
+      setTimeout (=>
+        @codewave.editor.addChangeListener( @proxyOnChange )
+      ), 2000
+      
     
     return this
   addCarrets: ->
@@ -80,8 +83,10 @@ class @Codewave.ClosingPromp
       cpos = @codewave.editor.getCursorPos()
       innerStart = @replacements[0].start+@codewave.brakets.length
       if @codewave.findPrevBraket(cpos.start) == @replacements[0].start and (innerEnd = @codewave.findNextBraket(innerStart))? and innerEnd >= cpos.end
+        console.log('found',[cpos,innerStart, innerEnd])
         @_typed = @codewave.editor.textSubstr(innerStart, innerEnd)
       else
+        console.log('not found',[cpos,innerStart, innerEnd])
         @_typed = false
     return @_typed
   whithinOpenBounds: (pos) ->
@@ -116,10 +121,13 @@ class @Codewave.SimulatedClosingPromp extends Codewave.ClosingPromp
     clearTimeout(@timeout) if @timeout?
     @timeout = setTimeout (=>
       targetText = @codewave.brakets + @codewave.closeChar + @typed() + @codewave.brakets
-      curClose = @whithinCloseBounds(@replacements[0].selections[1].applyOffset(@typed().length))
+      curClose = @whithinCloseBounds(@replacements[0].selections[1].copy().applyOffset(@typed().length))
       if curClose
         repl = new Codewave.util.Replacement(curClose.start,curClose.end,targetText)
-        repl.applyToEditor(@codewave.editor)
+        if repl.necessaryFor(@codewave.editor)
+          console.log('replacement start')
+          @codewave.editor.applyReplacements([repl])
+          console.log('replacement end')
       else
         @stop()
     ), 2

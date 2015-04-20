@@ -482,6 +482,10 @@
       return editor.spliceText(this.start, this.end, this.finalText(editor));
     };
 
+    Replacement.prototype.necessaryFor = function(editor) {
+      return this.finalText(editor) !== editor.textSubstr(this.start, this.end);
+    };
+
     Replacement.prototype.originalTextWith = function(editor) {
       return editor.textSubstr(this.start, this.end);
     };
@@ -966,7 +970,12 @@
         offset += repl.offsetAfter(this);
         selections = selections.concat(repl.selections);
       }
+      return this.applyReplacementsSelections(selections);
+    };
+
+    Editor.prototype.applyReplacementsSelections = function(selections) {
       if (selections.length > 0) {
+        console.log(selections);
         if (this.allowMultiSelection()) {
           return this.setMultiSel(selections);
         } else {
@@ -1204,7 +1213,8 @@
     function DomKeyListener() {}
 
     DomKeyListener.prototype.startListening = function(target) {
-      var onkeydown, onkeypress, onkeyup;
+      var onkeydown, onkeypress, onkeyup, timeout;
+      timeout = null;
       onkeydown = (function(_this) {
         return function(e) {
           if (e.keyCode === 69 && e.ctrlKey) {
@@ -1224,9 +1234,14 @@
       })(this);
       onkeypress = (function(_this) {
         return function(e) {
-          if (_this.onAnyChange != null) {
-            return _this.onAnyChange(e);
+          if (timeout != null) {
+            clearTimeout(timeout);
           }
+          return timeout = setTimeout((function() {
+            if (_this.onAnyChange != null) {
+              return _this.onAnyChange(e);
+            }
+          }), 100);
         };
       })(this);
       if (target.addEventListener) {
@@ -1258,6 +1273,7 @@
 
     TextAreaEditor.prototype.onAnyChange = function(e) {
       var callback, len1, q, ref, results;
+      console.log('onAnyChange');
       ref = this.changeListeners;
       results = [];
       for (q = 0, len1 = ref.length; q < len1; q++) {
@@ -1311,7 +1327,8 @@
           end = this.textLen();
         }
         event.initTextEvent('textInput', true, true, null, text || "\0", 9);
-        this.setCursorPos(start, end);
+        this.obj.selectionStart = start;
+        this.obj.selectionEnd = end;
         this.obj.dispatchEvent(event);
         return true;
       } else {
@@ -1357,6 +1374,7 @@
     };
 
     TextAreaEditor.prototype.setCursorPos = function(start, end) {
+      console.log([start, end]);
       if (arguments.length < 2) {
         end = start;
       }
@@ -1409,6 +1427,13 @@
       if ((i = this.changeListeners.indexOf(callback)) > -1) {
         return this.changeListeners.splice(i, 1);
       }
+    };
+
+    TextAreaEditor.prototype.applyReplacements = function(replacements) {
+      if (replacements.length > 0 && replacements[0].selections.length < 1) {
+        replacements[0].selections = [this.getCursorPos()];
+      }
+      return TextAreaEditor.__super__.applyReplacements.call(this, replacements);
     };
 
     return TextAreaEditor;
@@ -1606,7 +1631,11 @@
             return _this.onChange(ch);
           };
         })(this);
-        this.codewave.editor.addChangeListener(this.proxyOnChange);
+        setTimeout(((function(_this) {
+          return function() {
+            return _this.codewave.editor.addChangeListener(_this.proxyOnChange);
+          };
+        })(this)), 2000);
       }
       return this;
     };
@@ -1712,8 +1741,10 @@
         cpos = this.codewave.editor.getCursorPos();
         innerStart = this.replacements[0].start + this.codewave.brakets.length;
         if (this.codewave.findPrevBraket(cpos.start) === this.replacements[0].start && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null) && innerEnd >= cpos.end) {
+          console.log('found', [cpos, innerStart, innerEnd]);
           this._typed = this.codewave.editor.textSubstr(innerStart, innerEnd);
         } else {
+          console.log('not found', [cpos, innerStart, innerEnd]);
           this._typed = false;
         }
       }
@@ -1779,10 +1810,14 @@
         return function() {
           var curClose, repl, targetText;
           targetText = _this.codewave.brakets + _this.codewave.closeChar + _this.typed() + _this.codewave.brakets;
-          curClose = _this.whithinCloseBounds(_this.replacements[0].selections[1].applyOffset(_this.typed().length));
+          curClose = _this.whithinCloseBounds(_this.replacements[0].selections[1].copy().applyOffset(_this.typed().length));
           if (curClose) {
             repl = new Codewave.util.Replacement(curClose.start, curClose.end, targetText);
-            return repl.applyToEditor(_this.codewave.editor);
+            if (repl.necessaryFor(_this.codewave.editor)) {
+              console.log('replacement start');
+              _this.codewave.editor.applyReplacements([repl]);
+              return console.log('replacement end');
+            }
           } else {
             return _this.stop();
           }
