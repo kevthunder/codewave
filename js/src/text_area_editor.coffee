@@ -33,12 +33,16 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     @obj = document.getElementById(@target)
     @namespace = 'textarea'
     @changeListeners = []
+    @_skipChangeEvent = 0
   startListening: Codewave.DomKeyListener.prototype.startListening
   onAnyChange: (e) ->
-    console.log('onAnyChange')
-    for callback in @changeListeners
-      callback()
-    
+    if @_skipChangeEvent <= 0
+      for callback in @changeListeners
+        callback()
+    else
+      @_skipChangeEvent--
+  skipChangeEvent: (nb = 1) ->
+    @_skipChangeEvent += nb
   bindedTo: (codewave) ->
     @onActivationKey = -> codewave.onActivationKey()
     @startListening(document)
@@ -62,6 +66,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
       @obj.selectionStart = start
       @obj.selectionEnd = end
       @obj.dispatchEvent(event)
+      @skipChangeEvent()
       true
     else 
       false
@@ -91,7 +96,6 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
           rng.moveEnd("character", -1)
         return pos
   setCursorPos: (start, end) ->
-    console.log([start, end])
     end = start if arguments.length < 2
     if @selectionPropExists
       @tmpCursorPos = ( start: start, end: end )

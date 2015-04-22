@@ -243,7 +243,6 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)]
     replacements = @checkMulti(repl)
     @codewave.editor.applyReplacements(replacements)
-    console.log([text,repl,this,@codewave.editor.text()])
     
     @replaceStart = repl.start
     @replaceEnd = repl.resEnd()

@@ -327,11 +327,11 @@
     };
 
     Codewave.prototype.removeCarret = function(txt) {
-      return CodeWave.util.removeCarret(txt, this.carretChar);
+      return Codewave.util.removeCarret(txt, this.carretChar);
     };
 
     Codewave.prototype.getCarretPos = function(txt) {
-      return CodeWave.util.getCarretPos(txt, this.carretChar);
+      return Codewave.util.getCarretPos(txt, this.carretChar);
     };
 
     Codewave.prototype.regMarker = function(flags) {
@@ -975,7 +975,6 @@
 
     Editor.prototype.applyReplacementsSelections = function(selections) {
       if (selections.length > 0) {
-        console.log(selections);
         if (this.allowMultiSelection()) {
           return this.setMultiSel(selections);
         } else {
@@ -1267,20 +1266,31 @@
       this.obj = document.getElementById(this.target);
       this.namespace = 'textarea';
       this.changeListeners = [];
+      this._skipChangeEvent = 0;
     }
 
     TextAreaEditor.prototype.startListening = Codewave.DomKeyListener.prototype.startListening;
 
     TextAreaEditor.prototype.onAnyChange = function(e) {
       var callback, len1, q, ref, results;
-      console.log('onAnyChange');
-      ref = this.changeListeners;
-      results = [];
-      for (q = 0, len1 = ref.length; q < len1; q++) {
-        callback = ref[q];
-        results.push(callback());
+      if (this._skipChangeEvent <= 0) {
+        ref = this.changeListeners;
+        results = [];
+        for (q = 0, len1 = ref.length; q < len1; q++) {
+          callback = ref[q];
+          results.push(callback());
+        }
+        return results;
+      } else {
+        return this._skipChangeEvent--;
       }
-      return results;
+    };
+
+    TextAreaEditor.prototype.skipChangeEvent = function(nb) {
+      if (nb == null) {
+        nb = 1;
+      }
+      return this._skipChangeEvent += nb;
     };
 
     TextAreaEditor.prototype.bindedTo = function(codewave) {
@@ -1330,6 +1340,7 @@
         this.obj.selectionStart = start;
         this.obj.selectionEnd = end;
         this.obj.dispatchEvent(event);
+        this.skipChangeEvent();
         return true;
       } else {
         return false;
@@ -1374,7 +1385,6 @@
     };
 
     TextAreaEditor.prototype.setCursorPos = function(start, end) {
-      console.log([start, end]);
       if (arguments.length < 2) {
         end = start;
       }
@@ -1631,11 +1641,7 @@
             return _this.onChange(ch);
           };
         })(this);
-        setTimeout(((function(_this) {
-          return function() {
-            return _this.codewave.editor.addChangeListener(_this.proxyOnChange);
-          };
-        })(this)), 2000);
+        this.codewave.editor.addChangeListener(this.proxyOnChange);
       }
       return this;
     };
@@ -1647,11 +1653,15 @@
       return this.codewave.editor.applyReplacements(this.replacements);
     };
 
+    ClosingPromp.prototype.invalidTyped = function() {
+      return this._typed = null;
+    };
+
     ClosingPromp.prototype.onChange = function(ch) {
       if (ch == null) {
         ch = null;
       }
-      this._typed = null;
+      this.invalidTyped();
       if (this.skipEvent(ch)) {
         return;
       }
@@ -1684,7 +1694,6 @@
         } else if ((end = this.whithinCloseBounds(sel)) && (start != null)) {
           res = end.innerTextFromEditor(this.codewave.editor).split(' ')[0];
           repl = new Codewave.util.Replacement(end.innerStart, end.innerEnd, res);
-          console.log(repl, end, selections);
           repl.selections = [start];
           replacements.push(repl);
           start = null;
@@ -1698,7 +1707,6 @@
     };
 
     ClosingPromp.prototype.stop = function() {
-      console.log(this);
       throw "Nope";
       this.started = false;
       if (this.timeout != null) {
@@ -1741,10 +1749,8 @@
         cpos = this.codewave.editor.getCursorPos();
         innerStart = this.replacements[0].start + this.codewave.brakets.length;
         if (this.codewave.findPrevBraket(cpos.start) === this.replacements[0].start && ((innerEnd = this.codewave.findNextBraket(innerStart)) != null) && innerEnd >= cpos.end) {
-          console.log('found', [cpos, innerStart, innerEnd]);
           this._typed = this.codewave.editor.textSubstr(innerStart, innerEnd);
         } else {
-          console.log('not found', [cpos, innerStart, innerEnd]);
           this._typed = false;
         }
       }
@@ -1809,14 +1815,13 @@
       return this.timeout = setTimeout(((function(_this) {
         return function() {
           var curClose, repl, targetText;
+          _this.invalidTyped();
           targetText = _this.codewave.brakets + _this.codewave.closeChar + _this.typed() + _this.codewave.brakets;
           curClose = _this.whithinCloseBounds(_this.replacements[0].selections[1].copy().applyOffset(_this.typed().length));
           if (curClose) {
             repl = new Codewave.util.Replacement(curClose.start, curClose.end, targetText);
             if (repl.necessaryFor(_this.codewave.editor)) {
-              console.log('replacement start');
-              _this.codewave.editor.applyReplacements([repl]);
-              return console.log('replacement end');
+              return _this.codewave.editor.applyReplacements([repl]);
             }
           } else {
             return _this.stop();
@@ -3954,7 +3959,6 @@
       repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)];
       replacements = this.checkMulti(repl);
       this.codewave.editor.applyReplacements(replacements);
-      console.log([text, repl, this, this.codewave.editor.text()]);
       this.replaceStart = repl.start;
       return this.replaceEnd = repl.resEnd();
     };

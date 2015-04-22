@@ -189,9 +189,9 @@ class @Codewave
     else if @inInstance?
       return @inInstance.codewave.getRoot()
   removeCarret: (txt) ->
-    return CodeWave.util.removeCarret(txt,@carretChar)
+    return Codewave.util.removeCarret(txt,@carretChar)
   getCarretPos: (txt) ->
-    return CodeWave.util.getCarretPos(txt,@carretChar)
+    return Codewave.util.getCarretPos(txt,@carretChar)
   regMarker: (flags="g") -> # [pawa python] replace flags="g" flags=0 
     return new RegExp(Codewave.util.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->

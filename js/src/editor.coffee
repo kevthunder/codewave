@@ -54,7 +54,6 @@ class @Codewave.Editor
       
   applyReplacementsSelections: (selections) ->
     if selections.length > 0
-      console.log(selections)
       if @allowMultiSelection()
         @setMultiSel(selections)
       else
