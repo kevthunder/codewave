@@ -6,7 +6,7 @@
 
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
-  if key of dict then dict[key] else defVal
+  return if key of dict then dict[key] else defVal
 
 
 class @Codewave.Command

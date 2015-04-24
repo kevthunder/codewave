@@ -562,7 +562,7 @@ class EditCmd extends Codewave.BaseCommand
         ~~/box~~
         """)
       parser.checkCarret = no
-      if @verbalize then parser.getText() else parser.parseAll()
+      return if @verbalize then parser.getText() else parser.parseAll()
 EditCmd.setCmds = (base) ->
   for p in EditCmd.props
     p.setCmd(base)

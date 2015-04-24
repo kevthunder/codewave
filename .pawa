@@ -52,7 +52,7 @@ syntax:
           - -- -=1
           - /class (@[\w\.]+\.)?(\w+)$/               'class $2():'
           - /class (@[\w\.]+\.)?(\w+)\s*extends\s*(?:@?Codewave.)?([\w.]+)$/ 'class $2($3):'
-          - /([\w\]])\?(\s|:)/                            '$1 is not None$2'
+          - /([\w\]])\?(\s|:)/                        '$1 is not None$2'
           - /\s!(\w|@)/                               ' not $1'
           - /^(\s*)\[([\s\w,._@]*)\]\s*=\s*\[(.*)\]$/ '$1$2 = $3'
           - /^(\s*)\[([\s\w,._@]*)\]\s*=/             '$1$2 ='
@@ -69,14 +69,17 @@ syntax:
           - /([^\s]+)\s*=\s*(?:\(([^)]*)\))?\s*->/    'def $1($2):'
           - /^(\s*)for\W(.*,.*)\Wof\W(.*)$/           '$1for $2 in $3.items():'
           - /^(\s*(?:if|while|for)\W.*[^:])$/         '$1:'
-          - /^(\s*)unless\s*([\w@]*)\?\s*$/              '$1if $2 is None:'
+          - /^(\s*)unless\s*([\w@]*)\?\s*$/           '$1if $2 is None:'
           - /^(\s*)unless(\W.*[^:])$/                 '$1if not$2:'
           - /^(\s*)else if(\W.*[^:]):?$/              '$1elif$2:'
           - /^(\s*else)$/                             '$1:'
           # for the following, the actual match should be /^(\s*)(\w*) = \2\.concat\((.*)\)$/
           - /^(\s*)(\w*) = \w*\.concat\((.*)\)$/      '$1$2 += $3' 
           - /\[([^\]]*)\.\.([^\]]*)\]/                'range($1,$2\)'
-          - /(\w*).indexOf\((.*)\) > -1/              '$2 in $1'
+          - /(\w*).indexOf\((.*)\) (?:>|!=) -1/       '$2 in $1'
+          - /(\w*).indexOf\((.*)\) == -1/             '$2 not in $1'
+          - /if\s(.*)\sthen\s(.*)\selse\s(.*)/        '$2 if $1 else $3' reparse
+          - /\((.*) for (.*) in (.*) when (.*)\)/     '[$1 for $2 in $3 if $4]'
           - /typeof\s*([@.\w]*)\s*==\s*['"]string['"]/    'isinstance($1, str)'
           - /typeof\s*(\w*)\s*==\s*['"]function['"]/  "hasattr($1, '__call__')"
           - /([@\w.\[\]]*)\.length/                   'len($1)'

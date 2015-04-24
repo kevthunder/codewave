@@ -26,7 +26,6 @@ You may need to put it on a web server to be able to use the localstorage
 ```
 
 ## ToDo
-* multi lines support for ClosingPromp
 * comment styles
   * php outer
 * Create some more default commands

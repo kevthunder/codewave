@@ -111,10 +111,10 @@ class @Codewave
     return @editor.textSubstr(pos,pos+1) == "\n" or pos + 1 >= @editor.textLen()
   findLineStart: (pos) -> 
     p = @findAnyNext(pos ,["\n"], -1)
-    if p then p.pos+1 else 0
+    return if p then p.pos+1 else 0
   findLineEnd: (pos) -> 
     p = @findAnyNext(pos ,["\n","\r"])
-    if p then p.pos else @editor.textLen()
+    return if p then p.pos else @editor.textLen()
   findPrevBraket: (start) -> 
     return @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
