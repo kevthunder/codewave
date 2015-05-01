@@ -2079,8 +2079,17 @@
       if (cmd == null) {
         return false;
       }
-      cmd.init();
-      return !this.mustExecute || cmd.isExecutable();
+      return !this.mustExecute || this.cmdIsExecutable(cmd);
+    };
+
+    CmdFinder.prototype.cmdIsExecutable = function(cmd) {
+      var names;
+      names = this.getDirectNames();
+      if (names.length === 1) {
+        return cmd.init().isExecutableWithName(names[0]);
+      } else {
+        return cmd.init().isExecutable();
+      }
     };
 
     CmdFinder.prototype.cmdScore = function(cmd) {
@@ -2184,7 +2193,7 @@
         if (this.cmdObj != null) {
           return this.cmdObj.resultIsAvailable();
         }
-        aliased = this.getAliased();
+        aliased = this.getAliasedFinal();
         if (aliased != null) {
           return aliased.resultIsAvailable();
         }
@@ -2210,15 +2219,31 @@
     };
 
     CmdInstance.prototype.getAliased = function() {
-      var aliasOf, aliased;
       if (this.cmd != null) {
-        if (this.aliasedCmd != null) {
-          return this.aliasedCmd || null;
+        if (this.aliasedCmd == null) {
+          this.getAliasedFinal();
+        }
+        return this.aliasedCmd || null;
+      }
+    };
+
+    CmdInstance.prototype.getAliasedFinal = function() {
+      var aliasOf, aliased, cmdName, nspc, ref;
+      if (this.cmd != null) {
+        if (this.aliasedFinalCmd != null) {
+          return this.aliasedFinalCmd || null;
         }
         if (this.cmd.aliasOf != null) {
-          aliasOf = this.cmd.aliasOf.replace('%name%', this.cmdName);
-          aliased = this.cmd._aliasedFromFinder(this.getFinder(aliasOf));
-          this.aliasedCmd = aliased || false;
+          aliased = this.cmd;
+          while ((aliased != null) && (aliased.aliasOf != null)) {
+            ref = Codewave.util.splitNamespace(this.cmdName), nspc = ref[0], cmdName = ref[1];
+            aliasOf = aliased.aliasOf.replace('%name%', cmdName);
+            aliased = aliased._aliasedFromFinder(this.getFinder(aliasOf));
+            if (this.aliasedCmd == null) {
+              this.aliasedCmd = aliased || false;
+            }
+          }
+          this.aliasedFinalCmd = aliased || false;
           return aliased;
         }
       }
@@ -2273,7 +2298,7 @@
         if (this.cmdObj != null) {
           return this.cmdObj.execute();
         }
-        cmd = this.getAliased() || this.cmd;
+        cmd = this.getAliasedFinal() || this.cmd;
         cmd.init();
         if (cmd.executeFunct != null) {
           return cmd.executeFunct(this);
@@ -2287,7 +2312,7 @@
         if (this.cmdObj != null) {
           return this.cmdObj.result();
         }
-        cmd = this.getAliased() || this.cmd;
+        cmd = this.getAliasedFinal() || this.cmd;
         cmd.init();
         if (cmd.resultFunct != null) {
           return cmd.resultFunct(this);
@@ -2425,7 +2450,7 @@
       var aliased, len1, p, q, ref;
       aliased = this.getAliased();
       if (aliased != null) {
-        return aliased.isExecutable();
+        return aliased.init().isExecutable();
       }
       ref = ['resultStr', 'resultFunct', 'cls', 'executeFunct'];
       for (q = 0, len1 = ref.length; q < len1; q++) {
@@ -2435,6 +2460,20 @@
         }
       }
       return false;
+    };
+
+    Command.prototype.isExecutableWithName = function(name) {
+      var aliasOf, aliased, context;
+      if (this.aliasOf != null) {
+        context = new Codewave.Context();
+        aliasOf = this.aliasOf.replace('%name%', name);
+        aliased = this._aliasedFromFinder(context.getFinder(aliasOf));
+        if (aliased != null) {
+          return aliased.init().isExecutable();
+        }
+        return false;
+      }
+      return this.isExecutable();
     };
 
     Command.prototype.resultIsAvailable = function() {
@@ -2467,6 +2506,7 @@
     Command.prototype._aliasedFromFinder = function(finder) {
       finder.useFallbacks = false;
       finder.mustExecute = false;
+      finder.useDetectors = false;
       return finder.find();
     };
 

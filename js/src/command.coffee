@@ -60,11 +60,20 @@ class @Codewave.Command
   isExecutable: ->
     aliased = @getAliased()
     if aliased?
-      return aliased.isExecutable()
+      return aliased.init().isExecutable()
     for p in ['resultStr','resultFunct','cls','executeFunct']
       if this[p]?
         return true
     return false
+  isExecutableWithName: (name) ->
+    if @aliasOf?
+      context = new Codewave.Context()
+      aliasOf = @aliasOf.replace('%name%',name)
+      aliased = @_aliasedFromFinder(context.getFinder(aliasOf))
+      if aliased?
+        return aliased.init().isExecutable()
+      return false
+    return @isExecutable()
   resultIsAvailable: ->
     aliased = @getAliased()
     if aliased?
@@ -83,6 +92,7 @@ class @Codewave.Command
   _aliasedFromFinder: (finder) ->
       finder.useFallbacks = false
       finder.mustExecute = false
+      finder.useDetectors = false
       return finder.find()
   getAliased: ->
     if @aliasOf?

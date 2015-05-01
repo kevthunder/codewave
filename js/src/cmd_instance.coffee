@@ -42,7 +42,7 @@ class @Codewave.CmdInstance
     if @cmd?
       if @cmdObj?
         return @cmdObj.resultIsAvailable()
-      aliased = @getAliased()
+      aliased = @getAliasedFinal()
       if aliased?
         return aliased.resultIsAvailable()
       return @cmd.resultIsAvailable()
@@ -59,12 +59,22 @@ class @Codewave.CmdInstance
       return res
   getAliased: ->
     if @cmd?
-      if @aliasedCmd?
-        return @aliasedCmd or null
+      unless @aliasedCmd?
+        @getAliasedFinal()
+      return @aliasedCmd or null
+  getAliasedFinal: ->
+    if @cmd?
+      if @aliasedFinalCmd?
+        return @aliasedFinalCmd or null
       if @cmd.aliasOf?
-        aliasOf = @cmd.aliasOf.replace('%name%',@cmdName)
-        aliased = @cmd._aliasedFromFinder(@getFinder(aliasOf))
-        @aliasedCmd = aliased or false
+        aliased = @cmd
+        while aliased? and aliased.aliasOf?
+          [nspc, cmdName] = Codewave.util.splitNamespace(@cmdName)
+          aliasOf = aliased.aliasOf.replace('%name%',cmdName)
+          aliased = aliased._aliasedFromFinder(@getFinder(aliasOf))
+          unless @aliasedCmd?
+            @aliasedCmd = aliased or false
+        @aliasedFinalCmd = aliased or false
         return aliased
   getOptions: ->
     if @cmd?
@@ -89,7 +99,7 @@ class @Codewave.CmdInstance
     if @cmd?
       if @cmdObj?
         return @cmdObj.execute()
-      cmd = @getAliased() or @cmd
+      cmd = @getAliasedFinal() or @cmd
       cmd.init()
       if cmd.executeFunct?
         return cmd.executeFunct(this)
@@ -97,7 +107,7 @@ class @Codewave.CmdInstance
     if @cmd?
       if @cmdObj?
         return @cmdObj.result()
-      cmd = @getAliased() or @cmd
+      cmd = @getAliasedFinal() or @cmd
       cmd.init()
       if cmd.resultFunct?
         return cmd.resultFunct(this)

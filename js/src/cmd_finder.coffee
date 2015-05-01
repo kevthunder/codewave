@@ -115,8 +115,13 @@ class @Codewave.CmdFinder
   cmdIsValid: (cmd) ->
     unless cmd?
       return false
-    cmd.init()
-    return !@mustExecute or cmd.isExecutable()
+    return !@mustExecute or @cmdIsExecutable(cmd)
+  cmdIsExecutable: (cmd) ->
+    names = @getDirectNames()
+    if names.length == 1
+      return cmd.init().isExecutableWithName(names[0])
+    else
+      return cmd.init().isExecutable()
   cmdScore: (cmd) ->
     score = cmd.depth
     if cmd.name == 'fallback' 
