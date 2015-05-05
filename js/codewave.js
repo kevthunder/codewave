@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, getParam, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -2937,6 +2937,9 @@
       'close': {
         'cls': CloseCmd
       },
+      'param': {
+        'result': getParam
+      },
       'edit': {
         'cmds': EditCmd.setCmds({
           'save': {
@@ -3024,7 +3027,7 @@
       'e': {
         aliasOf: 'php:inner:echo'
       },
-      'class': "class | {\n\tfunction __construct() {\n\t\t~~content~~\n\t}\n}",
+      'class': "class ~~param 0 class def:|~~ {\n\tfunction __construct() {\n\t\t~~content~~|\n\t}\n}",
       'c': {
         aliasOf: 'php:inner:class'
       },
@@ -3208,6 +3211,12 @@
       } else {
         return "~~not_found~~";
       }
+    }
+  };
+
+  getParam = function(instance) {
+    if (instance.codewave.inInstance != null) {
+      return instance.codewave.inInstance.getParam(instance.params, instance.getParam(['def', 'default']));
     }
   };
 

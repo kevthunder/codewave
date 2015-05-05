@@ -196,6 +196,9 @@ initCmds = ->
     'close':{
       'cls' : CloseCmd
     },
+    'param':{
+      'result' : getParam
+    },
     'edit':{
       'cmds' : EditCmd.setCmds({
         'save':{
@@ -309,9 +312,9 @@ initCmds = ->
     'echo': 'echo ${id}',
     'e':{   aliasOf: 'php:inner:echo' },
     'class':"""
-      class | {
+      class ~~param 0 class def:|~~ {
       \tfunction __construct() {
-      \t\t~~content~~
+      \t\t~~content~~|
       \t}
       }
       """,
@@ -458,6 +461,11 @@ aliasCommand = (instance) ->
       return ""
     else 
       return "~~not_found~~"
+      
+getParam = (instance) ->
+  if instance.codewave.inInstance?
+    return instance.codewave.inInstance.getParam(instance.params,instance.getParam(['def','default']))
+  
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '
 class BoxCmd extends Codewave.BaseCommand
