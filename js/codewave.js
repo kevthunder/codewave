@@ -2881,6 +2881,579 @@
 
   })();
 
+  this.Codewave.Detector = (function() {
+    function Detector(data1) {
+      this.data = data1 != null ? data1 : {};
+    }
+
+    Detector.prototype.detect = function(finder) {
+      if (this.detected(finder)) {
+        if (this.data.result != null) {
+          return this.data.result;
+        }
+      } else {
+        if (this.data["else"] != null) {
+          return this.data["else"];
+        }
+      }
+    };
+
+    Detector.prototype.detected = function(finder) {};
+
+    return Detector;
+
+  })();
+
+  this.Codewave.LangDetector = (function(superClass) {
+    extend(LangDetector, superClass);
+
+    function LangDetector() {
+      return LangDetector.__super__.constructor.apply(this, arguments);
+    }
+
+    LangDetector.prototype.detect = function(finder) {
+      var lang;
+      if (finder.codewave != null) {
+        lang = finder.codewave.editor.getLang();
+        if (lang != null) {
+          return lang.toLowerCase();
+        }
+      }
+    };
+
+    return LangDetector;
+
+  })(Codewave.Detector);
+
+  this.Codewave.PairDetector = (function(superClass) {
+    extend(PairDetector, superClass);
+
+    function PairDetector() {
+      return PairDetector.__super__.constructor.apply(this, arguments);
+    }
+
+    PairDetector.prototype.detected = function(finder) {
+      var pair;
+      if ((this.data.opener != null) && (this.data.closer != null) && (finder.instance != null)) {
+        pair = new Codewave.util.Pair(this.data.opener, this.data.closer, this.data);
+        if (pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    return PairDetector;
+
+  })(Codewave.Detector);
+
+  this.Codewave.logger = {
+    log: function() {
+      var args, len1, msg, q, results;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      if (window.console) {
+        results = [];
+        for (q = 0, len1 = args.length; q < len1; q++) {
+          msg = args[q];
+          results.push(console.log(msg));
+        }
+        return results;
+      }
+    },
+    runtime: function(funct, name) {
+      var res, t0, t1;
+      if (name == null) {
+        name = "function";
+      }
+      t0 = performance.now();
+      res = funct();
+      t1 = performance.now();
+      console.log(name + " took " + (t1 - t0) + " milliseconds.");
+      return res;
+    },
+    minitorData: {},
+    toMonitor: function(obj, name, prefix) {
+      var funct;
+      if (prefix == null) {
+        prefix = '';
+      }
+      funct = obj[name];
+      return obj[name] = function() {
+        var args;
+        args = arguments;
+        return Codewave.logger.monitor((function() {
+          return funct.apply(obj, args);
+        }), prefix + name);
+      };
+    },
+    monitor: function(funct, name) {
+      var res, t0, t1;
+      t0 = performance.now();
+      res = funct();
+      t1 = performance.now();
+      if (Codewave.logger.minitorData[name] != null) {
+        Codewave.logger.minitorData[name].count++;
+        Codewave.logger.minitorData[name].total += t1 - t0;
+      } else {
+        Codewave.logger.minitorData[name] = {
+          count: 1,
+          total: t1 - t0
+        };
+      }
+      return res;
+    },
+    resume: function() {
+      return console.log(Codewave.logger.minitorData);
+    }
+  };
+
+  this.Codewave.PositionedCmdInstance = (function(superClass) {
+    extend(PositionedCmdInstance, superClass);
+
+    function PositionedCmdInstance(codewave1, pos1, str1) {
+      this.codewave = codewave1;
+      this.pos = pos1;
+      this.str = str1;
+      if (!this.isEmpty()) {
+        this._checkCloser();
+        this.opening = this.str;
+        this.noBracket = this._removeBracket(this.str);
+        this._splitComponents();
+        this._findClosing();
+        this._checkElongated();
+      }
+    }
+
+    PositionedCmdInstance.prototype._checkCloser = function() {
+      var f, noBracket;
+      noBracket = this._removeBracket(this.str);
+      if (noBracket.substring(0, this.codewave.closeChar.length) === this.codewave.closeChar && (f = this._findOpeningPos())) {
+        this.closingPos = new Codewave.util.StrPos(this.pos, this.str);
+        this.pos = f.pos;
+        return this.str = f.str;
+      }
+    };
+
+    PositionedCmdInstance.prototype._findOpeningPos = function() {
+      var closing, cmdName, f, opening;
+      cmdName = this._removeBracket(this.str).substring(this.codewave.closeChar.length);
+      opening = this.codewave.brakets + cmdName;
+      closing = this.str;
+      if (f = this.codewave.findMatchingPair(this.pos, opening, closing, -1)) {
+        f.str = this.codewave.editor.textSubstr(f.pos, this.codewave.findNextBraket(f.pos + f.str.length) + this.codewave.brakets.length);
+        return f;
+      }
+    };
+
+    PositionedCmdInstance.prototype._splitComponents = function() {
+      var parts;
+      parts = this.noBracket.split(" ");
+      this.cmdName = parts.shift();
+      return this.rawParams = parts.join(" ");
+    };
+
+    PositionedCmdInstance.prototype._parseParams = function(params) {
+      var allowedNamed, chr, i, inStr, name, nameToParam, param, q, ref;
+      this.params = [];
+      this.named = {};
+      if (this.cmd != null) {
+        this.named = Codewave.util.merge(this.named, this.cmd.getDefaults(this));
+        nameToParam = this.getOption('nameToParam');
+        if (nameToParam != null) {
+          this.named[nameToParam] = this.cmdName;
+        }
+      }
+      if (params.length) {
+        if (this.cmd != null) {
+          allowedNamed = this.getOption('allowedNamed');
+        }
+        inStr = false;
+        param = '';
+        name = false;
+        for (i = q = 0, ref = params.length - 1; 0 <= ref ? q <= ref : q >= ref; i = 0 <= ref ? ++q : --q) {
+          chr = params[i];
+          if (chr === ' ' && !inStr) {
+            if (name) {
+              this.named[name] = param;
+            } else {
+              this.params.push(param);
+            }
+            param = '';
+            name = false;
+          } else if ((chr === '"' || chr === "'") && (i === 0 || params[i - 1] !== '\\')) {
+            inStr = !inStr;
+          } else if (chr === ':' && !name && !inStr && ((allowedNamed == null) || indexOf.call(allowedNamed, name) >= 0)) {
+            name = param;
+            param = '';
+          } else {
+            param += chr;
+          }
+        }
+        if (param.length) {
+          if (name) {
+            return this.named[name] = param;
+          } else {
+            return this.params.push(param);
+          }
+        }
+      }
+    };
+
+    PositionedCmdInstance.prototype._findClosing = function() {
+      var f;
+      if (f = this._findClosingPos()) {
+        this.content = Codewave.util.trimEmptyLine(this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos));
+        return this.str = this.codewave.editor.textSubstr(this.pos, f.pos + f.str.length);
+      }
+    };
+
+    PositionedCmdInstance.prototype._findClosingPos = function() {
+      var closing, f, opening;
+      if (this.closingPos != null) {
+        return this.closingPos;
+      }
+      closing = this.codewave.brakets + this.codewave.closeChar + this.cmdName + this.codewave.brakets;
+      opening = this.codewave.brakets + this.cmdName;
+      if (f = this.codewave.findMatchingPair(this.pos + this.str.length, opening, closing)) {
+        return this.closingPos = f;
+      }
+    };
+
+    PositionedCmdInstance.prototype._checkElongated = function() {
+      var endPos, max, ref;
+      endPos = this.getEndPos();
+      max = this.codewave.editor.textLen();
+      while (endPos < max && this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length) === this.codewave.deco) {
+        endPos += this.codewave.deco.length;
+      }
+      if (endPos >= max || ((ref = this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length)) === ' ' || ref === "\n" || ref === "\r")) {
+        return this.str = this.codewave.editor.textSubstr(this.pos, endPos);
+      }
+    };
+
+    PositionedCmdInstance.prototype._checkBox = function() {
+      var cl, cr, endPos;
+      if ((this.codewave.inInstance != null) && this.codewave.inInstance.cmd.name === 'comment') {
+        return;
+      }
+      cl = this.context.wrapCommentLeft();
+      cr = this.context.wrapCommentRight();
+      endPos = this.getEndPos() + cr.length;
+      if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(endPos - cr.length, endPos) === cr) {
+        this.pos = this.pos - cl.length;
+        this.str = this.codewave.editor.textSubstr(this.pos, endPos);
+        return this._removeCommentFromContent();
+      } else if (this.sameLinesPrefix().indexOf(cl) > -1 && this.sameLinesSuffix().indexOf(cr) > -1) {
+        this.inBox = 1;
+        return this._removeCommentFromContent();
+      }
+    };
+
+    PositionedCmdInstance.prototype._removeCommentFromContent = function() {
+      var ecl, ecr, ed, re1, re2, re3;
+      if (this.content) {
+        ecl = Codewave.util.escapeRegExp(this.context.wrapCommentLeft());
+        ecr = Codewave.util.escapeRegExp(this.context.wrapCommentRight());
+        ed = Codewave.util.escapeRegExp(this.codewave.deco);
+        re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
+        re2 = new RegExp("^\\s*(?:" + ed + ")*" + ecr + "\r?\n");
+        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*\\s*$");
+        return this.content = this.content.replace(re1, '$1').replace(re2, '').replace(re3, '');
+      }
+    };
+
+    PositionedCmdInstance.prototype._getParentCmds = function() {
+      var ref;
+      return this.parent = (ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? ref.init() : void 0;
+    };
+
+    PositionedCmdInstance.prototype.setMultiPos = function(multiPos) {
+      return this.multiPos = multiPos;
+    };
+
+    PositionedCmdInstance.prototype.prevEOL = function() {
+      if (this._prevEOL == null) {
+        this._prevEOL = this.codewave.findLineStart(this.pos);
+      }
+      return this._prevEOL;
+    };
+
+    PositionedCmdInstance.prototype.nextEOL = function() {
+      if (this._nextEOL == null) {
+        this._nextEOL = this.codewave.findLineEnd(this.getEndPos());
+      }
+      return this._nextEOL;
+    };
+
+    PositionedCmdInstance.prototype.rawWithFullLines = function() {
+      if (this._rawWithFullLines == null) {
+        this._rawWithFullLines = this.codewave.editor.textSubstr(this.prevEOL(), this.nextEOL());
+      }
+      return this._rawWithFullLines;
+    };
+
+    PositionedCmdInstance.prototype.sameLinesPrefix = function() {
+      if (this._sameLinesPrefix == null) {
+        this._sameLinesPrefix = this.codewave.editor.textSubstr(this.prevEOL(), this.pos);
+      }
+      return this._sameLinesPrefix;
+    };
+
+    PositionedCmdInstance.prototype.sameLinesSuffix = function() {
+      if (this._sameLinesSuffix == null) {
+        this._sameLinesSuffix = this.codewave.editor.textSubstr(this.getEndPos(), this.nextEOL());
+      }
+      return this._sameLinesSuffix;
+    };
+
+    PositionedCmdInstance.prototype._getCmdObj = function() {
+      this.getCmd();
+      this._checkBox();
+      this.content = this.removeIndentFromContent(this.content);
+      return PositionedCmdInstance.__super__._getCmdObj.apply(this, arguments);
+    };
+
+    PositionedCmdInstance.prototype._initParams = function() {
+      return this._parseParams(this.rawParams);
+    };
+
+    PositionedCmdInstance.prototype.getContext = function() {
+      return this.context || this.codewave.context;
+    };
+
+    PositionedCmdInstance.prototype.getCmd = function() {
+      if (this.cmd == null) {
+        this._getParentCmds();
+        if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
+          this.cmd = Codewave.Command.cmds.getCmd('core:no_execute');
+          this.context = this.codewave.context;
+        } else {
+          this.finder = this.getFinder(this.cmdName);
+          this.context = this.finder.context;
+          this.cmd = this.finder.find();
+          if (this.cmd != null) {
+            this.context.addNameSpace(this.cmd.fullName);
+          }
+        }
+      }
+      return this.cmd;
+    };
+
+    PositionedCmdInstance.prototype.getFinder = function(cmdName) {
+      var finder;
+      finder = this.codewave.context.getFinder(cmdName, this._getParentNamespaces());
+      finder.instance = this;
+      return finder;
+    };
+
+    PositionedCmdInstance.prototype._getParentNamespaces = function() {
+      var nspcs, obj;
+      nspcs = [];
+      obj = this;
+      while (obj.parent != null) {
+        obj = obj.parent;
+        if ((obj.cmd != null) && (obj.cmd.fullName != null)) {
+          nspcs.push(obj.cmd.fullName);
+        }
+      }
+      return nspcs;
+    };
+
+    PositionedCmdInstance.prototype._removeBracket = function(str) {
+      return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
+    };
+
+    PositionedCmdInstance.prototype.isEmpty = function() {
+      return this.str === this.codewave.brakets + this.codewave.closeChar + this.codewave.brakets || this.str === this.codewave.brakets + this.codewave.brakets;
+    };
+
+    PositionedCmdInstance.prototype.execute = function() {
+      var beforeFunct, res;
+      if (this.isEmpty()) {
+        if ((this.codewave.closingPromp != null) && (this.codewave.closingPromp.whithinOpenBounds(this.pos + this.codewave.brakets.length) != null)) {
+          return this.codewave.closingPromp.cancel();
+        } else {
+          return this.replaceWith('');
+        }
+      } else if (this.cmd != null) {
+        if (beforeFunct = this.getOption('beforeExecute')) {
+          beforeFunct(this);
+        }
+        if (this.resultIsAvailable()) {
+          if ((res = this.result()) != null) {
+            this.replaceWith(res);
+            return true;
+          }
+        } else {
+          return this.runExecuteFunct();
+        }
+      }
+    };
+
+    PositionedCmdInstance.prototype.getEndPos = function() {
+      return this.pos + this.str.length;
+    };
+
+    PositionedCmdInstance.prototype.getPos = function() {
+      return new Codewave.util.Pos(this.pos, this.pos + this.str.length);
+    };
+
+    PositionedCmdInstance.prototype.getIndent = function() {
+      var helper;
+      if (this.indentLen == null) {
+        if (this.inBox != null) {
+          helper = new Codewave.util.BoxHelper(this.context);
+          this.indentLen = helper.removeComment(this.sameLinesPrefix()).length;
+        } else {
+          this.indentLen = this.pos - this.codewave.findLineStart(this.pos);
+        }
+      }
+      return this.indentLen;
+    };
+
+    PositionedCmdInstance.prototype.removeIndentFromContent = function(text) {
+      var reg;
+      if (text != null) {
+        reg = new RegExp('^\\s{' + this.getIndent() + '}', 'gm');
+        return text.replace(reg, '');
+      } else {
+        return text;
+      }
+    };
+
+    PositionedCmdInstance.prototype.alterResultForBox = function(repl) {
+      var box, helper, ref, ref1, res;
+      helper = new Codewave.util.BoxHelper(this.context);
+      helper.getOptFromLine(this.rawWithFullLines(), false);
+      if (this.getOption('replaceBox')) {
+        box = helper.getBoxForPos(this.getPos());
+        ref = [box.start, box.end], repl.start = ref[0], repl.end = ref[1];
+        this.indentLen = helper.indent;
+        repl.text = this.applyIndent(repl.text);
+      } else {
+        repl.text = this.applyIndent(repl.text);
+        repl.start = this.prevEOL();
+        repl.end = this.nextEOL();
+        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + repl.text + this.codewave.marker + this.sameLinesSuffix(), {
+          multiline: false
+        });
+        ref1 = res.split(this.codewave.marker), repl.prefix = ref1[0], repl.text = ref1[1], repl.suffix = ref1[2];
+      }
+      return repl;
+    };
+
+    PositionedCmdInstance.prototype.getCursorFromResult = function(repl) {
+      var cursorPos, p;
+      cursorPos = repl.resPosBeforePrefix();
+      if ((this.cmd != null) && this.codewave.checkCarret && this.getOption('checkCarret')) {
+        if ((p = this.codewave.getCarretPos(repl.text)) != null) {
+          cursorPos = repl.start + repl.prefix.length + p;
+        }
+        repl.text = this.codewave.removeCarret(repl.text);
+      }
+      return cursorPos;
+    };
+
+    PositionedCmdInstance.prototype.checkMulti = function(repl) {
+      var i, len1, newRepl, originalPos, originalText, pos, q, ref, replacements;
+      if ((this.multiPos != null) && this.multiPos.length > 1) {
+        replacements = [repl];
+        originalText = repl.originalTextWith(this.codewave.editor);
+        ref = this.multiPos;
+        for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
+          pos = ref[i];
+          if (i === 0) {
+            originalPos = pos.start;
+          } else {
+            newRepl = repl.copy().applyOffset(pos.start - originalPos);
+            if (newRepl.originalTextWith(this.codewave.editor) === originalText) {
+              replacements.push(newRepl);
+            }
+          }
+        }
+        return replacements;
+      } else {
+        return [repl];
+      }
+    };
+
+    PositionedCmdInstance.prototype.replaceWith = function(text) {
+      var cursorPos, repl, replacements;
+      repl = new Codewave.util.Replacement(this.pos, this.getEndPos(), text);
+      if (this.inBox != null) {
+        this.alterResultForBox(repl);
+      } else {
+        repl.text = this.applyIndent(repl.text);
+      }
+      cursorPos = this.getCursorFromResult(repl);
+      repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)];
+      replacements = this.checkMulti(repl);
+      this.codewave.editor.applyReplacements(replacements);
+      this.replaceStart = repl.start;
+      return this.replaceEnd = repl.resEnd();
+    };
+
+    return PositionedCmdInstance;
+
+  })(this.Codewave.CmdInstance);
+
+  this.Codewave.Process = (function() {
+    function Process() {}
+
+    return Process;
+
+  })();
+
+  this.Codewave.TestEditor = (function(superClass) {
+    extend(TestEditor, superClass);
+
+    function TestEditor(target) {
+      TestEditor.__super__.constructor.call(this, target);
+      this.selections = [];
+    }
+
+    TestEditor.prototype.allowMultiSelection = function() {
+      return true;
+    };
+
+    TestEditor.prototype.setCursorPos = function(start, end) {
+      var old;
+      if (arguments.length < 2) {
+        end = start;
+      }
+      old = this.getCursorPos();
+      if (start !== old.start || end !== old.end) {
+        TestEditor.__super__.setCursorPos.call(this, start, end);
+        return this.selections = [new Codewave.util.Pos(start, end)];
+      }
+    };
+
+    TestEditor.prototype.setMultiSel = function(selections) {
+      if (selections.length > 0) {
+        this.setCursorPos(selections[0].start, selections[0].end);
+      }
+      return this.selections = selections;
+    };
+
+    TestEditor.prototype.getMultiSel = function() {
+      var selections;
+      selections = this.selections;
+      selections[0] = this.getCursorPos();
+      return selections;
+    };
+
+    TestEditor.prototype.addSel = function(start, end) {
+      return this.selections.push(new Codewave.util.Pos(start, end));
+    };
+
+    TestEditor.prototype.resetSel = function(start, end) {
+      return this.selections = [this.getCursorPos()];
+    };
+
+    return TestEditor;
+
+  })(Codewave.TextAreaEditor);
+
   initCmds = function() {
     var core, css, html, js, php, phpInner, phpOuter;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
@@ -3494,584 +4067,11 @@
 
   })(this.Codewave.BaseCommand);
 
-  this.Codewave.Detector = (function() {
-    function Detector(data1) {
-      this.data = data1 != null ? data1 : {};
-    }
-
-    Detector.prototype.detect = function(finder) {
-      if (this.detected(finder)) {
-        if (this.data.result != null) {
-          return this.data.result;
-        }
-      } else {
-        if (this.data["else"] != null) {
-          return this.data["else"];
-        }
-      }
-    };
-
-    Detector.prototype.detected = function(finder) {};
-
-    return Detector;
-
-  })();
-
-  this.Codewave.LangDetector = (function(superClass) {
-    extend(LangDetector, superClass);
-
-    function LangDetector() {
-      return LangDetector.__super__.constructor.apply(this, arguments);
-    }
-
-    LangDetector.prototype.detect = function(finder) {
-      var lang;
-      if (finder.codewave != null) {
-        lang = finder.codewave.editor.getLang();
-        if (lang != null) {
-          return lang.toLowerCase();
-        }
-      }
-    };
-
-    return LangDetector;
-
-  })(Codewave.Detector);
-
-  this.Codewave.PairDetector = (function(superClass) {
-    extend(PairDetector, superClass);
-
-    function PairDetector() {
-      return PairDetector.__super__.constructor.apply(this, arguments);
-    }
-
-    PairDetector.prototype.detected = function(finder) {
-      var pair;
-      if ((this.data.opener != null) && (this.data.closer != null) && (finder.instance != null)) {
-        pair = new Codewave.util.Pair(this.data.opener, this.data.closer, this.data);
-        if (pair.isWapperOf(finder.instance.getPos(), finder.codewave.editor.text())) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    return PairDetector;
-
-  })(Codewave.Detector);
-
   this.Codewave.init();
 
   this.Codewave.detect = function(target) {
     return new Codewave(new Codewave.TextAreaEditor(target));
   };
-
-  this.Codewave.logger = {
-    log: function() {
-      var args, len1, msg, q, results;
-      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      if (window.console) {
-        results = [];
-        for (q = 0, len1 = args.length; q < len1; q++) {
-          msg = args[q];
-          results.push(console.log(msg));
-        }
-        return results;
-      }
-    },
-    runtime: function(funct, name) {
-      var res, t0, t1;
-      if (name == null) {
-        name = "function";
-      }
-      t0 = performance.now();
-      res = funct();
-      t1 = performance.now();
-      console.log(name + " took " + (t1 - t0) + " milliseconds.");
-      return res;
-    },
-    minitorData: {},
-    toMonitor: function(obj, name, prefix) {
-      var funct;
-      if (prefix == null) {
-        prefix = '';
-      }
-      funct = obj[name];
-      return obj[name] = function() {
-        var args;
-        args = arguments;
-        return Codewave.logger.monitor((function() {
-          return funct.apply(obj, args);
-        }), prefix + name);
-      };
-    },
-    monitor: function(funct, name) {
-      var res, t0, t1;
-      t0 = performance.now();
-      res = funct();
-      t1 = performance.now();
-      if (Codewave.logger.minitorData[name] != null) {
-        Codewave.logger.minitorData[name].count++;
-        Codewave.logger.minitorData[name].total += t1 - t0;
-      } else {
-        Codewave.logger.minitorData[name] = {
-          count: 1,
-          total: t1 - t0
-        };
-      }
-      return res;
-    },
-    resume: function() {
-      return console.log(Codewave.logger.minitorData);
-    }
-  };
-
-  this.Codewave.PositionedCmdInstance = (function(superClass) {
-    extend(PositionedCmdInstance, superClass);
-
-    function PositionedCmdInstance(codewave1, pos1, str1) {
-      this.codewave = codewave1;
-      this.pos = pos1;
-      this.str = str1;
-      if (!this.isEmpty()) {
-        this._checkCloser();
-        this.opening = this.str;
-        this.noBracket = this._removeBracket(this.str);
-        this._splitComponents();
-        this._findClosing();
-        this._checkElongated();
-      }
-    }
-
-    PositionedCmdInstance.prototype._checkCloser = function() {
-      var f, noBracket;
-      noBracket = this._removeBracket(this.str);
-      if (noBracket.substring(0, this.codewave.closeChar.length) === this.codewave.closeChar && (f = this._findOpeningPos())) {
-        this.closingPos = new Codewave.util.StrPos(this.pos, this.str);
-        this.pos = f.pos;
-        return this.str = f.str;
-      }
-    };
-
-    PositionedCmdInstance.prototype._findOpeningPos = function() {
-      var closing, cmdName, f, opening;
-      cmdName = this._removeBracket(this.str).substring(this.codewave.closeChar.length);
-      opening = this.codewave.brakets + cmdName;
-      closing = this.str;
-      if (f = this.codewave.findMatchingPair(this.pos, opening, closing, -1)) {
-        f.str = this.codewave.editor.textSubstr(f.pos, this.codewave.findNextBraket(f.pos + f.str.length) + this.codewave.brakets.length);
-        return f;
-      }
-    };
-
-    PositionedCmdInstance.prototype._splitComponents = function() {
-      var parts;
-      parts = this.noBracket.split(" ");
-      this.cmdName = parts.shift();
-      return this.rawParams = parts.join(" ");
-    };
-
-    PositionedCmdInstance.prototype._parseParams = function(params) {
-      var allowedNamed, chr, i, inStr, name, nameToParam, param, q, ref;
-      this.params = [];
-      this.named = {};
-      if (this.cmd != null) {
-        this.named = Codewave.util.merge(this.named, this.cmd.getDefaults(this));
-        nameToParam = this.getOption('nameToParam');
-        if (nameToParam != null) {
-          this.named[nameToParam] = this.cmdName;
-        }
-      }
-      if (params.length) {
-        if (this.cmd != null) {
-          allowedNamed = this.getOption('allowedNamed');
-        }
-        inStr = false;
-        param = '';
-        name = false;
-        for (i = q = 0, ref = params.length - 1; 0 <= ref ? q <= ref : q >= ref; i = 0 <= ref ? ++q : --q) {
-          chr = params[i];
-          if (chr === ' ' && !inStr) {
-            if (name) {
-              this.named[name] = param;
-            } else {
-              this.params.push(param);
-            }
-            param = '';
-            name = false;
-          } else if ((chr === '"' || chr === "'") && (i === 0 || params[i - 1] !== '\\')) {
-            inStr = !inStr;
-          } else if (chr === ':' && !name && !inStr && ((allowedNamed == null) || indexOf.call(allowedNamed, name) >= 0)) {
-            name = param;
-            param = '';
-          } else {
-            param += chr;
-          }
-        }
-        if (param.length) {
-          if (name) {
-            return this.named[name] = param;
-          } else {
-            return this.params.push(param);
-          }
-        }
-      }
-    };
-
-    PositionedCmdInstance.prototype._findClosing = function() {
-      var f;
-      if (f = this._findClosingPos()) {
-        this.content = Codewave.util.trimEmptyLine(this.codewave.editor.textSubstr(this.pos + this.str.length, f.pos));
-        return this.str = this.codewave.editor.textSubstr(this.pos, f.pos + f.str.length);
-      }
-    };
-
-    PositionedCmdInstance.prototype._findClosingPos = function() {
-      var closing, f, opening;
-      if (this.closingPos != null) {
-        return this.closingPos;
-      }
-      closing = this.codewave.brakets + this.codewave.closeChar + this.cmdName + this.codewave.brakets;
-      opening = this.codewave.brakets + this.cmdName;
-      if (f = this.codewave.findMatchingPair(this.pos + this.str.length, opening, closing)) {
-        return this.closingPos = f;
-      }
-    };
-
-    PositionedCmdInstance.prototype._checkElongated = function() {
-      var endPos, max, ref;
-      endPos = this.getEndPos();
-      max = this.codewave.editor.textLen();
-      while (endPos < max && this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length) === this.codewave.deco) {
-        endPos += this.codewave.deco.length;
-      }
-      if (endPos >= max || ((ref = this.codewave.editor.textSubstr(endPos, endPos + this.codewave.deco.length)) === ' ' || ref === "\n" || ref === "\r")) {
-        return this.str = this.codewave.editor.textSubstr(this.pos, endPos);
-      }
-    };
-
-    PositionedCmdInstance.prototype._checkBox = function() {
-      var cl, cr, endPos;
-      if ((this.codewave.inInstance != null) && this.codewave.inInstance.cmd.name === 'comment') {
-        return;
-      }
-      cl = this.context.wrapCommentLeft();
-      cr = this.context.wrapCommentRight();
-      endPos = this.getEndPos() + cr.length;
-      if (this.codewave.editor.textSubstr(this.pos - cl.length, this.pos) === cl && this.codewave.editor.textSubstr(endPos - cr.length, endPos) === cr) {
-        this.pos = this.pos - cl.length;
-        this.str = this.codewave.editor.textSubstr(this.pos, endPos);
-        return this._removeCommentFromContent();
-      } else if (this.sameLinesPrefix().indexOf(cl) > -1 && this.sameLinesSuffix().indexOf(cr) > -1) {
-        this.inBox = 1;
-        return this._removeCommentFromContent();
-      }
-    };
-
-    PositionedCmdInstance.prototype._removeCommentFromContent = function() {
-      var ecl, ecr, ed, re1, re2, re3;
-      if (this.content) {
-        ecl = Codewave.util.escapeRegExp(this.context.wrapCommentLeft());
-        ecr = Codewave.util.escapeRegExp(this.context.wrapCommentRight());
-        ed = Codewave.util.escapeRegExp(this.codewave.deco);
-        re1 = new RegExp("^\\s*" + ecl + "(?:" + ed + ")+\\s*(.*?)\\s*(?:" + ed + ")+" + ecr + "$", "gm");
-        re2 = new RegExp("^\\s*(?:" + ed + ")*" + ecr + "\r?\n");
-        re3 = new RegExp("\n\\s*" + ecl + "(?:" + ed + ")*\\s*$");
-        return this.content = this.content.replace(re1, '$1').replace(re2, '').replace(re3, '');
-      }
-    };
-
-    PositionedCmdInstance.prototype._getParentCmds = function() {
-      var ref;
-      return this.parent = (ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? ref.init() : void 0;
-    };
-
-    PositionedCmdInstance.prototype.setMultiPos = function(multiPos) {
-      return this.multiPos = multiPos;
-    };
-
-    PositionedCmdInstance.prototype.prevEOL = function() {
-      if (this._prevEOL == null) {
-        this._prevEOL = this.codewave.findLineStart(this.pos);
-      }
-      return this._prevEOL;
-    };
-
-    PositionedCmdInstance.prototype.nextEOL = function() {
-      if (this._nextEOL == null) {
-        this._nextEOL = this.codewave.findLineEnd(this.getEndPos());
-      }
-      return this._nextEOL;
-    };
-
-    PositionedCmdInstance.prototype.rawWithFullLines = function() {
-      if (this._rawWithFullLines == null) {
-        this._rawWithFullLines = this.codewave.editor.textSubstr(this.prevEOL(), this.nextEOL());
-      }
-      return this._rawWithFullLines;
-    };
-
-    PositionedCmdInstance.prototype.sameLinesPrefix = function() {
-      if (this._sameLinesPrefix == null) {
-        this._sameLinesPrefix = this.codewave.editor.textSubstr(this.prevEOL(), this.pos);
-      }
-      return this._sameLinesPrefix;
-    };
-
-    PositionedCmdInstance.prototype.sameLinesSuffix = function() {
-      if (this._sameLinesSuffix == null) {
-        this._sameLinesSuffix = this.codewave.editor.textSubstr(this.getEndPos(), this.nextEOL());
-      }
-      return this._sameLinesSuffix;
-    };
-
-    PositionedCmdInstance.prototype._getCmdObj = function() {
-      this.getCmd();
-      this._checkBox();
-      this.content = this.removeIndentFromContent(this.content);
-      return PositionedCmdInstance.__super__._getCmdObj.apply(this, arguments);
-    };
-
-    PositionedCmdInstance.prototype._initParams = function() {
-      return this._parseParams(this.rawParams);
-    };
-
-    PositionedCmdInstance.prototype.getContext = function() {
-      return this.context || this.codewave.context;
-    };
-
-    PositionedCmdInstance.prototype.getCmd = function() {
-      if (this.cmd == null) {
-        this._getParentCmds();
-        if (this.noBracket.substring(0, this.codewave.noExecuteChar.length) === this.codewave.noExecuteChar) {
-          this.cmd = Codewave.Command.cmds.getCmd('core:no_execute');
-          this.context = this.codewave.context;
-        } else {
-          this.finder = this.getFinder(this.cmdName);
-          this.context = this.finder.context;
-          this.cmd = this.finder.find();
-          if (this.cmd != null) {
-            this.context.addNameSpace(this.cmd.fullName);
-          }
-        }
-      }
-      return this.cmd;
-    };
-
-    PositionedCmdInstance.prototype.getFinder = function(cmdName) {
-      var finder;
-      finder = this.codewave.context.getFinder(cmdName, this._getParentNamespaces());
-      finder.instance = this;
-      return finder;
-    };
-
-    PositionedCmdInstance.prototype._getParentNamespaces = function() {
-      var nspcs, obj;
-      nspcs = [];
-      obj = this;
-      while (obj.parent != null) {
-        obj = obj.parent;
-        if ((obj.cmd != null) && (obj.cmd.fullName != null)) {
-          nspcs.push(obj.cmd.fullName);
-        }
-      }
-      return nspcs;
-    };
-
-    PositionedCmdInstance.prototype._removeBracket = function(str) {
-      return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
-    };
-
-    PositionedCmdInstance.prototype.isEmpty = function() {
-      return this.str === this.codewave.brakets + this.codewave.closeChar + this.codewave.brakets || this.str === this.codewave.brakets + this.codewave.brakets;
-    };
-
-    PositionedCmdInstance.prototype.execute = function() {
-      var beforeFunct, res;
-      if (this.isEmpty()) {
-        if ((this.codewave.closingPromp != null) && (this.codewave.closingPromp.whithinOpenBounds(this.pos + this.codewave.brakets.length) != null)) {
-          return this.codewave.closingPromp.cancel();
-        } else {
-          return this.replaceWith('');
-        }
-      } else if (this.cmd != null) {
-        if (beforeFunct = this.getOption('beforeExecute')) {
-          beforeFunct(this);
-        }
-        if (this.resultIsAvailable()) {
-          if ((res = this.result()) != null) {
-            this.replaceWith(res);
-            return true;
-          }
-        } else {
-          return this.runExecuteFunct();
-        }
-      }
-    };
-
-    PositionedCmdInstance.prototype.getEndPos = function() {
-      return this.pos + this.str.length;
-    };
-
-    PositionedCmdInstance.prototype.getPos = function() {
-      return new Codewave.util.Pos(this.pos, this.pos + this.str.length);
-    };
-
-    PositionedCmdInstance.prototype.getIndent = function() {
-      var helper;
-      if (this.indentLen == null) {
-        if (this.inBox != null) {
-          helper = new Codewave.util.BoxHelper(this.context);
-          this.indentLen = helper.removeComment(this.sameLinesPrefix()).length;
-        } else {
-          this.indentLen = this.pos - this.codewave.findLineStart(this.pos);
-        }
-      }
-      return this.indentLen;
-    };
-
-    PositionedCmdInstance.prototype.removeIndentFromContent = function(text) {
-      var reg;
-      if (text != null) {
-        reg = new RegExp('^\\s{' + this.getIndent() + '}', 'gm');
-        return text.replace(reg, '');
-      } else {
-        return text;
-      }
-    };
-
-    PositionedCmdInstance.prototype.alterResultForBox = function(repl) {
-      var box, helper, ref, ref1, res;
-      helper = new Codewave.util.BoxHelper(this.context);
-      helper.getOptFromLine(this.rawWithFullLines(), false);
-      if (this.getOption('replaceBox')) {
-        box = helper.getBoxForPos(this.getPos());
-        ref = [box.start, box.end], repl.start = ref[0], repl.end = ref[1];
-        this.indentLen = helper.indent;
-        repl.text = this.applyIndent(repl.text);
-      } else {
-        repl.text = this.applyIndent(repl.text);
-        repl.start = this.prevEOL();
-        repl.end = this.nextEOL();
-        res = helper.reformatLines(this.sameLinesPrefix() + this.codewave.marker + repl.text + this.codewave.marker + this.sameLinesSuffix(), {
-          multiline: false
-        });
-        ref1 = res.split(this.codewave.marker), repl.prefix = ref1[0], repl.text = ref1[1], repl.suffix = ref1[2];
-      }
-      return repl;
-    };
-
-    PositionedCmdInstance.prototype.getCursorFromResult = function(repl) {
-      var cursorPos, p;
-      cursorPos = repl.resPosBeforePrefix();
-      if ((this.cmd != null) && this.codewave.checkCarret && this.getOption('checkCarret')) {
-        if ((p = this.codewave.getCarretPos(repl.text)) != null) {
-          cursorPos = repl.start + repl.prefix.length + p;
-        }
-        repl.text = this.codewave.removeCarret(repl.text);
-      }
-      return cursorPos;
-    };
-
-    PositionedCmdInstance.prototype.checkMulti = function(repl) {
-      var i, len1, newRepl, originalPos, originalText, pos, q, ref, replacements;
-      if ((this.multiPos != null) && this.multiPos.length > 1) {
-        replacements = [repl];
-        originalText = repl.originalTextWith(this.codewave.editor);
-        ref = this.multiPos;
-        for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
-          pos = ref[i];
-          if (i === 0) {
-            originalPos = pos.start;
-          } else {
-            newRepl = repl.copy().applyOffset(pos.start - originalPos);
-            if (newRepl.originalTextWith(this.codewave.editor) === originalText) {
-              replacements.push(newRepl);
-            }
-          }
-        }
-        return replacements;
-      } else {
-        return [repl];
-      }
-    };
-
-    PositionedCmdInstance.prototype.replaceWith = function(text) {
-      var cursorPos, repl, replacements;
-      repl = new Codewave.util.Replacement(this.pos, this.getEndPos(), text);
-      if (this.inBox != null) {
-        this.alterResultForBox(repl);
-      } else {
-        repl.text = this.applyIndent(repl.text);
-      }
-      cursorPos = this.getCursorFromResult(repl);
-      repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)];
-      replacements = this.checkMulti(repl);
-      this.codewave.editor.applyReplacements(replacements);
-      this.replaceStart = repl.start;
-      return this.replaceEnd = repl.resEnd();
-    };
-
-    return PositionedCmdInstance;
-
-  })(this.Codewave.CmdInstance);
-
-  this.Codewave.Process = (function() {
-    function Process() {}
-
-    return Process;
-
-  })();
-
-  this.Codewave.TestEditor = (function(superClass) {
-    extend(TestEditor, superClass);
-
-    function TestEditor(target) {
-      TestEditor.__super__.constructor.call(this, target);
-      this.selections = [];
-    }
-
-    TestEditor.prototype.allowMultiSelection = function() {
-      return true;
-    };
-
-    TestEditor.prototype.setCursorPos = function(start, end) {
-      var old;
-      if (arguments.length < 2) {
-        end = start;
-      }
-      old = this.getCursorPos();
-      if (start !== old.start || end !== old.end) {
-        TestEditor.__super__.setCursorPos.call(this, start, end);
-        return this.selections = [new Codewave.util.Pos(start, end)];
-      }
-    };
-
-    TestEditor.prototype.setMultiSel = function(selections) {
-      if (selections.length > 0) {
-        this.setCursorPos(selections[0].start, selections[0].end);
-      }
-      return this.selections = selections;
-    };
-
-    TestEditor.prototype.getMultiSel = function() {
-      var selections;
-      selections = this.selections;
-      selections[0] = this.getCursorPos();
-      return selections;
-    };
-
-    TestEditor.prototype.addSel = function(start, end) {
-      return this.selections.push(new Codewave.util.Pos(start, end));
-    };
-
-    TestEditor.prototype.resetSel = function(start, end) {
-      return this.selections = [this.getCursorPos()];
-    };
-
-    return TestEditor;
-
-  })(Codewave.TextAreaEditor);
 
 }).call(this);
 
