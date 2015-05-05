@@ -3455,10 +3455,10 @@
   })(Codewave.TextAreaEditor);
 
   initCmds = function() {
-    var core, css, html, js, php, phpInner, phpOuter;
+    var core;
     core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'));
     core.addDetector(new Codewave.LangDetector());
-    core.addCmds({
+    return core.addCmds({
       'help': {
         'replaceBox': true,
         'result': "~~box~~\n~~quote_carret~~\n  ___         _   __      __\n / __|___  __| |__\\ \\    / /_ ___ ______\n/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/\n\\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|\nThe text editor helper\n~~/quote_carret~~\n\nWhen using Codewave you will be writing commands directly within \nyour text editor editing windows. These commands must be placed\nbetween two pairs of \"~\" (tilde) and then with you text either \ninside or at the command, they can be executed by pressing \n\"ctrl\"+\"shift\"+\"e\".\nEx: ~~!hello~~\n\nOne good thing about codewave is that you dont need to actually\ntype any \"~\" (tilde), because pressing \"ctrl\"+\"shift\"+\"e\" will\nadd them if you are not allready within a command\n\nCodewave does not relly use UI to display any information. \ninstead, it uses text within code comments to mimic UIs. The \ngenerated comment blocks will be refered as windows in the help\nsections.\n\nTo close this window (ie. remove this comment bloc), press \n\"ctrl\"+\"shift\"+\"e\" with you cursor on the line bellow.\n~~!close|~~\n\nUse the following command for a walkthrough of some of many\nfeatures of codewave\n~~!help:get_started~~ or ~~!help:demo~~\n\nList of all helps subjects \n~~!help:subjects~~ or ~~!help:sub~~ \n\n~~!close~~\n~~/box~~",
@@ -3554,109 +3554,6 @@
         'cls': EmmetCmd
       }
     });
-    html = Codewave.Command.cmds.addCmd(new Codewave.Command('html'));
-    html.addCmds({
-      'fallback': {
-        'aliasOf': 'core:emmet',
-        'defaults': {
-          'lang': 'html'
-        },
-        'nameToParam': 'abbr'
-      }
-    });
-    css = Codewave.Command.cmds.addCmd(new Codewave.Command('css'));
-    css.addCmds({
-      'fallback': {
-        'aliasOf': 'core:emmet',
-        'defaults': {
-          'lang': 'css'
-        },
-        'nameToParam': 'abbr'
-      }
-    });
-    php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'));
-    php.addDetector(new Codewave.PairDetector({
-      result: 'php:inner',
-      opener: '<?php',
-      closer: '?>',
-      'else': 'php:outer'
-    }));
-    phpOuter = php.addCmd(new Codewave.Command('outer'));
-    phpOuter.addCmds({
-      'fallback': {
-        aliasOf: 'php:inner:%name%',
-        beforeExecute: closePhpForContent,
-        alterResult: wrapWithPhp
-      },
-      'comment': '<?php /* ~~content~~ */ ?>',
-      php: '<?php\n\t~~content~~|\n?>'
-    });
-    phpInner = php.addCmd(new Codewave.Command('inner'));
-    phpInner.addCmds({
-      'comment': '/* ~~content~~ */',
-      'if': 'if(|){\n\t~~content~~\n}',
-      'info': 'phpinfo();',
-      'echo': 'echo ${id}',
-      'e': {
-        aliasOf: 'php:inner:echo'
-      },
-      'class': "class ~~param 0 class def:|~~ {\n\tfunction __construct() {\n\t\t~~content~~|\n\t}\n}",
-      'c': {
-        aliasOf: 'php:inner:class'
-      },
-      'function': 'function |() {\n\t~~content~~\n}',
-      'funct': {
-        aliasOf: 'php:inner:function'
-      },
-      'f': {
-        aliasOf: 'php:inner:function'
-      },
-      'array': '$| = array();',
-      'a': 'array()',
-      'for': 'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
-      'foreach': 'foreach ($| as $key => $val) {\n\t~~content~~\n}',
-      'each': {
-        aliasOf: 'php:inner:foreach'
-      },
-      'while': 'while(|) {\n\t~~content~~\n}',
-      'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
-      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
-      'ife': {
-        aliasOf: 'php:inner:ifelse'
-      },
-      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
-    });
-    js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
-    Codewave.Command.cmds.addCmd(new Codewave.Command('javascript', {
-      aliasOf: 'js'
-    }));
-    return js.addCmds({
-      'comment': '/* ~~content~~ */',
-      'if': 'if(|){\n\t~~content~~\n}',
-      'log': 'if(window.console){\n\tconsole.log(~~content~~|)\n}',
-      'function': 'function |() {\n\t~~content~~\n}',
-      'funct': {
-        aliasOf: 'js:function'
-      },
-      'f': {
-        aliasOf: 'js:function'
-      },
-      'for': 'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
-      'forin': 'foreach (var val in |) {\n\t~~content~~\n}',
-      'each': {
-        aliasOf: 'js:forin'
-      },
-      'foreach': {
-        aliasOf: 'js:forin'
-      },
-      'while': 'while(|) {\n\t~~content~~\n}',
-      'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
-      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
-      'ife': {
-        aliasOf: 'js:ifelse'
-      },
-      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
-    });
   };
 
   this.Codewave.Command.cmdInitialisers.push(initCmds);
@@ -3713,13 +3610,6 @@
     if (instance.codewave.inInstance != null) {
       return instance.codewave.inInstance.content || '';
     }
-  };
-
-  wrapWithPhp = function(result, instance) {
-    var regClose, regOpen;
-    regOpen = /<\?php\s([\\n\\r\s]+)/g;
-    regClose = /([\n\r\s]+)\s\?>/g;
-    return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
   };
 
   renameCommand = function(instance) {
@@ -3791,10 +3681,6 @@
     if (instance.codewave.inInstance != null) {
       return instance.codewave.inInstance.getParam(instance.params, instance.getParam(['def', 'default']));
     }
-  };
-
-  closePhpForContent = function(instance) {
-    return instance.content = ' ?>' + (instance.content || '') + '<?php ';
   };
 
   BoxCmd = (function(superClass) {
@@ -4066,6 +3952,169 @@
     return EmmetCmd;
 
   })(this.Codewave.BaseCommand);
+
+  initCmds = function() {
+    var css, html;
+    html = Codewave.Command.cmds.addCmd(new Codewave.Command('html'));
+    html.addCmds({
+      'fallback': {
+        'aliasOf': 'core:emmet',
+        'defaults': {
+          'lang': 'html'
+        },
+        'nameToParam': 'abbr'
+      }
+    });
+    css = Codewave.Command.cmds.addCmd(new Codewave.Command('css'));
+    return css.addCmds({
+      'fallback': {
+        'aliasOf': 'core:emmet',
+        'defaults': {
+          'lang': 'css'
+        },
+        'nameToParam': 'abbr'
+      }
+    });
+  };
+
+  this.Codewave.Command.cmdInitialisers.push(initCmds);
+
+  initCmds = function() {
+    var js;
+    js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
+    Codewave.Command.cmds.addCmd(new Codewave.Command('javascript', {
+      aliasOf: 'js'
+    }));
+    return js.addCmds({
+      'comment': '/* ~~content~~ */',
+      'if': 'if(|){\n\t~~content~~\n}',
+      'log': 'if(window.console){\n\tconsole.log(~~content~~|)\n}',
+      'function': 'function |() {\n\t~~content~~\n}',
+      'funct': {
+        aliasOf: 'js:function'
+      },
+      'f': {
+        aliasOf: 'js:function'
+      },
+      'for': 'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
+      'forin': 'foreach (var val in |) {\n\t~~content~~\n}',
+      'each': {
+        aliasOf: 'js:forin'
+      },
+      'foreach': {
+        aliasOf: 'js:forin'
+      },
+      'while': 'while(|) {\n\t~~content~~\n}',
+      'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
+      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'ife': {
+        aliasOf: 'js:ifelse'
+      },
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+    });
+  };
+
+  this.Codewave.Command.cmdInitialisers.push(initCmds);
+
+  initCmds = function() {
+    var js, php, phpInner, phpOuter;
+    php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'));
+    php.addDetector(new Codewave.PairDetector({
+      result: 'php:inner',
+      opener: '<?php',
+      closer: '?>',
+      'else': 'php:outer'
+    }));
+    phpOuter = php.addCmd(new Codewave.Command('outer'));
+    phpOuter.addCmds({
+      'fallback': {
+        aliasOf: 'php:inner:%name%',
+        beforeExecute: closePhpForContent,
+        alterResult: wrapWithPhp
+      },
+      'comment': '<?php /* ~~content~~ */ ?>',
+      php: '<?php\n\t~~content~~|\n?>'
+    });
+    phpInner = php.addCmd(new Codewave.Command('inner'));
+    phpInner.addCmds({
+      'comment': '/* ~~content~~ */',
+      'if': 'if(|){\n\t~~content~~\n}',
+      'info': 'phpinfo();',
+      'echo': 'echo ${id}',
+      'e': {
+        aliasOf: 'php:inner:echo'
+      },
+      'class': "class ~~param 0 class def:|~~ {\n\tfunction __construct() {\n\t\t~~content~~|\n\t}\n}",
+      'c': {
+        aliasOf: 'php:inner:class'
+      },
+      'function': 'function |() {\n\t~~content~~\n}',
+      'funct': {
+        aliasOf: 'php:inner:function'
+      },
+      'f': {
+        aliasOf: 'php:inner:function'
+      },
+      'array': '$| = array();',
+      'a': 'array()',
+      'for': 'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
+      'foreach': 'foreach ($| as $key => $val) {\n\t~~content~~\n}',
+      'each': {
+        aliasOf: 'php:inner:foreach'
+      },
+      'while': 'while(|) {\n\t~~content~~\n}',
+      'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
+      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'ife': {
+        aliasOf: 'php:inner:ifelse'
+      },
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+    });
+    js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
+    Codewave.Command.cmds.addCmd(new Codewave.Command('javascript', {
+      aliasOf: 'js'
+    }));
+    return js.addCmds({
+      'comment': '/* ~~content~~ */',
+      'if': 'if(|){\n\t~~content~~\n}',
+      'log': 'if(window.console){\n\tconsole.log(~~content~~|)\n}',
+      'function': 'function |() {\n\t~~content~~\n}',
+      'funct': {
+        aliasOf: 'js:function'
+      },
+      'f': {
+        aliasOf: 'js:function'
+      },
+      'for': 'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
+      'forin': 'foreach (var val in |) {\n\t~~content~~\n}',
+      'each': {
+        aliasOf: 'js:forin'
+      },
+      'foreach': {
+        aliasOf: 'js:forin'
+      },
+      'while': 'while(|) {\n\t~~content~~\n}',
+      'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
+      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'ife': {
+        aliasOf: 'js:ifelse'
+      },
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+    });
+  };
+
+  this.Codewave.Command.cmdInitialisers.push(initCmds);
+
+  wrapWithPhp = function(result, instance) {
+    var regClose, regOpen;
+    regOpen = /<\?php\s([\\n\\r\s]+)/g;
+    regClose = /([\n\r\s]+)\s\?>/g;
+    return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
+  };
+
+  closePhpForContent = function(instance) {
+    return instance.content = ' ?>' + (instance.content || '') + '<?php ';
+  };
 
   this.Codewave.init();
 
