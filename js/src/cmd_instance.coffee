@@ -35,7 +35,7 @@ class @Codewave.CmdInstance
   _initParams: ->
     @named = @getDefaults(this)
   _getParentNamespaces: ->
-    return array()
+    return []
   isEmpty: ->
     return @cmd?
   resultIsAvailable: ->
@@ -69,13 +69,13 @@ class @Codewave.CmdInstance
       if @cmd.aliasOf?
         aliased = @cmd
         while aliased? and aliased.aliasOf?
-          [nspc, cmdName] = Codewave.util.splitNamespace(@cmdName)
-          aliasOf = aliased.aliasOf.replace('%name%',cmdName)
-          aliased = aliased._aliasedFromFinder(@getFinder(aliasOf))
+          aliased = aliased._aliasedFromFinder(@getFinder(@alterAliasOf(aliased.aliasOf)))
           unless @aliasedCmd?
             @aliasedCmd = aliased or false
         @aliasedFinalCmd = aliased or false
         return aliased
+  alterAliasOf: (aliasOf)->
+    aliasOf
   getOptions: ->
     if @cmd?
       if @cmdOptions?
@@ -95,6 +95,12 @@ class @Codewave.CmdInstance
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
     return defVal
+  ancestorCmds: ->
+    if @context.codewave?.inInstance?
+      return @context.codewave.inInstance.ancestorCmdsAndSelf()
+    return []
+  ancestorCmdsAndSelf: ->
+    return @ancestorCmds().concat([@cmd])
   runExecuteFunct: ->
     if @cmd?
       if @cmdObj?

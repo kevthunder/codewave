@@ -160,6 +160,9 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     return nspcs
   _removeBracket: (str)->
     return str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
+  alterAliasOf: (aliasOf)->
+    [nspc, cmdName] = Codewave.util.splitNamespace(@cmdName)
+    return aliasOf.replace('%name%',cmdName)
   isEmpty: ->
     return @str == @codewave.brakets + @codewave.closeChar + @codewave.brakets or @str == @codewave.brakets + @codewave.brakets
   execute: ->

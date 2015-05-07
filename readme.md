@@ -26,6 +26,8 @@ You may need to put it on a web server to be able to use the localstorage
 ```
 
 ## ToDo
+* better php
+  * any_content should be alias
 * comment styles
   * php outer
 * Create some more default commands

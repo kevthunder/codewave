@@ -22,6 +22,8 @@ class @Codewave
     }
     @parent = options['parent']
     
+    @nested = if @parent? then @parent.nested+1 else 0
+    
     for key, val of defaults
       if key of options
         this[key] = options[key]
@@ -163,10 +165,13 @@ class @Codewave
     @closingPromp.stop() if @closingPromp?
     @closingPromp = Codewave.ClosingPromp.newFor(this,selections).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
   parseAll: (recursive = true) ->
+    if @nested > 100
+      throw "Infinite parsing Recursion"
     pos = 0
     while cmd = @nextCmd(pos)
       pos = cmd.getEndPos()
       @editor.setCursorPos(pos)
+      # console.log(cmd)
       cmd.init()
       if recursive and cmd.content? and (!cmd.getCmd()? or !cmd.getOption('preventParseAll'))
         parser = new Codewave(new Codewave.TextParser(cmd.content), {parent: this})

@@ -16,8 +16,11 @@ initCmds = ->
   phpOuter = php.addCmd(new Codewave.Command('outer'))
   phpOuter.addCmds({
     'fallback':{
+      'cmds' : {
+        'any_content': ' ?>\n~~content~~\n<?php ',
+      }
       aliasOf: 'php:inner:%name%',
-      beforeExecute: closePhpForContent
+      # beforeExecute: closePhpForContent
       alterResult: wrapWithPhp
     },
     'comment': '<?php /* ~~content~~ */ ?>',
@@ -26,8 +29,9 @@ initCmds = ->
   
   phpInner = php.addCmd(new Codewave.Command('inner'))
   phpInner.addCmds({
+    'any_content': '~~content~~',
     'comment': '/* ~~content~~ */',
-    'if':   'if(|){\n\t~~content~~\n}',
+    'if':   'if(|){\n\t~~any_content~~\n}',
     'info': 'phpinfo();',
     'echo': 'echo ${id}',
     'e':{   aliasOf: 'php:inner:echo' },
@@ -44,17 +48,17 @@ initCmds = ->
     'f':{     aliasOf: 'php:inner:function' },
     'array':  '$| = array();',
     'a':	    'array()',
-    'for': 		'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
-    'foreach':'foreach ($| as $key => $val) {\n\t~~content~~\n}',
+    'for': 		'for ($i = 0; $i < $|; $i++) {\n\t~~any_content~~\n}',
+    'foreach':'foreach ($| as $key => $val) {\n\t~~any_content~~\n}',
     'each':{  aliasOf: 'php:inner:foreach' },
-    'while':  'while(|) {\n\t~~content~~\n}',
-    'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
-    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+    'while':  'while(|) {\n\t~~any_content~~\n}',
+    'whilei': '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+    'ifelse': 'if( | ) {\n\t~~any_content~~\n} else {\n\t\n}',
     'ife':{   aliasOf: 'php:inner:ifelse' },
     'switch':	"""
       switch( | ) { 
       \tcase :
-      \t\t~~content~~
+      \t\t~~any_content~~
       \t\tbreak;
       \tdefault :
       \t\t
@@ -63,34 +67,6 @@ initCmds = ->
       """,
   })
   
-  js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
-  Codewave.Command.cmds.addCmd(new Codewave.Command('javascript',{ aliasOf: 'js' }))
-  js.addCmds({
-    'comment': '/* ~~content~~ */',
-    'if':  'if(|){\n\t~~content~~\n}',
-    'log':  'if(window.console){\n\tconsole.log(~~content~~|)\n}',
-    'function':	'function |() {\n\t~~content~~\n}',
-    'funct':{ aliasOf: 'js:function' },
-    'f':{     aliasOf: 'js:function' },
-    'for': 		'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
-    'forin':'foreach (var val in |) {\n\t~~content~~\n}',
-    'each':{  aliasOf: 'js:forin' },
-    'foreach':{  aliasOf: 'js:forin' },
-    'while':  'while(|) {\n\t~~content~~\n}',
-    'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
-    'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
-    'ife':{   aliasOf: 'js:ifelse' },
-    'switch':	"""
-      switch( | ) { 
-      \tcase :
-      \t\t~~content~~
-      \t\tbreak;
-      \tdefault :
-      \t\t
-      \t\tbreak;
-      }
-      """,
-  })
 
 @Codewave.Command.cmdInitialisers.push(initCmds)
 

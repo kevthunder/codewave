@@ -88,13 +88,13 @@ class @Codewave.CmdFinder
     @root.init()
     posibilities = []
     for space, names of @getNamesWithPaths()
-      next = @getCmdFollowAlias(space)
-      if next? 
+      nexts = @getCmdFollowAlias(space)
+      for next in nexts
         posibilities = posibilities.concat(new Codewave.CmdFinder(names, {parent: this, root: next}).findPosibilities())
     for nspc in @context.getNameSpaces()
       [nspcName,rest] = Codewave.util.splitFirstNamespace(nspc,true)
-      next = @getCmdFollowAlias(nspcName)
-      if next? 
+      nexts = @getCmdFollowAlias(nspcName)
+      for next in nexts
         posibilities = posibilities.concat(new Codewave.CmdFinder(@applySpaceOnNames(nspc), {parent: this, root: next}).findPosibilities())
     for name in @getDirectNames()
       direct = @root.getCmd(name)
@@ -104,18 +104,27 @@ class @Codewave.CmdFinder
       fallback = @root.getCmd('fallback')
       if @cmdIsValid(fallback)
         posibilities.push(fallback)
+    @posibilities = posibilities
     return posibilities
   getCmdFollowAlias: (name) ->
     cmd = @root.getCmd(name)
     if cmd? 
       cmd.init()
       if cmd.aliasOf?
-        return cmd.getAliased()
-    return cmd
+        return [cmd,cmd.getAliased()]
+      return [cmd]
+    return [cmd]
   cmdIsValid: (cmd) ->
     unless cmd?
       return false
+    if cmd.name != 'fallback' && cmd in @ancestors()
+      console.log(this,cmd,@ancestors())
+      return false
     return !@mustExecute or @cmdIsExecutable(cmd)
+  ancestors: ->
+    if @codewave?.inInstance?
+      return @codewave.inInstance.ancestorCmdsAndSelf()
+    return []
   cmdIsExecutable: (cmd) ->
     names = @getDirectNames()
     if names.length == 1

@@ -24,6 +24,7 @@
         'inInstance': null
       };
       this.parent = options['parent'];
+      this.nested = this.parent != null ? this.parent.nested + 1 : 0;
       for (key in defaults) {
         val = defaults[key];
         if (key in options) {
@@ -285,6 +286,9 @@
       var cmd, parser, pos;
       if (recursive == null) {
         recursive = true;
+      }
+      if (this.nested > 100) {
+        throw "Infinite parsing Recursion";
       }
       pos = 0;
       while (cmd = this.nextCmd(pos)) {
@@ -2017,7 +2021,7 @@
     };
 
     CmdFinder.prototype.findPosibilities = function() {
-      var direct, fallback, len1, len2, name, names, next, nspc, nspcName, posibilities, q, ref, ref1, ref2, ref3, rest, space, t;
+      var direct, fallback, len1, len2, len3, len4, name, names, next, nexts, nspc, nspcName, posibilities, q, ref, ref1, ref2, ref3, rest, space, t, u, y;
       if (this.root == null) {
         return [];
       }
@@ -2026,8 +2030,9 @@
       ref = this.getNamesWithPaths();
       for (space in ref) {
         names = ref[space];
-        next = this.getCmdFollowAlias(space);
-        if (next != null) {
+        nexts = this.getCmdFollowAlias(space);
+        for (q = 0, len1 = nexts.length; q < len1; q++) {
+          next = nexts[q];
           posibilities = posibilities.concat(new Codewave.CmdFinder(names, {
             parent: this,
             root: next
@@ -2035,11 +2040,12 @@
         }
       }
       ref1 = this.context.getNameSpaces();
-      for (q = 0, len1 = ref1.length; q < len1; q++) {
-        nspc = ref1[q];
+      for (t = 0, len2 = ref1.length; t < len2; t++) {
+        nspc = ref1[t];
         ref2 = Codewave.util.splitFirstNamespace(nspc, true), nspcName = ref2[0], rest = ref2[1];
-        next = this.getCmdFollowAlias(nspcName);
-        if (next != null) {
+        nexts = this.getCmdFollowAlias(nspcName);
+        for (u = 0, len3 = nexts.length; u < len3; u++) {
+          next = nexts[u];
           posibilities = posibilities.concat(new Codewave.CmdFinder(this.applySpaceOnNames(nspc), {
             parent: this,
             root: next
@@ -2047,8 +2053,8 @@
         }
       }
       ref3 = this.getDirectNames();
-      for (t = 0, len2 = ref3.length; t < len2; t++) {
-        name = ref3[t];
+      for (y = 0, len4 = ref3.length; y < len4; y++) {
+        name = ref3[y];
         direct = this.root.getCmd(name);
         if (this.cmdIsValid(direct)) {
           posibilities.push(direct);
@@ -2060,6 +2066,7 @@
           posibilities.push(fallback);
         }
       }
+      this.posibilities = posibilities;
       return posibilities;
     };
 
@@ -2069,17 +2076,30 @@
       if (cmd != null) {
         cmd.init();
         if (cmd.aliasOf != null) {
-          return cmd.getAliased();
+          return [cmd, cmd.getAliased()];
         }
+        return [cmd];
       }
-      return cmd;
+      return [cmd];
     };
 
     CmdFinder.prototype.cmdIsValid = function(cmd) {
       if (cmd == null) {
         return false;
       }
+      if (cmd.name !== 'fallback' && indexOf.call(this.ancestors(), cmd) >= 0) {
+        console.log(this, cmd, this.ancestors());
+        return false;
+      }
       return !this.mustExecute || this.cmdIsExecutable(cmd);
+    };
+
+    CmdFinder.prototype.ancestors = function() {
+      var ref;
+      if (((ref = this.codewave) != null ? ref.inInstance : void 0) != null) {
+        return this.codewave.inInstance.ancestorCmdsAndSelf();
+      }
+      return [];
     };
 
     CmdFinder.prototype.cmdIsExecutable = function(cmd) {
@@ -2180,7 +2200,7 @@
     };
 
     CmdInstance.prototype._getParentNamespaces = function() {
-      return array();
+      return [];
     };
 
     CmdInstance.prototype.isEmpty = function() {
@@ -2228,7 +2248,7 @@
     };
 
     CmdInstance.prototype.getAliasedFinal = function() {
-      var aliasOf, aliased, cmdName, nspc, ref;
+      var aliased;
       if (this.cmd != null) {
         if (this.aliasedFinalCmd != null) {
           return this.aliasedFinalCmd || null;
@@ -2236,9 +2256,7 @@
         if (this.cmd.aliasOf != null) {
           aliased = this.cmd;
           while ((aliased != null) && (aliased.aliasOf != null)) {
-            ref = Codewave.util.splitNamespace(this.cmdName), nspc = ref[0], cmdName = ref[1];
-            aliasOf = aliased.aliasOf.replace('%name%', cmdName);
-            aliased = aliased._aliasedFromFinder(this.getFinder(aliasOf));
+            aliased = aliased._aliasedFromFinder(this.getFinder(this.alterAliasOf(aliased.aliasOf)));
             if (this.aliasedCmd == null) {
               this.aliasedCmd = aliased || false;
             }
@@ -2247,6 +2265,10 @@
           return aliased;
         }
       }
+    };
+
+    CmdInstance.prototype.alterAliasOf = function(aliasOf) {
+      return aliasOf;
     };
 
     CmdInstance.prototype.getOptions = function() {
@@ -2290,6 +2312,18 @@
         }
       }
       return defVal;
+    };
+
+    CmdInstance.prototype.ancestorCmds = function() {
+      var ref;
+      if (((ref = this.context.codewave) != null ? ref.inInstance : void 0) != null) {
+        return this.context.codewave.inInstance.ancestorCmdsAndSelf();
+      }
+      return [];
+    };
+
+    CmdInstance.prototype.ancestorCmdsAndSelf = function() {
+      return this.ancestorCmds().concat([this.cmd]);
     };
 
     CmdInstance.prototype.runExecuteFunct = function() {
@@ -3263,6 +3297,12 @@
       return str.substring(this.codewave.brakets.length, str.length - this.codewave.brakets.length);
     };
 
+    PositionedCmdInstance.prototype.alterAliasOf = function(aliasOf) {
+      var cmdName, nspc, ref;
+      ref = Codewave.util.splitNamespace(this.cmdName), nspc = ref[0], cmdName = ref[1];
+      return aliasOf.replace('%name%', cmdName);
+    };
+
     PositionedCmdInstance.prototype.isEmpty = function() {
       return this.str === this.codewave.brakets + this.codewave.closeChar + this.codewave.brakets || this.str === this.codewave.brakets + this.codewave.brakets;
     };
@@ -4017,7 +4057,7 @@
   this.Codewave.Command.cmdInitialisers.push(initCmds);
 
   initCmds = function() {
-    var js, php, phpInner, phpOuter;
+    var php, phpInner, phpOuter;
     php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'));
     php.addDetector(new Codewave.PairDetector({
       result: 'php:inner',
@@ -4028,17 +4068,20 @@
     phpOuter = php.addCmd(new Codewave.Command('outer'));
     phpOuter.addCmds({
       'fallback': {
+        'cmds': {
+          'any_content': ' ?>\n~~content~~\n<?php '
+        },
         aliasOf: 'php:inner:%name%',
-        beforeExecute: closePhpForContent,
         alterResult: wrapWithPhp
       },
       'comment': '<?php /* ~~content~~ */ ?>',
       php: '<?php\n\t~~content~~|\n?>'
     });
     phpInner = php.addCmd(new Codewave.Command('inner'));
-    phpInner.addCmds({
+    return phpInner.addCmds({
+      'any_content': '~~content~~',
       'comment': '/* ~~content~~ */',
-      'if': 'if(|){\n\t~~content~~\n}',
+      'if': 'if(|){\n\t~~any_content~~\n}',
       'info': 'phpinfo();',
       'echo': 'echo ${id}',
       'e': {
@@ -4057,49 +4100,18 @@
       },
       'array': '$| = array();',
       'a': 'array()',
-      'for': 'for ($i = 0; $i < $|; $i++) {\n\t~~content~~\n}',
-      'foreach': 'foreach ($| as $key => $val) {\n\t~~content~~\n}',
+      'for': 'for ($i = 0; $i < $|; $i++) {\n\t~~any_content~~\n}',
+      'foreach': 'foreach ($| as $key => $val) {\n\t~~any_content~~\n}',
       'each': {
         aliasOf: 'php:inner:foreach'
       },
-      'while': 'while(|) {\n\t~~content~~\n}',
-      'whilei': '$i = 0;\nwhile(|) {\n\t~~content~~\n\t$i++;\n}',
-      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
+      'while': 'while(|) {\n\t~~any_content~~\n}',
+      'whilei': '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+      'ifelse': 'if( | ) {\n\t~~any_content~~\n} else {\n\t\n}',
       'ife': {
         aliasOf: 'php:inner:ifelse'
       },
-      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
-    });
-    js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'));
-    Codewave.Command.cmds.addCmd(new Codewave.Command('javascript', {
-      aliasOf: 'js'
-    }));
-    return js.addCmds({
-      'comment': '/* ~~content~~ */',
-      'if': 'if(|){\n\t~~content~~\n}',
-      'log': 'if(window.console){\n\tconsole.log(~~content~~|)\n}',
-      'function': 'function |() {\n\t~~content~~\n}',
-      'funct': {
-        aliasOf: 'js:function'
-      },
-      'f': {
-        aliasOf: 'js:function'
-      },
-      'for': 'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
-      'forin': 'foreach (var val in |) {\n\t~~content~~\n}',
-      'each': {
-        aliasOf: 'js:forin'
-      },
-      'foreach': {
-        aliasOf: 'js:forin'
-      },
-      'while': 'while(|) {\n\t~~content~~\n}',
-      'whilei': 'var i = 0;\nwhile(|) {\n\t~~content~~\n\ti++;\n}',
-      'ifelse': 'if( | ) {\n\t~~content~~\n} else {\n\t\n}',
-      'ife': {
-        aliasOf: 'js:ifelse'
-      },
-      'switch': "switch( | ) { \n\tcase :\n\t\t~~content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+      'switch': "switch( | ) { \n\tcase :\n\t\t~~any_content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
     });
   };
 
