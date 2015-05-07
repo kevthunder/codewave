@@ -33,7 +33,7 @@ class @Codewave.CmdInstance
         @cmdObj = new cmd.cls(this)
         return @cmdObj
   _initParams: ->
-    @named = @getDefaults(this)
+    @named = @getDefaults()
   _getParentNamespaces: ->
     return []
   isEmpty: ->
@@ -53,7 +53,7 @@ class @Codewave.CmdInstance
       aliased = @getAliased()
       if aliased?
         res = Codewave.util.merge(res,aliased.getDefaults())
-      res = Codewave.util.merge(res,cmd.defaults)
+      res = Codewave.util.merge(res,@cmd.defaults)
       if @cmdObj?
         res = Codewave.util.merge(res,@cmdObj.getDefaults())
       return res
@@ -142,8 +142,4 @@ class @Codewave.CmdInstance
     else
       return text
   applyIndent: (text) ->
-    if text?
-      reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
-      return text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", @getIndent()))
-    else
-      return text
+    return Codewave.util.indentNotFirst(text,@getIndent()," ")

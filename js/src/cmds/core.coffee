@@ -301,8 +301,13 @@ exec_parent = (instance) ->
     instance.replaceEnd = instance.parent.replaceEnd
     return res
 getContent = (instance) ->
+  affixes_empty = instance.getParam(['affixes_empty'],false)
+  prefix = instance.getParam(['prefix'],'')
+  suffix = instance.getParam(['suffix'],'')
   if instance.codewave.inInstance?
-    return instance.codewave.inInstance.content or ''
+    return prefix + (instance.codewave.inInstance.content or '') + suffix
+  if affixes_empty
+    return prefix + suffix
 renameCommand = (instance) ->
   savedCmds = Codewave.storage.load('cmds')
   origninalName = instance.getParam([0,'from'])

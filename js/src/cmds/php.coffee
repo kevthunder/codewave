@@ -17,7 +17,14 @@ initCmds = ->
   phpOuter.addCmds({
     'fallback':{
       'cmds' : {
-        'any_content': ' ?>\n~~content~~\n<?php ',
+        'any_content': { 
+          aliasOf: 'core:content' 
+          defaults: {
+            prefix: ' ?>\n'
+            suffix: '\n<?php '
+            affixes_empty: true
+          }
+        },
       }
       aliasOf: 'php:inner:%name%',
       # beforeExecute: closePhpForContent
@@ -29,21 +36,31 @@ initCmds = ->
   
   phpInner = php.addCmd(new Codewave.Command('inner'))
   phpInner.addCmds({
-    'any_content': '~~content~~',
+    'any_content': { aliasOf: 'core:content' },
     'comment': '/* ~~content~~ */',
     'if':   'if(|){\n\t~~any_content~~\n}',
     'info': 'phpinfo();',
     'echo': 'echo ${id}',
     'e':{   aliasOf: 'php:inner:echo' },
-    'class':"""
-      class ~~param 0 class def:|~~ {
-      \tfunction __construct() {
-      \t\t~~content~~|
-      \t}
+    'class':{
+      result : """
+        class ~~param 0 class def:|~~ {
+        \tfunction __construct() {
+        \t\t~~content~~|
+        \t}
+        }
+        """,
+      defaults: {
+        inline: false
       }
-      """,
+    },
     'c':{     aliasOf: 'php:inner:class' },
-    'function':	'function |() {\n\t~~content~~\n}',
+    'function':	{
+      result : 'function |() {\n\t~~content~~\n}'
+      defaults: {
+        inline: false
+      }
+    },
     'funct':{ aliasOf: 'php:inner:function' },
     'f':{     aliasOf: 'php:inner:function' },
     'array':  '$| = array();',
@@ -52,19 +69,29 @@ initCmds = ->
     'foreach':'foreach ($| as $key => $val) {\n\t~~any_content~~\n}',
     'each':{  aliasOf: 'php:inner:foreach' },
     'while':  'while(|) {\n\t~~any_content~~\n}',
-    'whilei': '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+    'whilei': {
+      result : '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+      defaults: {
+        inline: false
+      }
+    },
     'ifelse': 'if( | ) {\n\t~~any_content~~\n} else {\n\t\n}',
     'ife':{   aliasOf: 'php:inner:ifelse' },
-    'switch':	"""
-      switch( | ) { 
-      \tcase :
-      \t\t~~any_content~~
-      \t\tbreak;
-      \tdefault :
-      \t\t
-      \t\tbreak;
+    'switch':	{
+      result : """
+        switch( | ) { 
+        \tcase :
+        \t\t~~any_content~~
+        \t\tbreak;
+        \tdefault :
+        \t\t
+        \t\tbreak;
+        }
+        """,
+      defaults: {
+        inline: false
       }
-      """,
+    }
   })
   
 
@@ -72,9 +99,14 @@ initCmds = ->
 
 
 wrapWithPhp = (result,instance) ->
-  regOpen = /<\?php\s([\\n\\r\s]+)/g
-  regClose = /([\n\r\s]+)\s\?>/g
-  return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
+  console.log(instance)
+  inline = instance.getParam(['php_inline','inline'],true)
+  if inline
+    regOpen = /<\?php\s([\\n\\r\s]+)/g
+    regClose = /([\n\r\s]+)\s\?>/g
+    return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
+  else
+    '<?php\n' + Codewave.util.indent(result) + '\n?>'
 
 closePhpForContent = (instance) ->
   instance.content = ' ?>'+(instance.content || '')+'<?php '

@@ -198,6 +198,19 @@ class Pair
       w = Math.max(w,l.length)
     return new Size(w,lines.length-1)
 
+  indentNotFirst: (text,nb=1,spaces='  ') ->
+    if text?
+      reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
+      return text.replace(reg, "\n" + Codewave.util.repeatToLength(spaces, nb*spaces.length))
+    else
+      return text
+      
+  indent: (text,nb=1,spaces='  ') ->
+    if text?
+      return spaces + Codewave.util.indentNotFirst(text,nb,spaces)
+    else
+      return text
+  
   reverseStr: (txt) ->
     return txt.split("").reverse().join("")
   

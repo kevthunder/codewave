@@ -757,6 +757,34 @@
       }
       return new Size(w, lines.length - 1);
     },
+    indentNotFirst: function(text, nb, spaces) {
+      var reg;
+      if (nb == null) {
+        nb = 1;
+      }
+      if (spaces == null) {
+        spaces = '  ';
+      }
+      if (text != null) {
+        reg = /\n/g;
+        return text.replace(reg, "\n" + Codewave.util.repeatToLength(spaces, nb * spaces.length));
+      } else {
+        return text;
+      }
+    },
+    indent: function(text, nb, spaces) {
+      if (nb == null) {
+        nb = 1;
+      }
+      if (spaces == null) {
+        spaces = '  ';
+      }
+      if (text != null) {
+        return spaces + Codewave.util.indentNotFirst(text, nb, spaces);
+      } else {
+        return text;
+      }
+    },
     reverseStr: function(txt) {
       return txt.split("").reverse().join("");
     },
@@ -2088,7 +2116,6 @@
         return false;
       }
       if (cmd.name !== 'fallback' && indexOf.call(this.ancestors(), cmd) >= 0) {
-        console.log(this, cmd, this.ancestors());
         return false;
       }
       return !this.mustExecute || this.cmdIsExecutable(cmd);
@@ -2196,7 +2223,7 @@
     };
 
     CmdInstance.prototype._initParams = function() {
-      return this.named = this.getDefaults(this);
+      return this.named = this.getDefaults();
     };
 
     CmdInstance.prototype._getParentNamespaces = function() {
@@ -2230,7 +2257,7 @@
         if (aliased != null) {
           res = Codewave.util.merge(res, aliased.getDefaults());
         }
-        res = Codewave.util.merge(res, cmd.defaults);
+        res = Codewave.util.merge(res, this.cmd.defaults);
         if (this.cmdObj != null) {
           res = Codewave.util.merge(res, this.cmdObj.getDefaults());
         }
@@ -2400,13 +2427,7 @@
     };
 
     CmdInstance.prototype.applyIndent = function(text) {
-      var reg;
-      if (text != null) {
-        reg = /\n/g;
-        return text.replace(reg, "\n" + Codewave.util.repeatToLength(" ", this.getIndent()));
-      } else {
-        return text;
-      }
+      return Codewave.util.indentNotFirst(text, this.getIndent(), " ");
     };
 
     return CmdInstance;
@@ -3089,9 +3110,8 @@
     PositionedCmdInstance.prototype._parseParams = function(params) {
       var allowedNamed, chr, i, inStr, name, nameToParam, param, q, ref;
       this.params = [];
-      this.named = {};
+      this.named = this.getDefaults();
       if (this.cmd != null) {
-        this.named = Codewave.util.merge(this.named, this.cmd.getDefaults(this));
         nameToParam = this.getOption('nameToParam');
         if (nameToParam != null) {
           this.named[nameToParam] = this.cmdName;
@@ -3647,8 +3667,15 @@
   };
 
   getContent = function(instance) {
+    var affixes_empty, prefix, suffix;
+    affixes_empty = instance.getParam(['affixes_empty'], false);
+    prefix = instance.getParam(['prefix'], '');
+    suffix = instance.getParam(['suffix'], '');
     if (instance.codewave.inInstance != null) {
-      return instance.codewave.inInstance.content || '';
+      return prefix + (instance.codewave.inInstance.content || '') + suffix;
+    }
+    if (affixes_empty) {
+      return prefix + suffix;
     }
   };
 
@@ -4069,7 +4096,14 @@
     phpOuter.addCmds({
       'fallback': {
         'cmds': {
-          'any_content': ' ?>\n~~content~~\n<?php '
+          'any_content': {
+            aliasOf: 'core:content',
+            defaults: {
+              prefix: ' ?>\n',
+              suffix: '\n<?php ',
+              affixes_empty: true
+            }
+          }
         },
         aliasOf: 'php:inner:%name%',
         alterResult: wrapWithPhp
@@ -4079,7 +4113,9 @@
     });
     phpInner = php.addCmd(new Codewave.Command('inner'));
     return phpInner.addCmds({
-      'any_content': '~~content~~',
+      'any_content': {
+        aliasOf: 'core:content'
+      },
       'comment': '/* ~~content~~ */',
       'if': 'if(|){\n\t~~any_content~~\n}',
       'info': 'phpinfo();',
@@ -4087,11 +4123,21 @@
       'e': {
         aliasOf: 'php:inner:echo'
       },
-      'class': "class ~~param 0 class def:|~~ {\n\tfunction __construct() {\n\t\t~~content~~|\n\t}\n}",
+      'class': {
+        result: "class ~~param 0 class def:|~~ {\n\tfunction __construct() {\n\t\t~~content~~|\n\t}\n}",
+        defaults: {
+          inline: false
+        }
+      },
       'c': {
         aliasOf: 'php:inner:class'
       },
-      'function': 'function |() {\n\t~~content~~\n}',
+      'function': {
+        result: 'function |() {\n\t~~content~~\n}',
+        defaults: {
+          inline: false
+        }
+      },
       'funct': {
         aliasOf: 'php:inner:function'
       },
@@ -4106,22 +4152,38 @@
         aliasOf: 'php:inner:foreach'
       },
       'while': 'while(|) {\n\t~~any_content~~\n}',
-      'whilei': '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+      'whilei': {
+        result: '$i = 0;\nwhile(|) {\n\t~~any_content~~\n\t$i++;\n}',
+        defaults: {
+          inline: false
+        }
+      },
       'ifelse': 'if( | ) {\n\t~~any_content~~\n} else {\n\t\n}',
       'ife': {
         aliasOf: 'php:inner:ifelse'
       },
-      'switch': "switch( | ) { \n\tcase :\n\t\t~~any_content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}"
+      'switch': {
+        result: "switch( | ) { \n\tcase :\n\t\t~~any_content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}",
+        defaults: {
+          inline: false
+        }
+      }
     });
   };
 
   this.Codewave.Command.cmdInitialisers.push(initCmds);
 
   wrapWithPhp = function(result, instance) {
-    var regClose, regOpen;
-    regOpen = /<\?php\s([\\n\\r\s]+)/g;
-    regClose = /([\n\r\s]+)\s\?>/g;
-    return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
+    var inline, regClose, regOpen;
+    console.log(instance);
+    inline = instance.getParam(['php_inline', 'inline'], true);
+    if (inline) {
+      regOpen = /<\?php\s([\\n\\r\s]+)/g;
+      regClose = /([\n\r\s]+)\s\?>/g;
+      return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>';
+    } else {
+      return '<?php\n' + Codewave.util.indent(result) + '\n?>';
+    }
   };
 
   closePhpForContent = function(instance) {

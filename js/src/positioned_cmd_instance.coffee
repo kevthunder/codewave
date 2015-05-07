@@ -29,9 +29,8 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     @rawParams = parts.join(" ")
   _parseParams:(params) ->
     @params = []
-    @named = {}
+    @named = @getDefaults()
     if @cmd?
-      @named = Codewave.util.merge(@named,@cmd.getDefaults(this)) # [pawa python] replace '@named = Codewave.util.merge(@named,' self.named.update(
       nameToParam = @getOption('nameToParam')
       if nameToParam? 
         @named[nameToParam] = @cmdName

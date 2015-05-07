@@ -118,7 +118,6 @@ class @Codewave.CmdFinder
     unless cmd?
       return false
     if cmd.name != 'fallback' && cmd in @ancestors()
-      console.log(this,cmd,@ancestors())
       return false
     return !@mustExecute or @cmdIsExecutable(cmd)
   ancestors: ->
