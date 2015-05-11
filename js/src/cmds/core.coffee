@@ -371,6 +371,8 @@ class BoxCmd extends Codewave.BaseCommand
       @helper.closeText = @instance.codewave.brakets + @instance.codewave.closeChar + @cmd.split(" ")[0] + @instance.codewave.brakets
     @helper.deco = @instance.codewave.deco
     @helper.pad = 2
+    @helper.prefix = @instance.getParam(['prefix'],'')
+    @helper.suffix = @instance.getParam(['suffix'],'')
     
   height: ->
     if @bounds()?
@@ -417,8 +419,18 @@ class CloseCmd extends Codewave.BaseCommand
   init: ->
     @helper = new Codewave.util.BoxHelper(@instance.context)
   execute: ->
+    @helper.prefix = @instance.getParam(['prefix'],'')
+    @helper.suffix = @instance.getParam(['suffix'],'')
     box = @helper.getBoxForPos(@instance.getPos())
+    required_affixes = @instance.getParam(['required_affixes'],true)
+    if !box? && !required_affixes
+      @helper.prefix = @helper.suffix = ''
+      box = @helper.getBoxForPos(@instance.getPos())
     if box?
+      if !required_affixes
+        prefix = @instance.getParam(['prefix'])
+        if prefix?
+          @instance.codewave.editor.sub
       @instance.codewave.editor.spliceText(box.start,box.end,'')
       @instance.codewave.editor.setCursorPos(box.start)
     else

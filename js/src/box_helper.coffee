@@ -10,6 +10,8 @@ class @Codewave.util.BoxHelper
       height: 3
       openText: ''
       closeText: ''
+      prefix: ''
+      suffix: ''
       indent: 0
     }
     for key, val of defaults
@@ -26,10 +28,10 @@ class @Codewave.util.BoxHelper
     return @wrapComment(@decoLine(len))
   startSep: ->
     ln = @width + 2 * @pad + 2 * @deco.length - @openText.length
-    return @wrapComment(@openText+@decoLine(ln))
+    return @prefix + @wrapComment(@openText+@decoLine(ln))
   endSep: ->
     ln = @width + 2 * @pad + 2 * @deco.length - @closeText.length
-    return @wrapComment(@closeText+@decoLine(ln))
+    return @wrapComment(@closeText+@decoLine(ln)) + @suffix
   decoLine: (len) ->
     return Codewave.util.repeatToLength(@deco, len)
   padding: -> 
@@ -56,8 +58,8 @@ class @Codewave.util.BoxHelper
   textBounds: (text) ->
     return Codewave.util.getTxtSize(@removeIgnoredContent(text))
   getBoxForPos: (pos) ->
-    startFind = @context.wrapCommentLeft(@deco + @deco)
-    endFind = @context.wrapCommentRight(@deco + @deco)
+    startFind = @prefix + @context.wrapCommentLeft(@deco + @deco)
+    endFind = @context.wrapCommentRight(@deco + @deco) + @suffix
     start = @context.codewave.findPrev(pos.start, startFind)
     end = @context.codewave.findNext(pos.end, endFind)
     if start? and end?

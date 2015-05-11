@@ -621,9 +621,21 @@
 
   Pair = (function() {
     function Pair(opener, closer, options1) {
+      var defaults, key, val;
       this.opener = opener;
       this.closer = closer;
       this.options = options1 != null ? options1 : {};
+      defaults = {
+        optionnal_end: false
+      };
+      for (key in defaults) {
+        val = defaults[key];
+        if (key in this.options) {
+          this[key] = this.options[key];
+        } else {
+          this[key] = val;
+        }
+      }
     }
 
     Pair.prototype.openerReg = function() {
@@ -707,7 +719,7 @@
     };
 
     Pair.prototype.isWapperOf = function(pos, text) {
-      return this.matchAnyNamed(text.substr(pos.end)) === 'closer' && this.matchAnyLastNamed(text.substr(0, pos.start)) === 'opener';
+      return (this.optionnal_end || this.matchAnyNamed(text.substr(pos.end)) === 'closer') && this.matchAnyLastNamed(text.substr(0, pos.start)) === 'opener';
     };
 
     return Pair;
@@ -1496,6 +1508,8 @@
         height: 3,
         openText: '',
         closeText: '',
+        prefix: '',
+        suffix: '',
         indent: 0
       };
       for (key in defaults) {
@@ -1525,13 +1539,13 @@
     BoxHelper.prototype.startSep = function() {
       var ln;
       ln = this.width + 2 * this.pad + 2 * this.deco.length - this.openText.length;
-      return this.wrapComment(this.openText + this.decoLine(ln));
+      return this.prefix + this.wrapComment(this.openText + this.decoLine(ln));
     };
 
     BoxHelper.prototype.endSep = function() {
       var ln;
       ln = this.width + 2 * this.pad + 2 * this.deco.length - this.closeText.length;
-      return this.wrapComment(this.closeText + this.decoLine(ln));
+      return this.wrapComment(this.closeText + this.decoLine(ln)) + this.suffix;
     };
 
     BoxHelper.prototype.decoLine = function(len) {
@@ -1591,8 +1605,8 @@
 
     BoxHelper.prototype.getBoxForPos = function(pos) {
       var end, endFind, start, startFind;
-      startFind = this.context.wrapCommentLeft(this.deco + this.deco);
-      endFind = this.context.wrapCommentRight(this.deco + this.deco);
+      startFind = this.prefix + this.context.wrapCommentLeft(this.deco + this.deco);
+      endFind = this.context.wrapCommentRight(this.deco + this.deco) + this.suffix;
       start = this.context.codewave.findPrev(pos.start, startFind);
       end = this.context.codewave.findNext(pos.end, endFind);
       if ((start != null) && (end != null)) {
@@ -3765,7 +3779,9 @@
         this.helper.closeText = this.instance.codewave.brakets + this.instance.codewave.closeChar + this.cmd.split(" ")[0] + this.instance.codewave.brakets;
       }
       this.helper.deco = this.instance.codewave.deco;
-      return this.helper.pad = 2;
+      this.helper.pad = 2;
+      this.helper.prefix = this.instance.getParam(['prefix'], '');
+      return this.helper.suffix = this.instance.getParam(['suffix'], '');
     };
 
     BoxCmd.prototype.height = function() {
@@ -3837,9 +3853,22 @@
     };
 
     CloseCmd.prototype.execute = function() {
-      var box;
+      var box, prefix, required_affixes;
+      this.helper.prefix = this.instance.getParam(['prefix'], '');
+      this.helper.suffix = this.instance.getParam(['suffix'], '');
       box = this.helper.getBoxForPos(this.instance.getPos());
+      required_affixes = this.instance.getParam(['required_affixes'], true);
+      if ((box == null) && !required_affixes) {
+        this.helper.prefix = this.helper.suffix = '';
+        box = this.helper.getBoxForPos(this.instance.getPos());
+      }
       if (box != null) {
+        if (!required_affixes) {
+          prefix = this.instance.getParam(['prefix']);
+          if (prefix != null) {
+            this.instance.codewave.editor.sub;
+          }
+        }
         this.instance.codewave.editor.spliceText(box.start, box.end, '');
         return this.instance.codewave.editor.setCursorPos(box.start);
       } else {
@@ -4090,6 +4119,7 @@
       result: 'php:inner',
       opener: '<?php',
       closer: '?>',
+      optionnal_end: true,
       'else': 'php:outer'
     }));
     phpOuter = php.addCmd(new Codewave.Command('outer'));
@@ -4108,7 +4138,14 @@
         aliasOf: 'php:inner:%name%',
         alterResult: wrapWithPhp
       },
-      'comment': '<?php /* ~~content~~ */ ?>',
+      'box': {
+        aliasOf: 'core:box',
+        defaults: {
+          prefix: '<?php\n',
+          suffix: '\n?>'
+        }
+      },
+      'comment': '/* ~~content~~ */',
       php: '<?php\n\t~~content~~|\n?>'
     });
     phpInner = php.addCmd(new Codewave.Command('inner'));
@@ -4166,6 +4203,14 @@
         result: "switch( | ) { \n\tcase :\n\t\t~~any_content~~\n\t\tbreak;\n\tdefault :\n\t\t\n\t\tbreak;\n}",
         defaults: {
           inline: false
+        }
+      },
+      'close': {
+        aliasOf: 'core:close',
+        defaults: {
+          prefix: '<?php\n',
+          suffix: '\n?>',
+          required_affixes: false
         }
       }
     });

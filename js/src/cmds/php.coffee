@@ -10,6 +10,7 @@ initCmds = ->
     result: 'php:inner',
     opener: '<?php',
     closer: '?>',
+    optionnal_end: true,
     'else': 'php:outer'
   })) 
 
@@ -27,10 +28,16 @@ initCmds = ->
         },
       }
       aliasOf: 'php:inner:%name%',
-      # beforeExecute: closePhpForContent
       alterResult: wrapWithPhp
     },
-    'comment': '<?php /* ~~content~~ */ ?>',
+    'box': { 
+      aliasOf: 'core:box' 
+      defaults: {
+        prefix: '<?php\n'
+        suffix: '\n?>'
+      }
+    },
+    'comment': '/* ~~content~~ */',
     php: '<?php\n\t~~content~~|\n?>',
   })
   
@@ -92,6 +99,14 @@ initCmds = ->
         inline: false
       }
     }
+    'close': { 
+      aliasOf: 'core:close' 
+      defaults: {
+        prefix: '<?php\n'
+        suffix: '\n?>'
+        required_affixes: false
+      }
+    },
   })
   
 

@@ -120,6 +120,14 @@ class Wrapping extends Replacement
     
 class Pair
   constructor: (@opener,@closer,@options = {}) ->
+    defaults = {
+      optionnal_end: false
+    }
+    for key, val of defaults
+      if key of @options
+        this[key] = @options[key]
+      else
+        this[key] = val
   openerReg: ->
     if typeof @opener == 'string' 
       return new RegExp(Codewave.util.escapeRegExp(@opener))
@@ -164,7 +172,7 @@ class Pair
   matchAnyLastNamed: (text) ->
     return @_matchAnyGetName(@matchAnyLast(text))
   isWapperOf: (pos,text) ->
-    return @matchAnyNamed(text.substr(pos.end)) == 'closer' and @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
+    return (@optionnal_end or @matchAnyNamed(text.substr(pos.end)) == 'closer') and  @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
     
 
 @Codewave.util = ( 
