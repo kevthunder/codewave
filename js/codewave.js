@@ -3853,14 +3853,17 @@
     };
 
     CloseCmd.prototype.execute = function() {
-      var box, prefix, required_affixes;
-      this.helper.prefix = this.instance.getParam(['prefix'], '');
-      this.helper.suffix = this.instance.getParam(['suffix'], '');
+      var box, box2, prefix, required_affixes, suffix;
+      prefix = this.helper.prefix = this.instance.getParam(['prefix'], '');
+      suffix = this.helper.suffix = this.instance.getParam(['suffix'], '');
       box = this.helper.getBoxForPos(this.instance.getPos());
       required_affixes = this.instance.getParam(['required_affixes'], true);
-      if ((box == null) && !required_affixes) {
+      if (!required_affixes) {
         this.helper.prefix = this.helper.suffix = '';
-        box = this.helper.getBoxForPos(this.instance.getPos());
+        box2 = this.helper.getBoxForPos(this.instance.getPos());
+        if ((box == null) || box.start < box2.start - prefix.length || box.end > box2.end + suffix.length) {
+          box = box2;
+        }
       }
       if (box != null) {
         if (!required_affixes) {

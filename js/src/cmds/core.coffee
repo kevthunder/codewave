@@ -419,13 +419,15 @@ class CloseCmd extends Codewave.BaseCommand
   init: ->
     @helper = new Codewave.util.BoxHelper(@instance.context)
   execute: ->
-    @helper.prefix = @instance.getParam(['prefix'],'')
-    @helper.suffix = @instance.getParam(['suffix'],'')
+    prefix = @helper.prefix = @instance.getParam(['prefix'],'')
+    suffix = @helper.suffix = @instance.getParam(['suffix'],'')
     box = @helper.getBoxForPos(@instance.getPos())
     required_affixes = @instance.getParam(['required_affixes'],true)
-    if !box? && !required_affixes
+    if !required_affixes
       @helper.prefix = @helper.suffix = ''
-      box = @helper.getBoxForPos(@instance.getPos())
+      box2 = @helper.getBoxForPos(@instance.getPos())
+      if !box? or box.start < box2.start - prefix.length or box.end > box2.end + suffix.length
+        box = box2
     if box?
       if !required_affixes
         prefix = @instance.getParam(['prefix'])
