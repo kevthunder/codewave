@@ -22,6 +22,22 @@ module.exports = function (grunt) {
             'js/src/init.coffee'
           ] // concat then compile into single file
         }
+      },
+      compileTests: {
+        options: {
+          sourceMap: true
+        },
+        files: [
+          { 'test/js/test_utils.js': 'test/js/src/test_utils.coffee' },
+          {
+            expand: true,
+            flatten: true,
+            cwd: 'test/spec/src/',
+            src: ['*.coffee'],
+            dest: 'test/spec/',
+            ext: '.js'
+          },
+        ],
       }
     },
     sass: {
@@ -48,6 +64,16 @@ module.exports = function (grunt) {
         // js:  { files: 'js/*.js', tasks: [ 'uglify' ] },
         sass:  { files: 'sass/*.sass', tasks: [ 'sass' ] },
         coffee:  { files: ['js/src/*.coffee','js/src/**/*.coffee'], tasks: [ 'coffee','uglify' ] },
+    },
+    mocha: {
+      test: {
+        src: ['test/**/*.html'],
+        options: {
+          run: true,
+          log: true,
+          logErrors: true,
+        }
+      },
     }
 });
 
@@ -56,9 +82,12 @@ grunt.loadNpmTasks('grunt-contrib-watch');
 grunt.loadNpmTasks('grunt-contrib-uglify');
 grunt.loadNpmTasks('grunt-contrib-coffee');
 grunt.loadNpmTasks('grunt-contrib-sass');
+grunt.loadNpmTasks('grunt-mocha');
 
 // register at least this one task
 grunt.registerTask('default', [ 'coffee', 'uglify', 'sass' ]);
+
+grunt.registerTask('test', [ 'coffee', 'mocha']);
 
 
 };

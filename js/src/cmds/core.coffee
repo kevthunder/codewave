@@ -517,6 +517,12 @@ class EmmetCmd extends @Codewave.BaseCommand
     @abbr = @instance.getParam([0,'abbr','abbreviation'])
     @lang = @instance.getParam([1,'lang','language'])
   result: ->
+    emmet = if window.emmet?
+      window.emmet
+    else if window.self?.emmet?
+      window.self.emmet
+    else if window.global?.emmet?
+      window.global.emmet
     if emmet?
       # emmet.require('./parser/abbreviation').expand('ul>li', {pastedContent:'lorem'})
       res = emmet.expandAbbreviation(@abbr, @lang)

@@ -1,7 +1,7 @@
 class @Codewave.Editor
   constructor: ->
     @namespace = null
-    
+    @_lang = null
   bindedTo: (codewave) ->
     #
   text: (val) ->
@@ -25,7 +25,9 @@ class @Codewave.Editor
   endUndoAction: ->
     #
   getLang: ->
-    return null
+    return @_lang
+  setLang: (val) ->
+    @_lang = val
   getEmmetContextObject: ->
     return null
   allowMultiSelection: ->

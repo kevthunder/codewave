@@ -46,6 +46,7 @@ class @Codewave
     if @editor.allowMultiSelection()
       @runAtMultiPos(@editor.getMultiSel())
     else
+      console.log(@editor.getCursorPos().start)
       @runAtPos(@editor.getCursorPos())
   runAtPos: (pos)->
     @runAtMultiPos([pos])

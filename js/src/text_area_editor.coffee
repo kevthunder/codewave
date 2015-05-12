@@ -98,7 +98,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
     if @selectionPropExists
-      @tmpCursorPos = ( start: start, end: end )
+      @tmpCursorPos = new Codewave.util.Pos(start,end)
       @obj.selectionStart = start
       @obj.selectionEnd = end
       setTimeout (=>
@@ -117,7 +117,11 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
       rng.moveEnd "character", end - start
       rng.select()
   getLang: ->
+    return @_lang if @_lang
     @obj.getAttribute('data-lang') if @obj.hasAttribute('data-lang')
+  setLang: (val) ->
+    @_lang = val
+    @obj.setAttribute('data-lang',val)
   canListenToChange: ->
     return true
   addChangeListener: (callback) ->

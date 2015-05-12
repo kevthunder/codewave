@@ -23,6 +23,8 @@ class Pos
     return this
   copy: ->
     return new Pos(@start,@end)
+  raw: ->
+    [@start,@end]
     
 class WrappedPos extends Pos
   constructor: (@start,@innerStart,@innerEnd,@end) ->

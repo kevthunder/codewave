@@ -55,6 +55,7 @@
       if (this.editor.allowMultiSelection()) {
         return this.runAtMultiPos(this.editor.getMultiSel());
       } else {
+        console.log(this.editor.getCursorPos().start);
         return this.runAtPos(this.editor.getCursorPos());
       }
     };
@@ -404,6 +405,10 @@
 
     Pos.prototype.copy = function() {
       return new Pos(this.start, this.end);
+    };
+
+    Pos.prototype.raw = function() {
+      return [this.start, this.end];
     };
 
     return Pos;
@@ -928,6 +933,7 @@
   this.Codewave.Editor = (function() {
     function Editor() {
       this.namespace = null;
+      this._lang = null;
     }
 
     Editor.prototype.bindedTo = function(codewave) {};
@@ -972,7 +978,11 @@
     Editor.prototype.endUndoAction = function() {};
 
     Editor.prototype.getLang = function() {
-      return null;
+      return this._lang;
+    };
+
+    Editor.prototype.setLang = function(val) {
+      return this._lang = val;
     };
 
     Editor.prototype.getEmmetContextObject = function() {
@@ -1433,10 +1443,7 @@
         end = start;
       }
       if (this.selectionPropExists) {
-        this.tmpCursorPos = {
-          start: start,
-          end: end
-        };
+        this.tmpCursorPos = new Codewave.util.Pos(start, end);
         this.obj.selectionStart = start;
         this.obj.selectionEnd = end;
         setTimeout(((function(_this) {
@@ -1463,9 +1470,17 @@
     };
 
     TextAreaEditor.prototype.getLang = function() {
+      if (this._lang) {
+        return this._lang;
+      }
       if (this.obj.hasAttribute('data-lang')) {
         return this.obj.getAttribute('data-lang');
       }
+    };
+
+    TextAreaEditor.prototype.setLang = function(val) {
+      this._lang = val;
+      return this.obj.setAttribute('data-lang', val);
     };
 
     TextAreaEditor.prototype.canListenToChange = function() {
@@ -4041,8 +4056,9 @@
     };
 
     EmmetCmd.prototype.result = function() {
-      var res;
-      if (typeof emmet !== "undefined" && emmet !== null) {
+      var emmet, ref, ref1, res;
+      emmet = window.emmet != null ? window.emmet : ((ref = window.self) != null ? ref.emmet : void 0) != null ? window.self.emmet : ((ref1 = window.global) != null ? ref1.emmet : void 0) != null ? window.global.emmet : void 0;
+      if (emmet != null) {
         res = emmet.expandAbbreviation(this.abbr, this.lang);
         return res.replace(/\$\{0\}/g, '|');
       }
