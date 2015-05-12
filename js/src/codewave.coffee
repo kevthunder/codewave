@@ -46,7 +46,6 @@ class @Codewave
     if @editor.allowMultiSelection()
       @runAtMultiPos(@editor.getMultiSel())
     else
-      console.log(@editor.getCursorPos().start)
       @runAtPos(@editor.getCursorPos())
   runAtPos: (pos)->
     @runAtMultiPos([pos])
@@ -75,7 +74,7 @@ class @Codewave
       unless prev?
         return null 
       next = @findNextBraket(pos-1)
-      if next is null or @countPrevBraket(prev) % 2 != 0 
+      if !next? or @countPrevBraket(prev) % 2 != 0 
         return null
     return new Codewave.PositionedCmdInstance(this,prev,@editor.textSubstr(prev,next+@brakets.length))
   nextCmd: (start = 0) ->
@@ -107,11 +106,13 @@ class @Codewave
     return @editor.textSubstr(pos,pos+@brakets.length) == @brakets
   countPrevBraket: (start) -> 
     i = 0
-    while start = @findPrevBraket(start)
+    while (start = @findPrevBraket(start))?
       i++
     return i
   isEndLine: (pos) -> 
     return @editor.textSubstr(pos,pos+1) == "\n" or pos + 1 >= @editor.textLen()
+  getLineAt: (pos) ->
+    return new Codewave.util.Pos(@findLineStart(pos),@findLineEnd(pos))
   findLineStart: (pos) -> 
     p = @findAnyNext(pos ,["\n"], -1)
     return if p then p.pos+1 else 0
