@@ -61,7 +61,16 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
     event = document.createEvent('TextEvent') if document.createEvent?
     if event? and event.initTextEvent?
       end = @textLen() unless end?
-      event.initTextEvent('textInput', true, true, null, text || "\0", 9)
+      if text.length < 1
+        if start != 0
+          text = @textSubstr(start-1,start)
+          start--
+        else if end != @textLen()
+          text = @textSubstr(end,end+1)
+          end++
+        else
+          return false
+      event.initTextEvent('textInput', true, true, null, text, 9)
       # @setCursorPos(start,end)
       @obj.selectionStart = start
       @obj.selectionEnd = end
