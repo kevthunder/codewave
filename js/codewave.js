@@ -1,5 +1,5 @@
 (function() {
-  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, getParam, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
+  var BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, Pair, PairMatch, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, closePhpForContent, exec_parent, getContent, getParam, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -55,7 +55,6 @@
       if (this.editor.allowMultiSelection()) {
         return this.runAtMultiPos(this.editor.getMultiSel());
       } else {
-        console.log(this.editor.getCursorPos().start);
         return this.runAtPos(this.editor.getCursorPos());
       }
     };
@@ -99,7 +98,7 @@
           return null;
         }
         next = this.findNextBraket(pos - 1);
-        if (next === null || this.countPrevBraket(prev) % 2 !== 0) {
+        if ((next == null) || this.countPrevBraket(prev) % 2 !== 0) {
           return null;
         }
       }
@@ -158,7 +157,7 @@
     Codewave.prototype.countPrevBraket = function(start) {
       var i;
       i = 0;
-      while (start = this.findPrevBraket(start)) {
+      while ((start = this.findPrevBraket(start)) != null) {
         i++;
       }
       return i;
@@ -166,6 +165,10 @@
 
     Codewave.prototype.isEndLine = function(pos) {
       return this.editor.textSubstr(pos, pos + 1) === "\n" || pos + 1 >= this.editor.textLen();
+    };
+
+    Codewave.prototype.getLineAt = function(pos) {
+      return new Codewave.util.Pos(this.findLineStart(pos), this.findLineEnd(pos));
     };
 
     Codewave.prototype.findLineStart = function(pos) {
@@ -377,6 +380,9 @@
     function Pos(start1, end1) {
       this.start = start1;
       this.end = end1;
+      if (this.end == null) {
+        this.end = this.start;
+      }
     }
 
     Pos.prototype.containsPt = function(pt) {
@@ -624,6 +630,51 @@
 
   })(Replacement);
 
+  PairMatch = (function() {
+    function PairMatch(pair1, match1, offset1) {
+      this.pair = pair1;
+      this.match = match1;
+      this.offset = offset1 != null ? offset1 : 0;
+    }
+
+    PairMatch.prototype.name = function() {
+      var _name, group, i, len1, q, ref;
+      if (this.match) {
+        if (typeof _name === "undefined" || _name === null) {
+          ref = this.match;
+          for (i = q = 0, len1 = ref.length; q < len1; i = ++q) {
+            group = ref[i];
+            if (i > 0 && (group != null)) {
+              _name = this.pair.matchAnyPartKeys()[i - 1];
+              return _name;
+            }
+          }
+          _name = false;
+        }
+        return _name || null;
+      }
+    };
+
+    PairMatch.prototype.start = function() {
+      return this.match.index + this.offset;
+    };
+
+    PairMatch.prototype.end = function() {
+      return this.match.index + this.match[0].length + this.offset;
+    };
+
+    PairMatch.prototype.valid = function() {
+      return !this.pair.validMatch || this.pair.validMatch(this);
+    };
+
+    PairMatch.prototype.length = function() {
+      return this.match[0].length;
+    };
+
+    return PairMatch;
+
+  })();
+
   Pair = (function() {
     function Pair(opener, closer, options1) {
       var defaults, key, val;
@@ -631,7 +682,8 @@
       this.closer = closer;
       this.options = options1 != null ? options1 : {};
       defaults = {
-        optionnal_end: false
+        optionnal_end: false,
+        validMatch: null
       };
       for (key in defaults) {
         val = defaults[key];
@@ -688,43 +740,70 @@
       return new RegExp(groups.join('|'));
     };
 
-    Pair.prototype.matchAny = function(text) {
-      return this.matchAnyReg().exec(text);
+    Pair.prototype.matchAny = function(text, offset) {
+      var match;
+      if (offset == null) {
+        offset = 0;
+      }
+      while (((match = this._matchAny(text, offset)) != null) && !match.valid()) {
+        offset = match.end();
+      }
+      if ((match != null) && match.valid()) {
+        return match;
+      }
+    };
+
+    Pair.prototype._matchAny = function(text, offset) {
+      var match;
+      if (offset == null) {
+        offset = 0;
+      }
+      if (offset) {
+        text = text.substr(offset);
+      }
+      match = this.matchAnyReg().exec(text);
+      if (match != null) {
+        return new PairMatch(this, match, offset);
+      }
     };
 
     Pair.prototype.matchAnyNamed = function(text) {
       return this._matchAnyGetName(this.matchAny(text));
     };
 
-    Pair.prototype._matchAnyGetName = function(match) {
-      var group, i, len1, q;
-      if (match) {
-        for (i = q = 0, len1 = match.length; q < len1; i = ++q) {
-          group = match[i];
-          if (i > 0 && (group != null)) {
-            return this.matchAnyPartKeys()[i - 1];
-          }
-        }
-        return null;
+    Pair.prototype.matchAnyLast = function(text, offset) {
+      var match, res;
+      if (offset == null) {
+        offset = 0;
       }
-    };
-
-    Pair.prototype.matchAnyLast = function(text) {
-      var ctext, match, res;
-      ctext = text;
-      while (match = this.matchAny(ctext)) {
-        ctext = ctext.substr(match.index + 1);
-        res = match;
+      while (match = this.matchAny(text, offset)) {
+        offset = match.end();
+        if (!res || res.end() !== match.end()) {
+          res = match;
+        }
       }
       return res;
     };
 
-    Pair.prototype.matchAnyLastNamed = function(text) {
-      return this._matchAnyGetName(this.matchAnyLast(text));
+    Pair.prototype.identical = function() {
+      return this.opener === this.closer || ((this.opener.source != null) && (this.closer.source != null) && this.opener.source === this.closer.source);
+    };
+
+    Pair.prototype.wrapperPos = function(pos, text) {
+      var end, start;
+      start = this.matchAnyLast(text.substr(0, pos.start));
+      if ((start != null) && (this.identical() || start.name() === 'opener')) {
+        end = this.matchAny(text, pos.end);
+        if ((end != null) && (this.identical() || end.name() === 'closer')) {
+          return new Codewave.util.Pos(start.start(), end.end());
+        } else if (this.optionnal_end) {
+          return new Codewave.util.Pos(start.start(), text.length);
+        }
+      }
     };
 
     Pair.prototype.isWapperOf = function(pos, text) {
-      return (this.optionnal_end || this.matchAnyNamed(text.substr(pos.end)) === 'closer') && this.matchAnyLastNamed(text.substr(0, pos.start)) === 'opener';
+      return this.wrapperPos(pos, text) != null;
     };
 
     return Pair;
@@ -764,6 +843,9 @@
       }
       return Array(Math.ceil(length / txt.length) + 1).join(txt).substring(0, length);
     },
+    repeat: function(txt, nb) {
+      return Array(nb + 1).join(txt);
+    },
     getTxtSize: function(txt) {
       var l, len1, lines, q, w;
       lines = txt.replace(/\r/g, '').split("\n");
@@ -784,7 +866,7 @@
       }
       if (text != null) {
         reg = /\n/g;
-        return text.replace(reg, "\n" + Codewave.util.repeatToLength(spaces, nb * spaces.length));
+        return text.replace(reg, "\n" + Codewave.util.repeat(spaces, nb));
       } else {
         return text;
       }
@@ -1390,7 +1472,18 @@
         if (end == null) {
           end = this.textLen();
         }
-        event.initTextEvent('textInput', true, true, null, text || "\0", 9);
+        if (text.length < 1) {
+          if (start !== 0) {
+            text = this.textSubstr(start - 1, start);
+            start--;
+          } else if (end !== this.textLen()) {
+            text = this.textSubstr(end, end + 1);
+            end++;
+          } else {
+            return false;
+          }
+        }
+        event.initTextEvent('textInput', true, true, null, text, 9);
         this.obj.selectionStart = start;
         this.obj.selectionEnd = end;
         this.obj.dispatchEvent(event);
@@ -1511,12 +1604,12 @@
 
   this.Codewave.util.BoxHelper = (function() {
     function BoxHelper(context1, options) {
-      var defaults, key, val;
+      var key, ref, val;
       this.context = context1;
       if (options == null) {
         options = {};
       }
-      defaults = {
+      this.defaults = {
         deco: this.context.codewave.deco,
         pad: 2,
         width: 50,
@@ -1527,8 +1620,9 @@
         suffix: '',
         indent: 0
       };
-      for (key in defaults) {
-        val = defaults[key];
+      ref = this.defaults;
+      for (key in ref) {
+        val = ref[key];
         if (key in options) {
           this[key] = options[key];
         } else {
@@ -1536,6 +1630,17 @@
         }
       }
     }
+
+    BoxHelper.prototype.clone = function(text) {
+      var key, opt, ref, val;
+      opt = {};
+      ref = this.defaults;
+      for (key in ref) {
+        val = ref[key];
+        opt[key] = this[key];
+      }
+      return new Codewave.util.BoxHelper(this.context, opt);
+    };
 
     BoxHelper.prototype.draw = function(text) {
       return this.startSep() + "\n" + this.lines(text) + "\n" + this.endSep();
@@ -1610,6 +1715,14 @@
       return Codewave.util.repeatToLength(" ", this.indent) + this.wrapComment(this.deco + this.padding() + text + Codewave.util.repeatToLength(" ", this.width - this.removeIgnoredContent(text).length) + this.padding() + this.deco);
     };
 
+    BoxHelper.prototype.left = function() {
+      return this.context.wrapCommentLeft(this.deco + this.padding());
+    };
+
+    BoxHelper.prototype.right = function() {
+      return this.context.wrapCommentRight(this.padding() + this.deco);
+    };
+
     BoxHelper.prototype.removeIgnoredContent = function(text) {
       return this.context.codewave.removeMarkers(this.context.codewave.removeCarret(text));
     };
@@ -1619,14 +1732,44 @@
     };
 
     BoxHelper.prototype.getBoxForPos = function(pos) {
-      var end, endFind, start, startFind;
-      startFind = this.prefix + this.context.wrapCommentLeft(this.deco + this.deco);
-      endFind = this.context.wrapCommentRight(this.deco + this.deco) + this.suffix;
-      start = this.context.codewave.findPrev(pos.start, startFind);
-      end = this.context.codewave.findNext(pos.end, endFind);
-      if ((start != null) && (end != null)) {
-        return new Codewave.util.Pos(start, end + endFind.length);
+      var clone, curLeft, depth, endFind, left, pair, placeholder, res, startFind;
+      depth = this.getNestedLvl(pos.start);
+      if (depth > 0) {
+        left = this.left();
+        curLeft = Codewave.util.repeat(left, depth - 1);
+        clone = this.clone();
+        placeholder = "###PlaceHolder###";
+        clone.width = placeholder.length;
+        clone.openText = clone.closeText = this.deco + this.deco + placeholder + this.deco + this.deco;
+        startFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.startSep()).replace(placeholder, '.*'));
+        endFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.endSep()).replace(placeholder, '.*'));
+        pair = new Codewave.util.Pair(startFind, endFind, {
+          validMatch: (function(_this) {
+            return function(match) {
+              var f;
+              f = _this.context.codewave.findAnyNext(match.start(), [left, "\n", "\r"], -1);
+              return (f == null) || f.str !== left;
+            };
+          })(this)
+        });
+        res = pair.wrapperPos(pos, this.context.codewave.editor.text());
+        console.log(this, depth, pair, res);
+        if (res != null) {
+          res.start += curLeft.length;
+          return res;
+        }
       }
+    };
+
+    BoxHelper.prototype.getNestedLvl = function(index) {
+      var depth, f, left;
+      depth = 0;
+      left = this.left();
+      while (((f = this.context.codewave.findAnyNext(index, [left, "\n", "\r"], -1)) != null) && f.str === left) {
+        index = f.pos;
+        depth++;
+      }
+      return depth;
     };
 
     BoxHelper.prototype.getOptFromLine = function(line, getPad) {
@@ -3876,17 +4019,12 @@
       if (!required_affixes) {
         this.helper.prefix = this.helper.suffix = '';
         box2 = this.helper.getBoxForPos(this.instance.getPos());
-        if ((box == null) || box.start < box2.start - prefix.length || box.end > box2.end + suffix.length) {
+        if ((box2 != null) && ((box == null) || box.start < box2.start - prefix.length || box.end > box2.end + suffix.length)) {
           box = box2;
         }
       }
       if (box != null) {
-        if (!required_affixes) {
-          prefix = this.instance.getParam(['prefix']);
-          if (prefix != null) {
-            this.instance.codewave.editor.sub;
-          }
-        }
+        console.log(box);
         this.instance.codewave.editor.spliceText(box.start, box.end, '');
         return this.instance.codewave.editor.setCursorPos(box.start);
       } else {

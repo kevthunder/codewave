@@ -63,7 +63,7 @@ module.exports = function (grunt) {
         },
         // js:  { files: 'js/*.js', tasks: [ 'uglify' ] },
         sass:  { files: 'sass/*.sass', tasks: [ 'sass' ] },
-        coffee:  { files: ['js/src/*.coffee','js/src/**/*.coffee'], tasks: [ 'coffee','uglify' ] },
+        coffee:  { files: ['js/src/**/*.coffee','test/**/*.coffee'], tasks: [ 'coffee','uglify' ] },
     },
     mocha: {
       test: {

@@ -8,6 +8,7 @@ class StrPos
 
 class Pos
   constructor: (@start,@end) ->
+    @end = @start unless @end?
   containsPt: (pt) ->
     return @start <= pt and pt <= @end
   containsPos: (pos) ->
@@ -119,11 +120,31 @@ class Wrapping extends Replacement
     res = new Wrapping(@start, @end, @prefix, @suffix)
     res.selections = @selections.map( (s)->s.copy() )
     return res
-    
+
+class PairMatch
+  constructor: (@pair,@match,@offset = 0) ->
+  name: ->
+    if @match
+      unless _name?
+        for group, i in @match
+          if i > 0 and group?
+            _name = @pair.matchAnyPartKeys()[i-1]
+            return _name
+        _name = false
+      return _name || null
+  start: ->
+    @match.index + @offset
+  end: ->
+    @match.index + @match[0].length + @offset
+  valid: ->
+    return !@pair.validMatch || @pair.validMatch(this)
+  length: ->
+    @match[0].length
 class Pair
   constructor: (@opener,@closer,@options = {}) ->
     defaults = {
       optionnal_end: false
+      validMatch: null
     }
     for key, val of defaults
       if key of @options
@@ -155,26 +176,40 @@ class Pair
     for key, reg of @matchAnyParts()
       groups.push('('+reg.source+')')  # [pawa python] replace reg.source reg.pattern
     return new RegExp(groups.join('|'))
-  matchAny: (text) ->
-    return @matchAnyReg().exec(text)
+  matchAny: (text,offset=0) ->
+    while (match = @_matchAny(text,offset))? and !match.valid()
+      offset = match.end()
+    return match if match? and match.valid()
+  _matchAny: (text,offset=0) ->
+    if offset
+      text = text.substr(offset)
+    match = @matchAnyReg().exec(text)
+    if match?
+      return new PairMatch(this,match,offset)
   matchAnyNamed: (text) ->
     return @_matchAnyGetName(@matchAny(text))
-  _matchAnyGetName: (match) ->
-    if match
-      for group, i in match
-        if i > 0 and group?
-          return @matchAnyPartKeys()[i-1]
-      return null
-  matchAnyLast: (text) ->
-    ctext = text
-    while match = @matchAny(ctext)
-      ctext = ctext.substr(match.index+1)   # [pawa python] replace match.index match.start()
-      res = match
+  matchAnyLast: (text,offset=0) ->
+    while match = @matchAny(text,offset)
+      offset = match.end()
+      if !res or res.end() != match.end()
+        res = match
     return res
-  matchAnyLastNamed: (text) ->
-    return @_matchAnyGetName(@matchAnyLast(text))
+  identical: ->
+    @opener == @closer or (
+      @opener.source? and 
+      @closer.source? and 
+      @opener.source == @closer.source
+    )
+  wrapperPos: (pos,text) ->
+    start = @matchAnyLast(text.substr(0,pos.start))
+    if start? and (@identical() or start.name() == 'opener')
+      end = @matchAny(text,pos.end)
+      if end? and (@identical() or end.name() == 'closer')
+        return new Codewave.util.Pos(start.start(),end.end())
+      else if @optionnal_end
+        return new Codewave.util.Pos(start.start(),text.length)
   isWapperOf: (pos,text) ->
-    return (@optionnal_end or @matchAnyNamed(text.substr(pos.end)) == 'closer') and  @matchAnyLastNamed(text.substr(0,pos.start)) == 'opener'
+    return @wrapperPos(pos,text)?
     
 
 @Codewave.util = ( 
@@ -200,7 +235,10 @@ class Pair
   repeatToLength: (txt, length) ->
     return '' if length <= 0
     Array(Math.ceil(length/txt.length)+1).join(txt).substring(0,length)
-
+    
+  repeat: (txt, nb) ->
+    Array(nb+1).join(txt)
+    
   getTxtSize: (txt) ->
     lines = txt.replace(/\r/g,'').split("\n")  # [pawa python] replace '/\r/g' "'\r'"
     w = 0
@@ -211,7 +249,7 @@ class Pair
   indentNotFirst: (text,nb=1,spaces='  ') ->
     if text?
       reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
-      return text.replace(reg, "\n" + Codewave.util.repeatToLength(spaces, nb*spaces.length))
+      return text.replace(reg, "\n" + Codewave.util.repeat(spaces, nb))
     else
       return text
       

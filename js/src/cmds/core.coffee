@@ -426,13 +426,10 @@ class CloseCmd extends Codewave.BaseCommand
     if !required_affixes
       @helper.prefix = @helper.suffix = ''
       box2 = @helper.getBoxForPos(@instance.getPos())
-      if !box? or box.start < box2.start - prefix.length or box.end > box2.end + suffix.length
+      if box2? and (!box? or box.start < box2.start - prefix.length or box.end > box2.end + suffix.length)
         box = box2
     if box?
-      if !required_affixes
-        prefix = @instance.getParam(['prefix'])
-        if prefix?
-          @instance.codewave.editor.sub
+      console.log(box)
       @instance.codewave.editor.spliceText(box.start,box.end,'')
       @instance.codewave.editor.setCursorPos(box.start)
     else

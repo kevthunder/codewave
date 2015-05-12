@@ -3,7 +3,7 @@
 
 class @Codewave.util.BoxHelper
   constructor: (@context, options = {}) ->
-    defaults = {
+    @defaults = {
       deco: @context.codewave.deco
       pad: 2
       width: 50
@@ -14,11 +14,16 @@ class @Codewave.util.BoxHelper
       suffix: ''
       indent: 0
     }
-    for key, val of defaults
+    for key, val of @defaults
       if key of options
         this[key] = options[key]
       else
         this[key] = val
+  clone: (text) ->
+    opt = {}
+    for key, val of @defaults
+      opt[key] = this[key]
+    return new Codewave.util.BoxHelper(@context,opt)
   draw: (text) ->
     return @startSep() + "\n" + @lines(text) + "\n"+ @endSep()
   wrapComment: (str) ->
@@ -53,17 +58,47 @@ class @Codewave.util.BoxHelper
         @padding() +
         @deco
       ))
+  left: ->
+    @context.wrapCommentLeft(@deco + @padding())
+  right: ->
+    @context.wrapCommentRight(@padding() + @deco)
   removeIgnoredContent: (text) ->
     return @context.codewave.removeMarkers(@context.codewave.removeCarret(text))
   textBounds: (text) ->
     return Codewave.util.getTxtSize(@removeIgnoredContent(text))
   getBoxForPos: (pos) ->
-    startFind = @prefix + @context.wrapCommentLeft(@deco + @deco)
-    endFind = @context.wrapCommentRight(@deco + @deco) + @suffix
-    start = @context.codewave.findPrev(pos.start, startFind)
-    end = @context.codewave.findNext(pos.end, endFind)
-    if start? and end?
-      return new Codewave.util.Pos(start,end + endFind.length)
+    depth = @getNestedLvl(pos.start)
+    if depth > 0
+      left = @left()
+      curLeft = Codewave.util.repeat(left,depth-1)
+      
+      clone = @clone()
+      placeholder = "###PlaceHolder###"
+      clone.width = placeholder.length
+      clone.openText = clone.closeText = @deco + @deco + placeholder + @deco + @deco
+      
+      startFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.startSep()).replace(placeholder,'.*'))
+      endFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.endSep()).replace(placeholder,'.*'))
+      
+      pair = new Codewave.util.Pair(startFind,endFind,{
+        validMatch: (match)=>
+          # console.log(match,left)
+          f = @context.codewave.findAnyNext(match.start() ,[left,"\n","\r"],-1)
+          return !f? or f.str != left
+      })
+      res = pair.wrapperPos(pos,@context.codewave.editor.text())
+      console.log(this,depth,pair,res)
+      if res?
+        res.start += curLeft.length
+        return res
+    
+  getNestedLvl: (index) ->
+    depth = 0
+    left = @left()
+    while (f = @context.codewave.findAnyNext(index ,[left,"\n","\r"],-1))? && f.str == left
+      index = f.pos
+      depth++
+    return depth
   getOptFromLine: (line,getPad=true) ->
     rStart = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentLeft(@deco))+")(\\s*)")
     rEnd = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentRight(@deco))+")")
