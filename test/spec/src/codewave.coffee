@@ -173,3 +173,24 @@ describe 'Codewave', ->
       """<ul>
            <li>|</li>
          </ul>"""
+         
+  
+  it 'should display help', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~help|~~"""
+    @codewave.onActivationKey()
+    expect(@codewave.editor.text()).to.contain('~~~~~~~~~~')
+    expect(@codewave.editor.text()).to.contain('Codewave')
+    expect(@codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/') # slice from the ascii logo
+    expect(@codewave.editor.text()).to.contain('~~close~~')
+    
+  it ' help demo should expend editing intro', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~help:demo|~~"""
+    @codewave.onActivationKey()
+    expect(@codewave.editor.text()).to.contain('~~~~~~~~~~')
+    expect(@codewave.editor.text()).to.contain('~~close~~')
+    expect(@codewave.editor.text()).to.not.contain('~~help:editing:intro~~')
+    expect(@codewave.editor.text()).to.contain('Codewave allows you to make your own commands')

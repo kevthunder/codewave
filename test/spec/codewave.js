@@ -110,11 +110,29 @@
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, "<?php\n  function |() {\n    \n  }\n?>");
     });
-    return it('should be able to use emmet', function() {
+    it('should be able to use emmet', function() {
       this.codewave.editor.setLang('html');
       setEditorContent(this.codewave.editor, '~~ul>li|~~');
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, "<ul>\n  <li>|</li>\n</ul>");
+    });
+    it('should display help', function() {
+      this.codewave.editor.setLang('html');
+      setEditorContent(this.codewave.editor, "~~help|~~");
+      this.codewave.onActivationKey();
+      expect(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
+      expect(this.codewave.editor.text()).to.contain('Codewave');
+      expect(this.codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/');
+      return expect(this.codewave.editor.text()).to.contain('~~close~~');
+    });
+    return it(' help demo should expend editing intro', function() {
+      this.codewave.editor.setLang('html');
+      setEditorContent(this.codewave.editor, "~~help:demo|~~");
+      this.codewave.onActivationKey();
+      expect(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
+      expect(this.codewave.editor.text()).to.contain('~~close~~');
+      expect(this.codewave.editor.text()).to.not.contain('~~help:editing:intro~~');
+      return expect(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands');
     });
   });
 
