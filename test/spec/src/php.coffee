@@ -1,10 +1,13 @@
 describe 'Codewave for PHP', ->
   beforeEach ->
+    createTextArea('Editor')
+    Codewave.logger.enabled = false;
     @codewave = Codewave.detect('Editor')
     
 
   afterEach ->
     delete @codewave
+    removeTextArea('Editor')
 
   it 'should create php tag', ->
     @codewave.editor.setLang('php')

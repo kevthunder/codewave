@@ -114,7 +114,6 @@ initCmds = ->
 
 
 wrapWithPhp = (result,instance) ->
-  console.log(instance)
   inline = instance.getParam(['php_inline','inline'],true)
   if inline
     regOpen = /<\?php\s([\\n\\r\s]+)/g

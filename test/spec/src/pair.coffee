@@ -100,7 +100,6 @@ describe 'Pair', ->
   it 'should allow match validation', ->
     @pair = new Codewave.util.Pair(/#+-+/,/-+#+/,{
       validMatch: (match) ->
-        console.log(match,match.length())
         match.length() < 6
     })
     text = "abc ##-- def ---### --## end"

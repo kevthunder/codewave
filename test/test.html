@@ -28,15 +28,6 @@
 
     <!-- Include anything you want to test -->
     <script type="text/javascript" src="../js/codewave.js"></script>
-    <script type="text/javascript">
-      //  Function.prototype.bind polyfill
-      Function.prototype.bind = Function.prototype.bind || function (thisp) {
-        var fn = this;
-        return function () {
-          return fn.apply(thisp, arguments);
-        };
-      };
-    </script>
     <script type="text/javascript" src="../js/vendors/emmet-min.js"></script>
 
     <!-- Spec files -->

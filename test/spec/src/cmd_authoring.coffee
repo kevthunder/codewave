@@ -1,5 +1,7 @@
 describe 'Codewave', ->
   beforeEach ->
+    createTextArea('Editor')
+    Codewave.logger.enabled = false;
     Codewave.Command.resetSaved()
     @codewave = Codewave.detect('Editor')
     
@@ -7,6 +9,7 @@ describe 'Codewave', ->
   afterEach ->
     delete @codewave
     Codewave.Command.resetSaved()
+    removeTextArea('Editor')
 
   it 'should show edit box for new command', ->
     @codewave.editor.setLang('js')

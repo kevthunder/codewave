@@ -1,10 +1,13 @@
 (function() {
   describe('Codewave', function() {
     beforeEach(function() {
+      createTextArea('Editor');
+      Codewave.logger.enabled = false;
       return this.codewave = Codewave.detect('Editor');
     });
     afterEach(function() {
-      return delete this.codewave;
+      delete this.codewave;
+      return removeTextArea('Editor');
     });
     it('should use tilde brakets', function() {
       return expect(this.codewave).property('brakets', '~~');

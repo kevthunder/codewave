@@ -104,7 +104,6 @@
       var res, text;
       this.pair = new Codewave.util.Pair(/#+-+/, /-+#+/, {
         validMatch: function(match) {
-          console.log(match, match.length());
           return match.length() < 6;
         }
       });

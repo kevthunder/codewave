@@ -87,7 +87,6 @@ class @Codewave.util.BoxHelper
           return !f? or f.str != left
       })
       res = pair.wrapperPos(pos,@context.codewave.editor.text())
-      console.log(this,depth,pair,res)
       if res?
         res.start += curLeft.length
         return res

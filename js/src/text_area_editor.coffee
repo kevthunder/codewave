@@ -31,6 +31,8 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
     # Codewave.logger.toMonitor(this,'textEventChange')
     @obj = document.getElementById(@target)
+    unless @obj?
+      throw "TextArea not found"
     @namespace = 'textarea'
     @changeListeners = []
     @_skipChangeEvent = 0

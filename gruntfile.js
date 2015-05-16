@@ -65,16 +65,11 @@ module.exports = function (grunt) {
         sass:  { files: 'sass/*.sass', tasks: [ 'sass' ] },
         coffee:  { files: ['js/src/**/*.coffee','test/**/*.coffee'], tasks: [ 'coffee','uglify' ] },
     },
-    mocha: {
+    karma: {
       test: {
-        src: ['test/**/*.html'],
-        options: {
-          run: true,
-          log: true,
-          logErrors: true,
-        }
-      },
-    }
+        configFile: 'karma.conf.js'
+      }
+    },
 });
 
 // load plugins
@@ -82,12 +77,12 @@ grunt.loadNpmTasks('grunt-contrib-watch');
 grunt.loadNpmTasks('grunt-contrib-uglify');
 grunt.loadNpmTasks('grunt-contrib-coffee');
 grunt.loadNpmTasks('grunt-contrib-sass');
-grunt.loadNpmTasks('grunt-mocha');
+grunt.loadNpmTasks('grunt-karma');
 
 // register at least this one task
 grunt.registerTask('default', [ 'coffee', 'uglify', 'sass' ]);
 
-grunt.registerTask('test', [ 'coffee', 'mocha']);
+grunt.registerTask('test', [ 'coffee', 'karma']);
 
 
 };

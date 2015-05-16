@@ -7,3 +7,4 @@ _pawa_tmp/
 /node_modules
 /npm-debug.log
 /js/vendors/emmet.js
+/coverage

@@ -1,10 +1,13 @@
 (function() {
   describe('Editor', function() {
     beforeEach(function() {
+      createTextArea('Editor');
+      Codewave.logger.enabled = false;
       return this.codewave = Codewave.detect('Editor');
     });
     afterEach(function() {
-      return delete this.codewave;
+      delete this.codewave;
+      return removeTextArea('Editor');
     });
     return it('should set cursor pos', function() {
       this.codewave.editor.text('lorem');

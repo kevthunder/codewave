@@ -1400,6 +1400,9 @@
     function TextAreaEditor(target1) {
       this.target = target1;
       this.obj = document.getElementById(this.target);
+      if (this.obj == null) {
+        throw "TextArea not found";
+      }
       this.namespace = 'textarea';
       this.changeListeners = [];
       this._skipChangeEvent = 0;
@@ -1753,7 +1756,6 @@
           })(this)
         });
         res = pair.wrapperPos(pos, this.context.codewave.editor.text());
-        console.log(this, depth, pair, res);
         if (res != null) {
           res.start += curLeft.length;
           return res;
@@ -3178,7 +3180,7 @@
     log: function() {
       var args, len1, msg, q, results;
       args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      if (window.console) {
+      if (window.console && Codewave.logger.enabled) {
         results = [];
         for (q = 0, len1 = args.length; q < len1; q++) {
           msg = args[q];
@@ -3187,6 +3189,7 @@
         return results;
       }
     },
+    enabled: true,
     runtime: function(funct, name) {
       var res, t0, t1;
       if (name == null) {
@@ -3858,7 +3861,6 @@
     newName = instance.getParam([1, 'to']);
     if ((origninalName != null) && (newName != null)) {
       cmd = instance.context.getCmd(origninalName);
-      console.log(cmd);
       if ((savedCmds[origninalName] != null) && (cmd != null)) {
         if (!(newName.indexOf(':') > -1)) {
           newName = cmd.fullName.replace(origninalName, '') + newName;
@@ -4024,7 +4026,6 @@
         }
       }
       if (box != null) {
-        console.log(box);
         this.instance.codewave.editor.spliceText(box.start, box.end, '');
         return this.instance.codewave.editor.setCursorPos(box.start);
       } else {
@@ -4377,7 +4378,6 @@
 
   wrapWithPhp = function(result, instance) {
     var inline, regClose, regOpen;
-    console.log(instance);
     inline = instance.getParam(['php_inline', 'inline'], true);
     if (inline) {
       regOpen = /<\?php\s([\\n\\r\s]+)/g;

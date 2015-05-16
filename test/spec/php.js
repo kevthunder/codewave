@@ -1,10 +1,13 @@
 (function() {
   describe('Codewave for PHP', function() {
     beforeEach(function() {
+      createTextArea('Editor');
+      Codewave.logger.enabled = false;
       return this.codewave = Codewave.detect('Editor');
     });
     afterEach(function() {
-      return delete this.codewave;
+      delete this.codewave;
+      return removeTextArea('Editor');
     });
     it('should create php tag', function() {
       this.codewave.editor.setLang('php');

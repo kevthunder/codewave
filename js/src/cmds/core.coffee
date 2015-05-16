@@ -314,7 +314,6 @@ renameCommand = (instance) ->
   newName = instance.getParam([1,'to'])
   if origninalName? and newName?
     cmd = instance.context.getCmd(origninalName)
-    console.log(cmd)
     if savedCmds[origninalName]? and cmd?
       unless newName.indexOf(':') > -1
         newName = cmd.fullName.replace(origninalName,'') + newName
@@ -429,7 +428,6 @@ class CloseCmd extends Codewave.BaseCommand
       if box2? and (!box? or box.start < box2.start - prefix.length or box.end > box2.end + suffix.length)
         box = box2
     if box?
-      console.log(box)
       @instance.codewave.editor.spliceText(box.start,box.end,'')
       @instance.codewave.editor.setCursorPos(box.start)
     else

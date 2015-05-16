@@ -1,12 +1,15 @@
 (function() {
   describe('Codewave', function() {
     beforeEach(function() {
+      createTextArea('Editor');
+      Codewave.logger.enabled = false;
       Codewave.Command.resetSaved();
       return this.codewave = Codewave.detect('Editor');
     });
     afterEach(function() {
       delete this.codewave;
-      return Codewave.Command.resetSaved();
+      Codewave.Command.resetSaved();
+      return removeTextArea('Editor');
     });
     it('should show edit box for new command', function() {
       this.codewave.editor.setLang('js');

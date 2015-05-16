@@ -1,8 +1,9 @@
 @Codewave.logger = ( 
   log: (args...) ->
-    if window.console
+    if window.console and Codewave.logger.enabled
       for msg in args
         console.log(msg)
+  enabled: true
   runtime: (funct,name = "function") ->
     t0 = performance.now()
     res = funct()
