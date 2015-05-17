@@ -15,15 +15,47 @@ class Pos
     return @start <= pos.start and pos.end <= @end
   wrappedBy: (prefix,suffix) ->
     return new WrappedPos(@start-prefix.length,@start,@end,@end+suffix.length)
-  textFromEditor: (editor) ->
-    editor.textSubstr(@start, @end)
+  withEditor: (val)->
+    @_editor = val
+    return this
+  editor: ->
+    unless @_editor?
+      throw new Error('No editor set')
+    return @_editor
+  hasEditor: ->
+    return @_editor?
+  text: ->
+    @editor().textSubstr(@start, @end)
   applyOffset: (offset)->
     if offset != 0
       @start += offset
       @end += offset
     return this
+  prevEOL: ->
+    unless @_prevEOL?
+      @_prevEOL = @editor().findLineStart(@start)
+    return @_prevEOL
+  nextEOL: ->
+    unless @_nextEOL?
+      @_nextEOL = @editor().findLineEnd(@end)
+    return @_nextEOL
+  textWithFullLines: ->
+    unless @_textWithFullLines?
+      @_textWithFullLines = @editor().textSubstr(@prevEOL(),@nextEOL())
+    return @_textWithFullLines
+  sameLinesPrefix: ->
+    unless @_sameLinesPrefix?
+      @_sameLinesPrefix = @editor().textSubstr(@prevEOL(),@start)
+    return @_sameLinesPrefix
+  sameLinesSuffix: ->
+    unless @_sameLinesSuffix?
+      @_sameLinesSuffix = @editor().textSubstr(@end,@nextEOL())
+    return @_sameLinesSuffix
   copy: ->
-    return new Pos(@start,@end)
+    res = new Pos(@start,@end)
+    if @hasEditor()
+      res.withEditor(@editor())
+    return res
   raw: ->
     [@start,@end]
     
@@ -33,8 +65,8 @@ class WrappedPos extends Pos
     return @innerStart <= pt and pt <= @innerEnd
   innerContainsPos: (pos) ->
     return @innerStart <= pos.start and pos.end <= @innerEnd
-  innerTextFromEditor: (editor) ->
-    editor.textSubstr(@innerStart, @innerEnd)
+  innerText: ->
+    @editor().textSubstr(@innerStart, @innerEnd)
   setInnerLen: (len) ->
     @moveSufix(@innerStart + len)
   moveSuffix: (pt) ->
@@ -47,20 +79,69 @@ class WrappedPos extends Pos
 class Size
   constructor: (@width,@height) ->
     
-class Replacement
-  constructor: (@start, @end, @text, @prefix ='', @suffix = '') ->
-    @selections = []
+class OptionObject
+  setOpts: (options,defaults)->
+    @defaults = defaults
+    for key, val of @defaults
+      if key of options
+        @setOpt(key,options[key])
+      else
+        @setOpt(key,val)
+        
+  setOpt: (key, val)->
+    if this[key]?.call?
+      this[key](val)
+    else
+      this[key]= val
+        
+  getOpt: (key)->
+    if this[key]?.call?
+      return this[key]()
+    else
+      return this[key]
+  
+  getOpts: ->
+    opts = {}
+    for key, val of @defaults
+      opts[key] = @getOpt(key)
+    return opts
+
+# class Proxy
+  # target: (val)->
+    # if val?
+      # @_target = val
+      # for name, funct of @_target.prototype
+        # unless this[name]?
+          # this[name] = ->
+            # @_target[name].call(@_target,arguments)
+    # return @_target
+
+AddModule = (self,module) ->
+  throw('AddModule requires module') unless module
+  for key, value of module.prototype
+      self::[key] = value
+  
+class Replacement extends Pos
+  AddModule(this,OptionObject)
+  constructor: (@start, @end, @text, @options = {}) ->
+    @setOpts(@options)
+  setOpts: (options) ->
+    OptionObject.prototype.setOpts.call(this,options,{
+      prefix: ''
+      suffix: ''
+      selections: []
+    })
   resPosBeforePrefix: ->
     return @start+@prefix.length+@text.length
-  resEnd: (editor = null) -> 
-    return @start+@finalText(editor).length
-  applyToEditor: (editor) ->
-    editor.spliceText(@start, @end, @finalText(editor))
-  necessaryFor: (editor) ->
-    return @finalText(editor) != editor.textSubstr(@start, @end)
-  originalTextWith: (editor) ->
-    editor.textSubstr(@start, @end)
-  finalText: (editor = null) ->
+  resEnd: -> 
+    return @start+@finalText().length
+  apply: ->
+    @editor().spliceText(@start, @end, @finalText())
+  necessary: ->
+    return @finalText() != @originalText()
+  originalText: ->
+    return @editor().textSubstr(@start, @end)
+  finalText: ->
     return @prefix+@text+@suffix
   offsetAfter: () -> 
     return @finalText().length - (@end - @start)
@@ -89,27 +170,31 @@ class Replacement
       
     return this
   copy: -> 
-    res = new Replacement(@start, @end, @text, @prefix, @suffix)
+    res = new Replacement(@start, @end, @text, @getOpts())
+    if @hasEditor()
+      res.withEditor(@editor())
     res.selections = @selections.map( (s)->s.copy() )
     return res
-    
+
 class Wrapping extends Replacement
-  constructor: (@start, @end, @prefix ='', @suffix = '') ->
+  constructor: (@start, @end, prefix ='', suffix = '', @options = {}) ->
+    @setOpts(@options)
     @text = ''
-    @selections = []
-  applyToEditor: (editor) ->
-    @adjustSelFor(editor)
-    super(editor)
-  adjustSelFor: (editor) ->
-    offset = @originalTextWith(editor).length
+    @prefix = prefix
+    @suffix = suffix
+  apply: ->
+    @adjustSel()
+    super
+  adjustSel: ->
+    offset = @originalText().length
     for sel in @selections
       if sel.start > @start+@prefix.length
         sel.start += offset
       if sel.end >= @start+@prefix.length
         sel.end += offset
-  finalText: (editor = null) ->
-    if editor?
-      text = @originalTextWith(editor)
+  finalText: ->
+    if @hasEditor()
+      text = @originalText()
     else
       text = ''
     return @prefix+text+@suffix
@@ -300,6 +385,7 @@ class Pair
   Size: Size
   Pair: Pair
   Replacement: Replacement
+  Wrapping: Wrapping
     
   union: (a1,a2) ->
     Codewave.util.unique(a1.concat(a2))

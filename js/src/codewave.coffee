@@ -7,6 +7,7 @@
 
 class @Codewave
   constructor: (@editor, options = {}) ->
+    Codewave.init()
     # Codewave.logger.toMonitor(this,'runAtCursorPos')
     @marker = '[[[[codewave_marquer]]]]'
     @vars = {}
@@ -111,14 +112,6 @@ class @Codewave
     return i
   isEndLine: (pos) -> 
     return @editor.textSubstr(pos,pos+1) == "\n" or pos + 1 >= @editor.textLen()
-  getLineAt: (pos) ->
-    return new Codewave.util.Pos(@findLineStart(pos),@findLineEnd(pos))
-  findLineStart: (pos) -> 
-    p = @findAnyNext(pos ,["\n"], -1)
-    return if p then p.pos+1 else 0
-  findLineEnd: (pos) -> 
-    p = @findAnyNext(pos ,["\n","\r"])
-    return if p then p.pos else @editor.textLen()
   findPrevBraket: (start) -> 
     return @findNextBraket(start,-1)
   findNextBraket: (start,direction = 1) -> 
@@ -132,20 +125,8 @@ class @Codewave
     f.pos if f
   
   findAnyNext: (start,strings,direction = 1) -> 
-    if direction > 0
-      text = @editor.textSubstr(start,@editor.textLen())
-    else
-      text = @editor.textSubstr(0,start)
-    bestPos = null
-    for stri in strings
-      pos = if direction > 0 then text.indexOf(stri) else text.lastIndexOf(stri)
-      if pos != -1
-        if !bestPos? or bestPos*direction > pos*direction
-          bestPos = pos
-          bestStr = stri
-    if bestStr?
-      return new Codewave.util.StrPos((if direction > 0 then bestPos + start else bestPos),bestStr)
-    return null
+    return @editor.findAnyNext(start,strings,direction)
+    
   findMatchingPair: (startPos,opening,closing,direction = 1) ->
     pos = startPos
     nested = 0
@@ -204,6 +185,9 @@ class @Codewave
   removeMarkers: (text) ->
     return text.replace(@regMarker(),'') # [pawa python] replace @regMarker() self.marker 
 
+@Codewave.inited = false
 @Codewave.init = ->
-  Codewave.Command.initCmds()
-  Codewave.Command.loadCmds()
+  unless Codewave.inited
+    Codewave.inited = true
+    Codewave.Command.initCmds()
+    Codewave.Command.loadCmds()

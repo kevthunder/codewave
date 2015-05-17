@@ -25,13 +25,21 @@
       expect(this.codewave.context.getCmd('new_cmd')).to.exist;
       return assertEditorResult(this.codewave.editor, '|');
     });
-    return it('new command should expand', function() {
+    it('new command should expand', function() {
       this.codewave.editor.setLang('js');
       setEditorContent(this.codewave.editor, "/* ~~core:edit new_cmd~~~~~ */\n/* ~  ~~help~~            ~ */\n/* ~                      ~ */\n/* ~  ~~/help~~           ~ */\n/* ~  ~~source~~          ~ */\n/* ~  Lorem ipsum         ~ */\n/* ~  ~~/source~~         ~ */\n/* ~  ~~|save~~ ~~close~~  ~ */\n/* ~~/core:edit~~~~~~~~~~~~ */");
       this.codewave.onActivationKey();
       setEditorContent(this.codewave.editor, "~~new_cmd|~~");
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, 'Lorem ipsum|');
+    });
+    return it('should allow command alias', function() {
+      this.codewave.editor.setLang('js');
+      setEditorContent(this.codewave.editor, '~~alias hello hello2|~~');
+      this.codewave.onActivationKey();
+      setEditorContent(this.codewave.editor, "~~hello2|~~");
+      this.codewave.onActivationKey();
+      return assertEditorResult(this.codewave.editor, 'Hello, World!|');
     });
   });
 

@@ -63,3 +63,11 @@ describe 'Codewave', ->
     setEditorContent @codewave.editor, """~~new_cmd|~~"""
     @codewave.onActivationKey()
     assertEditorResult @codewave.editor, 'Lorem ipsum|'
+    
+  it 'should allow command alias', ->
+    @codewave.editor.setLang('js')
+    setEditorContent @codewave.editor, '~~alias hello hello2|~~'
+    @codewave.onActivationKey()
+    setEditorContent @codewave.editor, """~~hello2|~~"""
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, 'Hello, World!|'

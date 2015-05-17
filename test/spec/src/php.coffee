@@ -55,4 +55,24 @@ describe 'Codewave for PHP', ->
           }
         ?>"""
       
-    
+  it ' should add php tag to boxes', ->
+    @codewave.editor.setLang('php')
+    setEditorContent @codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~'
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, 
+      """<?php
+         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+         /* ~   Lorem Ipsum ~~close~~   ~ */
+         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+         ?>|"""
+         
+  it 'should remove php tag when closing box', ->
+    @codewave.editor.setLang('php')
+    setEditorContent @codewave.editor, 
+      """<?php
+         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+         /* ~   Lorem Ipsum ~~close|~~   ~ */
+         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+         ?>"""
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, '|'

@@ -43,6 +43,7 @@ class @Codewave.TextAreaEditor extends Codewave.TextParser
         callback()
     else
       @_skipChangeEvent--
+      @onSkipedChange() if @onSkipedChange?
   skipChangeEvent: (nb = 1) ->
     @_skipChangeEvent += nb
   bindedTo: (codewave) ->

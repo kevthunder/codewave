@@ -22,6 +22,11 @@ describe 'Codewave', ->
     @codewave.onActivationKey()
     assertEditorResult @codewave.editor, '~~|~~lorem'
     
+  it 'should wrap selection with brakets', ->
+    setEditorContent @codewave.editor, '|[lorem ipsum]'
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, '~~|~~\nlorem ipsum\n~~/~~'
+    
   it 'should create brakets at end', ->
     setEditorContent @codewave.editor, 'lorem|'
     @codewave.onActivationKey()
@@ -72,6 +77,16 @@ describe 'Codewave', ->
     @codewave.onActivationKey()
     assertEditorResult @codewave.editor, '- Hello, World!|'
     
+  it 'non exiting commands should not change', ->
+    setEditorContent @codewave.editor, '- ~~non_exiting_command|~~'
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, '- ~~non_exiting_command|~~'
+    
+  it 'escaped commands should unescape', ->
+    setEditorContent @codewave.editor, '~~!hello|~~'
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, '~~hello~~|'
+    
   it 'should create box', ->
     setEditorContent @codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~'
     @codewave.onActivationKey()
@@ -119,7 +134,6 @@ describe 'Codewave', ->
        <!-- ~  adipiscing elit.                      ~ -->
        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
        
-  
   it 'should close nested box', ->
     @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
@@ -132,6 +146,37 @@ describe 'Codewave', ->
        <!-- ~  adipiscing elit.                      ~ -->
        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
     @codewave.onActivationKey()
+    expect(@codewave.editor.text()).to.match(
+      RegExp('^'+Codewave.util.escapeRegExp(
+        """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+           <!-- ~  Lorem ipsum dolor                     ~ -->
+           <!-- ~  ##spaces## ~ -->
+           <!-- ~  adipiscing elit.                      ~ -->
+           <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
+      ).replace('##spaces##','\\s*')+'$'))
+  
+  it 'closed nested box should be aligned', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+    """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+       <!-- ~  Lorem ipsum dolor                     ~ -->
+       <!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->
+       <!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->
+       <!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->
+       <!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->
+       <!-- ~  adipiscing elit.                      ~ -->
+       <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
+    @codewave.onActivationKey()
+    matchExp = RegExp('^'+Codewave.util.escapeRegExp(
+        """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+           <!-- ~  Lorem ipsum dolor                     ~ -->
+           <!-- ~  ##spaces##  ~ -->
+           <!-- ~  adipiscing elit.                      ~ -->
+           <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
+      ).replace('##spaces##','(\\s*)')+'$')
+    expect(@codewave.editor.text()).to.match(matchExp)
+    match = @codewave.editor.text().match(matchExp)
+    expect(match[1]).property('length', 36)
     assertEditorResult @codewave.editor, 
     """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
        <!-- ~  Lorem ipsum dolor                     ~ -->
@@ -165,6 +210,35 @@ describe 'Codewave', ->
             
           }
         ?>"""
+    
+  
+  it 'should replace box on option replaceBox', ->
+    @codewave.editor.setLang('js')
+    setEditorContent @codewave.editor, 
+      """/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+         /* ~  ~~test:replace_box|~~  ~ */
+         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */"""
+    @codewave.onActivationKey()
+    assertEditorResult @codewave.editor, 
+      """/* ~~~~~~~~~~~~~~~~~ */
+         /* ~  Lorem ipsum  ~ */
+         /* ~~~~~~~~~~~~~~~~~ */|"""
+         
+#  it 'should replace nested box on option replaceBox', ->
+#    @codewave.editor.setLang('js')
+#    setEditorContent @codewave.editor, 
+#      """/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#         /* ~  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */  ~ */
+#         /* ~  /* ~  ~~test:replace_box|~~  ~ */  ~ */
+#         /* ~  /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */  ~ */
+#         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */"""
+#    @codewave.onActivationKey()
+#    assertEditorResult @codewave.editor, 
+#      """/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#         /* ~  /* ~~~~~~~~~~~~~~~~~ */  ~ */
+#         /* ~  /* ~  Lorem ipsum  ~ */  ~ */
+#         /* ~  /* ~~~~~~~~~~~~~~~~~ */  ~ */
+#         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */|"""
     
   it 'should be able to use emmet', ->
     # console.log(module)

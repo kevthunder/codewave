@@ -88,7 +88,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
       @pos = @pos - cl.length
       @str = @codewave.editor.textSubstr(@pos,endPos)
       @_removeCommentFromContent()
-    else if @sameLinesPrefix().indexOf(cl) > -1 and @sameLinesSuffix().indexOf(cr) > -1
+    else if @getPos().sameLinesPrefix().indexOf(cl) > -1 and @getPos().sameLinesSuffix().indexOf(cr) > -1
       @inBox = 1
       @_removeCommentFromContent()
   _removeCommentFromContent: ->
@@ -104,26 +104,6 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     @parent = @codewave.getEnclosingCmd(@getEndPos())?.init()
   setMultiPos: (multiPos) ->
     @multiPos = multiPos
-  prevEOL: ->
-    unless @_prevEOL?
-      @_prevEOL = @codewave.findLineStart(@pos)
-    return @_prevEOL
-  nextEOL: ->
-    unless @_nextEOL?
-      @_nextEOL = @codewave.findLineEnd(@getEndPos())
-    return @_nextEOL
-  rawWithFullLines: ->
-    unless @_rawWithFullLines?
-      @_rawWithFullLines = @codewave.editor.textSubstr(@prevEOL(),@nextEOL())
-    return @_rawWithFullLines
-  sameLinesPrefix: ->
-    unless @_sameLinesPrefix?
-      @_sameLinesPrefix = @codewave.editor.textSubstr(@prevEOL(),@pos)
-    return @_sameLinesPrefix
-  sameLinesSuffix: ->
-    unless @_sameLinesSuffix?
-      @_sameLinesSuffix = @codewave.editor.textSubstr(@getEndPos(),@nextEOL())
-    return @_sameLinesSuffix
   _getCmdObj: ->
     @getCmd()
     @_checkBox()
@@ -182,14 +162,16 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
   getEndPos: ->
     return @pos+@str.length
   getPos: ->
-    return new Codewave.util.Pos(@pos,@pos+@str.length)
+    return new Codewave.util.Pos(@pos,@pos+@str.length).withEditor(@codewave.editor)
+  getOpeningPos: ->
+    return new Codewave.util.Pos(@pos,@pos+@opening.length).withEditor(@codewave.editor)
   getIndent: ->
     unless @indentLen?
       if @inBox?
         helper = new Codewave.util.BoxHelper(@context)
-        @indentLen = helper.removeComment(@sameLinesPrefix()).length
+        @indentLen = helper.removeComment(@getPos().sameLinesPrefix()).length
       else
-        @indentLen = @pos - @codewave.findLineStart(@pos)
+        @indentLen = @pos - @getPos().prevEOL()
     return @indentLen
   removeIndentFromContent: (text) ->
     if text?
@@ -198,18 +180,19 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     else
       return text
   alterResultForBox: (repl) ->
+    original = repl.copy()
     helper = new Codewave.util.BoxHelper(@context)
-    helper.getOptFromLine(@rawWithFullLines(),false)
+    helper.getOptFromLine(original.textWithFullLines(),false)
     if @getOption('replaceBox')
-      box = helper.getBoxForPos(@getPos())
+      box = helper.getBoxForPos(original)
       [repl.start, repl.end] = [box.start, box.end]
       @indentLen = helper.indent
       repl.text = @applyIndent(repl.text)
     else
       repl.text = @applyIndent(repl.text)
-      repl.start = @prevEOL()
-      repl.end = @nextEOL()
-      res = helper.reformatLines(@sameLinesPrefix() + @codewave.marker + repl.text + @codewave.marker + @sameLinesSuffix(), {multiline:false})
+      repl.start = original.prevEOL()
+      repl.end = original.nextEOL()
+      res = helper.reformatLines(original.sameLinesPrefix() + @codewave.marker + repl.text + @codewave.marker + original.sameLinesSuffix(), {multiline:false})
       [repl.prefix,repl.text,repl.suffix] = res.split(@codewave.marker)
     return repl
   getCursorFromResult: (repl) ->
@@ -222,25 +205,25 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
   checkMulti: (repl) ->
     if @multiPos? and @multiPos.length > 1
       replacements = [repl]
-      originalText = repl.originalTextWith(@codewave.editor)
+      originalText = repl.originalText()
       for pos, i in @multiPos
         if i == 0
           originalPos = pos.start
         else
           newRepl = repl.copy().applyOffset(pos.start-originalPos)
-          if newRepl.originalTextWith(@codewave.editor) == originalText
+          if newRepl.originalText() == originalText
             replacements.push(newRepl)
       return replacements
     else
       return [repl]
   replaceWith: (text) ->
-    repl = new Codewave.util.Replacement(@pos,@getEndPos(),text)
-    
+    @applyReplacement(new Codewave.util.Replacement(@pos,@getEndPos(),text))
+  applyReplacement: (repl) ->
+    repl.withEditor(@codewave.editor)
     if @inBox?
       @alterResultForBox(repl)
     else
       repl.text = @applyIndent(repl.text)
-      
     cursorPos = @getCursorFromResult(repl)
     repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)]
     replacements = @checkMulti(repl)

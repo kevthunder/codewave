@@ -22,6 +22,11 @@
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, '~~|~~lorem');
     });
+    it('should wrap selection with brakets', function() {
+      setEditorContent(this.codewave.editor, '|[lorem ipsum]');
+      this.codewave.onActivationKey();
+      return assertEditorResult(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/~~');
+    });
     it('should create brakets at end', function() {
       setEditorContent(this.codewave.editor, 'lorem|');
       this.codewave.onActivationKey();
@@ -72,6 +77,16 @@
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, '- Hello, World!|');
     });
+    it('non exiting commands should not change', function() {
+      setEditorContent(this.codewave.editor, '- ~~non_exiting_command|~~');
+      this.codewave.onActivationKey();
+      return assertEditorResult(this.codewave.editor, '- ~~non_exiting_command|~~');
+    });
+    it('escaped commands should unescape', function() {
+      setEditorContent(this.codewave.editor, '~~!hello|~~');
+      this.codewave.onActivationKey();
+      return assertEditorResult(this.codewave.editor, '~~hello~~|');
+    });
     it('should create box', function() {
       setEditorContent(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
       this.codewave.onActivationKey();
@@ -99,6 +114,17 @@
       this.codewave.editor.setLang('html');
       setEditorContent(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
       this.codewave.onActivationKey();
+      return expect(this.codewave.editor.text()).to.match(RegExp('^' + Codewave.util.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '\\s*') + '$'));
+    });
+    it('closed nested box should be aligned', function() {
+      var match, matchExp;
+      this.codewave.editor.setLang('html');
+      setEditorContent(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+      this.codewave.onActivationKey();
+      matchExp = RegExp('^' + Codewave.util.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '(\\s*)') + '$');
+      expect(this.codewave.editor.text()).to.match(matchExp);
+      match = this.codewave.editor.text().match(matchExp);
+      expect(match[1]).property('length', 36);
       return assertEditorResult(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  |                                      ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     });
     it('should close parent of nested box', function() {
@@ -112,6 +138,12 @@
       setEditorContent(this.codewave.editor, '~~php:outer:f|~~');
       this.codewave.onActivationKey();
       return assertEditorResult(this.codewave.editor, "<?php\n  function |() {\n    \n  }\n?>");
+    });
+    it('should replace box on option replaceBox', function() {
+      this.codewave.editor.setLang('js');
+      setEditorContent(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~  ~~test:replace_box|~~  ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */");
+      this.codewave.onActivationKey();
+      return assertEditorResult(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~ */\n/* ~  Lorem ipsum  ~ */\n/* ~~~~~~~~~~~~~~~~~ */|");
     });
     it('should be able to use emmet', function() {
       this.codewave.editor.setLang('html');

@@ -13,7 +13,9 @@ class @Codewave.TestEditor extends Codewave.TextAreaEditor
   setMultiSel: (selections) ->
     if selections.length > 0
       @setCursorPos(selections[0].start, selections[0].end)
-    @selections = selections
+    @selections = selections.map (s)-> s.copy()
+  textEventChange: ->
+    return false
   getMultiSel: ->
     selections = @selections
     selections[0] = @getCursorPos()

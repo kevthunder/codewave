@@ -122,5 +122,5 @@ wrapWithPhp = (result,instance) ->
   else
     '<?php\n' + Codewave.util.indent(result) + '\n?>'
 
-closePhpForContent = (instance) ->
-  instance.content = ' ?>'+(instance.content || '')+'<?php '
+# closePhpForContent = (instance) ->
+#   instance.content = ' ?>'+(instance.content || '')+'<?php '

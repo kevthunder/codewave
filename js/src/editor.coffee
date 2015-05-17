@@ -43,12 +43,38 @@ class @Codewave.Editor
   removeChangeListener: (callback) ->
     throw "Not Implemented"
   
+  getLineAt: (pos) ->
+    return new Codewave.util.Pos(@findLineStart(pos),@findLineEnd(pos))
+  findLineStart: (pos) -> 
+    p = @findAnyNext(pos ,["\n"], -1)
+    return if p then p.pos+1 else 0
+  findLineEnd: (pos) -> 
+    p = @findAnyNext(pos ,["\n","\r"])
+    return if p then p.pos else @textLen()
+  
+  findAnyNext: (start,strings,direction = 1) -> 
+    if direction > 0
+      text = @textSubstr(start,@textLen())
+    else
+      text = @textSubstr(0,start)
+    bestPos = null
+    for stri in strings
+      pos = if direction > 0 then text.indexOf(stri) else text.lastIndexOf(stri)
+      if pos != -1
+        if !bestPos? or bestPos*direction > pos*direction
+          bestPos = pos
+          bestStr = stri
+    if bestStr?
+      return new Codewave.util.StrPos((if direction > 0 then bestPos + start else bestPos),bestStr)
+    return null
+  
   applyReplacements: (replacements) ->
     selections = []
     offset = 0
     for repl in replacements
+      repl.withEditor(this)
       repl.applyOffset(offset)
-      repl.applyToEditor(this)
+      repl.apply()
       offset += repl.offsetAfter(this)
       
       selections = selections.concat(repl.selections)

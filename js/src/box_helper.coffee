@@ -100,7 +100,7 @@ class @Codewave.util.BoxHelper
     return depth
   getOptFromLine: (line,getPad=true) ->
     rStart = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentLeft(@deco))+")(\\s*)")
-    rEnd = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentRight(@deco))+")")
+    rEnd = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentRight(@deco))+")(\n|$)")
     resStart = rStart.exec(line)
     resEnd = rEnd.exec(line)
     if resStart? and resEnd?

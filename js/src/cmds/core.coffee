@@ -428,8 +428,10 @@ class CloseCmd extends Codewave.BaseCommand
       if box2? and (!box? or box.start < box2.start - prefix.length or box.end > box2.end + suffix.length)
         box = box2
     if box?
-      @instance.codewave.editor.spliceText(box.start,box.end,'')
-      @instance.codewave.editor.setCursorPos(box.start)
+      depth = @helper.getNestedLvl(@instance.getPos().start)
+      if depth < 2
+        @instance.inBox = null
+      @instance.applyReplacement(new Codewave.util.Replacement(box.start,box.end,''))
     else
       @instance.replaceWith('')
           

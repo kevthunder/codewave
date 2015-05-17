@@ -38,10 +38,10 @@ class @Codewave.CmdFinder
     @triggerDetectors()
     @cmd = @findIn(@root)
     return @cmd
-  getPosibilities: ->
-    @triggerDetectors()
-    path = list(@path)
-    return @findPosibilitiesIn(@root,path)
+#  getPosibilities: ->
+#    @triggerDetectors()
+#    path = list(@path)
+#    return @findPosibilitiesIn(@root,path)
   getNamesWithPaths: ->
     paths = {}
     for name in @names 
