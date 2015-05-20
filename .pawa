@@ -1,7 +1,7 @@
 folder:
   - source: js/src
     target: 
-      python: codewave-py
+      python: codewave-py/codewave_core
   # - source: codewave-py
     # target: 
       # coffee: js/src
