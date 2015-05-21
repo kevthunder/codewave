@@ -2,6 +2,12 @@ folder:
   - source: js/src
     target: 
       python: codewave-py/codewave_core
+  - source: test/js/src
+    target: 
+      python: codewave-py/test
+  - source: test/spec/src
+    target: 
+      python: codewave-py/test
   # - source: codewave-py
     # target: 
       # coffee: js/src

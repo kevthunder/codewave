@@ -1,3 +1,9 @@
+# [pawa]
+#   replace /it 'should (.*)', ->/ 'def test_${slug}(self):' alter:$1,slug,/[\s()]/,'_' 
+#   replace /it '(.*)', ->/ 'def test_${slug}(self):' alter:$1,slug,/[\s()]/,'_' 
+#   replace /setEditorContent @(.*)$/ 'test_helper.setEditorContent(self.$1)'
+#   replace /assertEditorResult @(.*)$/ 'test_helper.assertEditorResult(self,self.$1)'
+
 describe 'Codewave', ->
   beforeEach ->
     createTextArea('Editor')
