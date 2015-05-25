@@ -2,6 +2,9 @@ folder:
   - source: js/src
     target: 
       python: codewave-py/codewave_core
+  - source: js/src/cmds
+    target: 
+      python: codewave-py/codewave_core/cmds
   - source: test/js/src
     target: 
       python: codewave-py/test
