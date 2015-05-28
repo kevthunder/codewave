@@ -146,11 +146,11 @@ initCmds = ->
             ~~box~~
             ~~help:editing:intro~~
             
-            All the windows of codewave are made with the command "box". 
-            They are meant to display texts that should not remain in your code. 
-            They are valid comments of your current language and the command "close" 
-            can be user to be removed them rapidly. You can make your own command
-            with them if you need to display some text temporarily.
+            All the windows of Codewave are made with the command "box". 
+            They are meant to display text that should not remain in your code. 
+            They are valid comments so they won't break your code and the command 
+            "close" can be used to remove them rapidly. You can make your own 
+            commands with them if you need to display some text temporarily.
             ~~!box~~
             The box will scale with the content you put in it
             ~~!close|~~
@@ -166,11 +166,11 @@ initCmds = ->
             two : ||
             ~~!/box~~
             
-            You can also use the "quote_carret" command that will escape any 
-            vertical bars that are between it's opening and closing tag
-            ~~!quote_carret~~
+            You can also use the "escape_pipes" command that will escape any 
+            vertical bars that are between its opening and closing tags
+            ~~!escape_pipes~~
             |
-            ~~!/quote_carret~~
+            ~~!/escape_pipes~~
             
             Commands inside other commands will be expanded automatically.
             If you want to print a command without having it expand when 
@@ -195,10 +195,13 @@ initCmds = ->
     'no_execute':{
       'result' : no_execute
     },
-    'quote_carret':{
+    'escape_pipes':{
       'result' : quote_carret,
       'checkCarret' : false
     },
+    'quote_carret':{
+      'aliasOf': 'core:escape_pipes'
+    }
     'exec_parent':{
       'execute' : exec_parent
     },
