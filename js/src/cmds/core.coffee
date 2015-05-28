@@ -23,7 +23,7 @@ initCmds = ->
         
         When using Codewave you will be writing commands within 
         your text editor. These commands must be placed between two 
-        pairs of "~" (tilde) and then , they can be executed by pressing 
+        pairs of "~" (tilde) and then, they can be executed by pressing 
         "ctrl"+"shift"+"e", with your cursor inside the command
         Ex: ~~!hello~~
         
@@ -88,34 +88,34 @@ initCmds = ->
             ~~!/js:f~~
             
             CodeWave comes with the excellent Emmet ( http://emmet.io/ ) to 
-            provide event more abbreviations. Emmet will fire automaticaly if
-            you are in a html or css file and no other command of the same 
-            name were defined.
+            provide event more abbreviations. Emmet abbreviations will be 
+            used automatically if you are in a HTML or CSS file.
             ~~!ul>li~~ (if you are in a html doccument)
             ~~!emmet ul>li~~
             ~~!emmet m2 css~~
             
-            Commands are stored in name spaces and some of the namespaces are
-            active depending of the context or they can be called explicitly. 
-            The two following commands are the same and will display the 
-            currently  active namespace. The first command command works 
-            because the core namespace is active.
+            Commands are stored in namespaces. The same command can have 
+            different results depending on the namespace.
+            ~~!js:each~~
+            ~~!php:outer:each~~
+            ~~!php:inner:each~~
+            
+            Some of the namespaces are active depending on the context. The
+            following commands are the same and will display the currently
+            active namespace. The first command command works because the 
+            core namespace is active.
             ~~!namespace~~
             ~~!core:namespace~~
             
-            you can make an namespace active with the following command.
+            You can make a namespace active with the following command.
             ~~!namespace php~~
             
             Check the namespaces again
             ~~!namespace~~
             
-            All the dialogs(windows) of codewave are made with the command 
-            "box" and you can use it in your own commands. you can also use a
-            "close" command to make it easy to get rid of the window.
-            ~~!box~~
-            The box will scale with the content you put in it
-            ~~!close|~~
-            ~~!/box~~
+            In addition to detecting the document type, Codewave can detect the
+            context from the surrounding text. In a PHP file, it means Codewave 
+            will add the PHP tags when you need them.
             
             ~~/quote_carret~~
             ~~!close|~~
@@ -146,6 +146,16 @@ initCmds = ->
             ~~box~~
             ~~help:editing:intro~~
             
+            All the windows of codewave are made with the command "box". 
+            They are meant to display texts that should not remain in your code. 
+            They are valid comments of your current language and the command "close" 
+            can be user to be removed them rapidly. You can make your own command
+            with them if you need to display some text temporarily.
+            ~~!box~~
+            The box will scale with the content you put in it
+            ~~!close|~~
+            ~~!/box~~
+            
             ~~quote_carret~~
             When you create a command, you may want to specify where the cursor 
             will be located once the command is expanded. To do that, use a "|" 
@@ -155,6 +165,12 @@ initCmds = ->
             one : | 
             two : ||
             ~~!/box~~
+            
+            You can also use the "quote_carret" command that will escape any 
+            vertical bars that are between it's opening and closing tag
+            ~~!quote_carret~~
+            |
+            ~~!/quote_carret~~
             
             Commands inside other commands will be expanded automatically.
             If you want to print a command without having it expand when 
