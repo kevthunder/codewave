@@ -1,5 +1,5 @@
 (function() {
-  var AddModule, BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, OptionObject, Pair, PairMatch, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, exec_parent, getContent, getParam, initCmds, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
+  var AddModule, BoxCmd, CloseCmd, EditCmd, EmmetCmd, NameSpaceCmd, OptionObject, Pair, PairMatch, Pos, Replacement, Size, StrPos, WrappedPos, Wrapping, _optKey, aliasCommand, exec_parent, getContent, getParam, initCmds, isElement, no_execute, quote_carret, removeCommand, renameCommand, wrapWithPhp,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty,
     slice = [].slice,
@@ -1501,7 +1501,7 @@
       timeout = null;
       onkeydown = (function(_this) {
         return function(e) {
-          if (e.keyCode === 69 && e.ctrlKey) {
+          if ((Codewave.instances.length < 2 || _this.obj === document.activeElement) && e.keyCode === 69 && e.ctrlKey) {
             e.preventDefault();
             if (_this.onActivationKey != null) {
               return _this.onActivationKey();
@@ -1543,12 +1543,22 @@
 
   })();
 
+  isElement = function(obj) {
+    var e;
+    try {
+      return obj instanceof HTMLElement;
+    } catch (_error) {
+      e = _error;
+      return (typeof obj === "object") && (obj.nodeType === 1) && (typeof obj.style === "object") && (typeof obj.ownerDocument === "object");
+    }
+  };
+
   this.Codewave.TextAreaEditor = (function(superClass) {
     extend(TextAreaEditor, superClass);
 
     function TextAreaEditor(target1) {
       this.target = target1;
-      this.obj = document.getElementById(this.target);
+      this.obj = isElement(this.target) ? this.target : document.getElementById(this.target);
       if (this.obj == null) {
         throw "TextArea not found";
       }
@@ -4446,7 +4456,7 @@
       'comment': '/* ~~content~~ */',
       'if': 'if(|){\n\t~~any_content~~\n}',
       'info': 'phpinfo();',
-      'echo': 'echo ${id}',
+      'echo': 'echo |',
       'e': {
         aliasOf: 'php:inner:echo'
       },
@@ -4520,8 +4530,13 @@
     }
   };
 
+  Codewave.instances = [];
+
   Codewave.detect = function(target) {
-    return new Codewave(new Codewave.TextAreaEditor(target));
+    var cw;
+    cw = new Codewave(new Codewave.TextAreaEditor(target));
+    Codewave.instances.push(cw);
+    return cw;
   };
 
 }).call(this);

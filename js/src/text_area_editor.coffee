@@ -4,7 +4,7 @@ class @Codewave.DomKeyListener
     timeout = null
     
     onkeydown = (e) => 
-      if e.keyCode == 69 && e.ctrlKey
+      if (Codewave.instances.length < 2 or @obj == document.activeElement) and e.keyCode == 69 && e.ctrlKey
         e.preventDefault()
         if @onActivationKey?
           @onActivationKey()
@@ -27,10 +27,23 @@ class @Codewave.DomKeyListener
         target.attachEvent("onkeyup", onkeyup)
         target.attachEvent("onkeypress", onkeypress)
 
+isElement = (obj) ->
+  try
+    # Using W3 DOM2 (works for FF, Opera and Chrom)
+    obj instanceof HTMLElement
+  catch e
+    # Browsers not supporting W3 DOM2 don't have HTMLElement and
+    # an exception is thrown and we end up here. Testing some
+    # properties that all elements have. (works on IE7)
+    return (typeof obj=="object") &&
+      (obj.nodeType==1) && (typeof obj.style == "object") &&
+      (typeof obj.ownerDocument =="object")
+
+        
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
     # Codewave.logger.toMonitor(this,'textEventChange')
-    @obj = document.getElementById(@target)
+    @obj = if isElement(@target) then @target else document.getElementById(@target)
     unless @obj?
       throw "TextArea not found"
     @namespace = 'textarea'

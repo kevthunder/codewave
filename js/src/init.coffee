@@ -1,2 +1,6 @@
+Codewave.instances = []
 Codewave.detect = (target) ->
-  new Codewave(new Codewave.TextAreaEditor(target));
+  cw = new Codewave(new Codewave.TextAreaEditor(target))
+  Codewave.instances.push(cw)
+  cw
+  
