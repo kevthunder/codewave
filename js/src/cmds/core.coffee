@@ -21,31 +21,30 @@ initCmds = ->
         The text editor helper
         ~~/quote_carret~~
         
-        When using Codewave you will be writing commands directly within 
-        your text editor editing windows. These commands must be placed
-        between two pairs of "~" (tilde) and then with you text either 
-        inside or at the command, they can be executed by pressing 
-        "ctrl"+"shift"+"e".
+        When using Codewave you will be writing commands within 
+        your text editor. These commands must be placed between two 
+        pairs of "~" (tilde) and then , they can be executed by pressing 
+        "ctrl"+"shift"+"e", with your cursor inside the command
         Ex: ~~!hello~~
         
-        One good thing about codewave is that you dont need to actually
-        type any "~" (tilde), because pressing "ctrl"+"shift"+"e" will
-        add them if you are not allready within a command
+        You dont need to actually type any "~" (tilde). 
+        Pressing "ctrl"+"shift"+"e" will add them if you are not already
+        within a command.
         
-        Codewave does not relly use UI to display any information. 
-        instead, it uses text within code comments to mimic UIs. The 
-        generated comment blocks will be refered as windows in the help
-        sections.
+        Codewave does not use UI to display any information. 
+        Instead, it uses text within code comments to mimic UIs. 
+        The generated comment blocks will be referred to as windows 
+        in the help sections.
         
-        To close this window (ie. remove this comment bloc), press 
-        "ctrl"+"shift"+"e" with you cursor on the line bellow.
+        To close this window (i.e. remove this comment block), press 
+        "ctrl"+"shift"+"e" with your cursor on the line bellow.
         ~~!close|~~
         
-        Use the following command for a walkthrough of some of many
-        features of codewave
+        Use the following command for a walkthrough of some of the many
+        features of Codewave
         ~~!help:get_started~~ or ~~!help:demo~~
         
-        List of all helps subjects 
+        List of all help subjects 
         ~~!help:subjects~~ or ~~!help:sub~~ 
         
         ~~!close~~
@@ -77,19 +76,19 @@ initCmds = ->
             ~~help:editing:intro~~
             ~~quote_carret~~
             
-            for more information on creating your own commands, see:
+            For more information on creating your own commands, see:
             ~~!help:editing~~
             
-            Codewave come with many prexisting commands. Here an example of 
-            javascript abreviations
+            Codewave comes with many pre-existing commands. Here is an example
+            of JavaScript abbreviations
             ~~!js:f~~
             ~~!js:if~~
               ~~!js:log~~"~~!hello~~"~~!/js:log~~
             ~~!/js:if~~
             ~~!/js:f~~
             
-            CodeWave come with the exellent Emmet ( http://emmet.io/ ) to 
-            provide event more abreviations. Emmet will fire automaticaly if
+            CodeWave comes with the excellent Emmet ( http://emmet.io/ ) to 
+            provide event more abbreviations. Emmet will fire automaticaly if
             you are in a html or css file and no other command of the same 
             name were defined.
             ~~!ul>li~~ (if you are in a html doccument)
@@ -148,8 +147,8 @@ initCmds = ->
             ~~help:editing:intro~~
             
             ~~quote_carret~~
-            When you make your command you may need to tell where the text cursor 
-            will be located once the command is executed. To do that, use a "|" 
+            When you create a command, you may want to specify where the cursor 
+            will be located once the command is expanded. To do that, use a "|" 
             (Vertical bar). Use 2 of them if you want to print the actual 
             character.
             ~~!box~~
@@ -157,14 +156,14 @@ initCmds = ->
             two : ||
             ~~!/box~~
             
-            If you want to print a command without having it evalute when 
-            the command is executed, use a "!" exclamation mark.
+            Commands inside other commands will be expanded automatically.
+            If you want to print a command without having it expand when 
+            the parent command is expanded, use a "!" (exclamation mark).
             ~~!!hello~~
             
-            for commands that have both a openig and a closing tag, you can use
+            For commands that have both an opening and a closing tag, you can use
             the "content" command. "content" will be replaced with the text
-            that is between tha tags. Look at the code of the following command
-            for en example of how it can be used.
+            that is between the tags. Here is an example of how it can be used.
             ~~!edit php:inner:if~~
             
             ~~/quote_carret~~
@@ -211,7 +210,7 @@ initCmds = ->
       'cmds' : {
         'not_applicable' : """
           ~~box~~
-          You cant rename a command you did not create yourself.
+          You can only rename commands that you created yourself.
           ~~!close|~~
           ~~/box~~
           """,
@@ -229,7 +228,7 @@ initCmds = ->
       'cmds' : {
         'not_applicable' : """
           ~~box~~
-          You cant remove a command you did not create yourself.
+          You can only remove commands that you created yourself.
           ~~!close|~~
           ~~/box~~
           """,

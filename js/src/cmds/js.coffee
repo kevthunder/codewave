@@ -15,7 +15,7 @@ initCmds = ->
     'funct':{ aliasOf: 'js:function' },
     'f':{     aliasOf: 'js:function' },
     'for': 		'for (var i = 0; i < |; i++) {\n\t~~content~~\n}',
-    'forin':'foreach (var val in |) {\n\t~~content~~\n}',
+    'forin':'for (var val in |) {\n\t~~content~~\n}',
     'each':{  aliasOf: 'js:forin' },
     'foreach':{  aliasOf: 'js:forin' },
     'while':  'while(|) {\n\t~~content~~\n}',
