@@ -1,4 +1,4 @@
-class @Codewave.Context
+export class Context
   constructor: (@codewave) ->
     @nameSpaces = []
   

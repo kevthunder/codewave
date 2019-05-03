@@ -4,6 +4,7 @@
 
 class @Codewave.TextParser extends @Codewave.Editor
   constructor: (@_text) ->
+    super()
     self.namespace = 'text_parser'
   text: (val) ->
     @_text = val if val?

@@ -47,11 +47,11 @@ class @Codewave.EditCmdProp
     
     
 class @Codewave.EditCmdProp.source extends @Codewave.EditCmdProp 
-	valFromCmd: (cmd)->
-		res = super(cmd)
-		if res?
-			res = res.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
-		return res
+  valFromCmd: (cmd)->
+    res = super(cmd)
+    if res?
+      res = res.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
+    return res
   setCmd: (cmds)->
     cmds[@name] = Codewave.Command.setVarCmd(@name,{'preventParseAll' : true})
   showForCmd: (cmd) ->

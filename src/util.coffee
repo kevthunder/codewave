@@ -61,6 +61,7 @@ class Pos
     
 class WrappedPos extends Pos
   constructor: (@start,@innerStart,@innerEnd,@end) ->
+    super()
   innerContainsPt: (pt) ->
     return @innerStart <= pt and pt <= @innerEnd
   innerContainsPos: (pos) ->
@@ -124,6 +125,7 @@ AddModule = (self,module) ->
 class Replacement extends Pos
   AddModule(this,OptionObject)
   constructor: (@start, @end, @text, @options = {}) ->
+    super()
     @setOpts(@options)
   setOpts: (options) ->
     OptionObject.prototype.setOpts.call(this,options,{
@@ -178,13 +180,14 @@ class Replacement extends Pos
 
 class Wrapping extends Replacement
   constructor: (@start, @end, prefix ='', suffix = '', @options = {}) ->
+    super()
     @setOpts(@options)
     @text = ''
     @prefix = prefix
     @suffix = suffix
   apply: ->
     @adjustSel()
-    super
+    super()
   adjustSel: ->
     offset = @originalText().length
     for sel in @selections

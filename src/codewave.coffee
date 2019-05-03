@@ -4,6 +4,7 @@
 #   replace 'new Codewave(' Codewave(
 #   replace '@Codewave.init = ->' 'def init():'
 
+import { Context } from './../Context';
 
 class @Codewave
   constructor: (@editor, options = {}) ->

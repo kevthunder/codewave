@@ -3,6 +3,7 @@
 
 class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
   constructor: (@codewave,@pos,@str) ->
+    super()
     unless @isEmpty()
       @_checkCloser()
       @opening = @str
@@ -108,7 +109,7 @@ class @Codewave.PositionedCmdInstance extends @Codewave.CmdInstance
     @getCmd()
     @_checkBox()
     @content = @removeIndentFromContent(@content)
-    super
+    super()
   _initParams: ->
     @_parseParams(@rawParams)
   getContext: ->

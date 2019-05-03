@@ -42,6 +42,7 @@ isElement = (obj) ->
         
 class @Codewave.TextAreaEditor extends Codewave.TextParser
   constructor: (@target) ->
+    super()
     # Codewave.logger.toMonitor(this,'textEventChange')
     @obj = if isElement(@target) then @target else document.getElementById(@target)
     unless @obj?
