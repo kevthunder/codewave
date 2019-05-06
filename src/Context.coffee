@@ -1,3 +1,7 @@
+
+import { CmdFinder } from './CmdFinder';
+import { CmdInstance } from './CmdInstance';
+
 export class Context
   constructor: (@codewave) ->
     @nameSpaces = []
@@ -26,7 +30,7 @@ export class Context
     finder = @getFinder(cmdName,nameSpaces)
     return finder.find()
   getFinder: (cmdName,nameSpaces = []) ->
-    return new Codewave.CmdFinder(cmdName, {
+    return new CmdFinder(cmdName, {
       namespaces: nameSpaces
       useDetectors: @isRoot()
       codewave: @codewave
@@ -53,7 +57,7 @@ export class Context
     else
       return str + ' ' + cc
   cmdInstanceFor: (cmd) ->
-    return new Codewave.CmdInstance(cmd,this)
+    return new CmdInstance(cmd,this)
   getCommentChar: ->
     if @commentChar?
       return @commentChar

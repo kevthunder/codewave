@@ -20,10 +20,12 @@ gulp.task('coffee', function() {
 gulp.task('concat', function() {
 
   var b = browserify({
-    entries: './lib/codewave.js',
+    entries: './lib/entry.js',
     debug: true
   })
-    .transform(babelify)
+    .transform(babelify.configure({
+      presets: ["@babel/preset-env"]
+    }));
 
   return b.bundle()
     .pipe(source('codewave.js'))

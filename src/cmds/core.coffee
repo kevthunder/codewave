@@ -327,7 +327,8 @@ getContent = (instance) ->
   if affixes_empty
     return prefix + suffix
 renameCommand = (instance) ->
-  savedCmds = Codewave.storage.load('cmds')
+  storage = new Storage()
+  savedCmds = storage.load('cmds')
   origninalName = instance.getParam([0,'from'])
   newName = instance.getParam([1,'to'])
   if origninalName? and newName?
@@ -340,7 +341,7 @@ renameCommand = (instance) ->
       cmd.unregister()
       savedCmds[newName] = cmdData
       delete savedCmds[origninalName]
-      Codewave.storage.save('cmds',savedCmds)
+      storage.save('cmds',savedCmds)
       return ""
     else if cmd? 
       return "~~not_applicable~~"
@@ -349,13 +350,14 @@ renameCommand = (instance) ->
 removeCommand = (instance) ->
   name = instance.getParam([0,'name'])
   if name?
-    savedCmds = Codewave.storage.load('cmds')
+    storage = new Storage()
+    savedCmds = storage.load('cmds')
     cmd = instance.context.getCmd(name)
     if savedCmds[name]? and cmd?
       cmdData = savedCmds[name]
       cmd.unregister()
       delete savedCmds[name]
-      Codewave.storage.save('cmds',savedCmds)
+      storage.save('cmds',savedCmds)
       return ""
     else if cmd? 
       return "~~not_applicable~~"
