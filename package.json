@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "Codewave : The text editor helper.",
   "scripts": {
+    "start": "gulp demo",
     "test": "gulp test",
     "build": "gulp build",
     "build-debug": "node --inspect-brk ./node_modules/gulp/bin/gulp build",
@@ -23,7 +24,9 @@
     "chai": "^4.1",
     "gulp": "^4.0",
     "gulp-coffee": "^3.0.2",
+    "gulp-live-server": "0.0.31",
     "gulp-mocha": "^6.0.0",
+    "gulp-open": "^3.0.1",
     "gulp-rename": "^1.4.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify-es": "^1.0.4",

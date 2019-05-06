@@ -4,9 +4,15 @@
 #   replace EditCmd.props editCmdProps
 #   replace EditCmd.setCmds editCmdSetCmds reparse
 
+import { Command, BaseCommand } from '../Command';
+import { LangDetector } from '../LangDetector';
+import { BoxHelper } from '../BoxHelper';
+import { StringHelper } from '../helpers/StringHelper';
+import { Replacement } from '../positioning/Replacement';
+
 initCmds = ->
-  core = Codewave.Command.cmds.addCmd(new Codewave.Command('core'))
-  core.addDetector(new Codewave.LangDetector())
+  core = Codewave.Command.cmds.addCmd(new Command('core'))
+  core.addDetector(new LangDetector())
   
   core.addCmds({
     'help':{
@@ -307,7 +313,7 @@ initCmds = ->
   return base
   
 no_execute = (instance) ->
-  reg = new RegExp("^("+Codewave.util.escapeRegExp(instance.codewave.brakets) + ')' + Codewave.util.escapeRegExp(instance.codewave.noExecuteChar))
+  reg = new RegExp("^("+StringHelper.escapeRegExp(instance.codewave.brakets) + ')' + StringHelper.escapeRegExp(instance.codewave.noExecuteChar))
   return instance.str.replace(reg,'$1')
   
 quote_carret = (instance) ->
@@ -381,9 +387,9 @@ getParam = (instance) ->
   if instance.codewave.inInstance?
     return instance.codewave.inInstance.getParam(instance.params,instance.getParam(['def','default']))
   
-class BoxCmd extends Codewave.BaseCommand
+class BoxCmd extends BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.context)
+    @helper = new BoxHelper(@instance.context)
     @cmd = @instance.getParam(['cmd'])
     if @cmd?
       @helper.openText  = @instance.codewave.brakets + @cmd + @instance.codewave.brakets
@@ -434,9 +440,9 @@ class BoxCmd extends Codewave.BaseCommand
     else
       return 0
   
-class CloseCmd extends Codewave.BaseCommand
+class CloseCmd extends BaseCommand
   init: ->
-    @helper = new Codewave.util.BoxHelper(@instance.context)
+    @helper = new BoxHelper(@instance.context)
   execute: ->
     prefix = @helper.prefix = @instance.getParam(['prefix'],'')
     suffix = @helper.suffix = @instance.getParam(['suffix'],'')
@@ -451,11 +457,11 @@ class CloseCmd extends Codewave.BaseCommand
       depth = @helper.getNestedLvl(@instance.getPos().start)
       if depth < 2
         @instance.inBox = null
-      @instance.applyReplacement(new Codewave.util.Replacement(box.start,box.end,''))
+      @instance.applyReplacement(new Replacement(box.start,box.end,''))
     else
       @instance.replaceWith('')
           
-class EditCmd extends Codewave.BaseCommand
+class EditCmd extends BaseCommand
   init: ->
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
@@ -510,7 +516,7 @@ EditCmd.props = [
   new Codewave.EditCmdProp.source( 'help',              {funct:'help', showEmpty:true}),
   new Codewave.EditCmdProp.source( 'source',            {var:'resultStr', dataName:'result', showEmpty:true, carret:true}),
 ]
-class NameSpaceCmd extends Codewave.BaseCommand
+class NameSpaceCmd extends BaseCommand
   init: ->
     @name = @instance.getParam([0])
   result: ->
@@ -529,7 +535,7 @@ class NameSpaceCmd extends Codewave.BaseCommand
 
 
 
-class EmmetCmd extends @Codewave.BaseCommand
+class EmmetCmd extends BaseCommand
   init: ->
     @abbr = @instance.getParam([0,'abbr','abbreviation'])
     @lang = @instance.getParam([1,'lang','language'])

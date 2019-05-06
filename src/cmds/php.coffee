@@ -4,6 +4,8 @@
 #   replace EditCmd.props editCmdProps
 #   replace EditCmd.setCmds editCmdSetCmds reparse
 
+import { StringHelper } from '../helpers/StringHelper';
+
 initCmds = ->
   php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
   php.addDetector(new Codewave.PairDetector({
@@ -120,7 +122,7 @@ wrapWithPhp = (result,instance) ->
     regClose = /([\n\r\s]+)\s\?>/g
     return '<?php ' + result.replace(regOpen, '$1<?php ').replace(regClose, ' ?>$1') + ' ?>'
   else
-    '<?php\n' + Codewave.util.indent(result) + '\n?>'
+    '<?php\n' + StringHelper.indent(result) + '\n?>'
 
 # closePhpForContent = (instance) ->
 #   instance.content = ' ?>'+(instance.content || '')+'<?php '

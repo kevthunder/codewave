@@ -1,10 +1,14 @@
+import { PosCollection } from './positioning/PosCollection';
+import { Replacement } from './positioning/Replacement';
+import { Pos } from './positioning/Pos';
+
 export class ClosingPromp
   constructor: (@codewave,selections) ->
     @timeout = null
     @_typed = null
     @started = false
     @nbChanges = 0
-    @selections = Codewave.util.posCollection(selections)
+    @selections = new PosCollection(selections)
   begin: ->
     @started = true
     @addCarrets()
@@ -50,7 +54,7 @@ export class ClosingPromp
         start = sel
       else if (end = @whithinCloseBounds(sel)) and start?
         res = end.withEditor(@codewave.editor).innerText().split(' ')[0]
-        repl = new Codewave.util.Replacement(end.innerStart,end.innerEnd,res)
+        repl = new Replacement(end.innerStart,end.innerEnd,res)
         repl.selections = [start]
         replacements.push(repl)
         start = null
@@ -74,7 +78,7 @@ export class ClosingPromp
       if pos = @whithinOpenBounds(sel)
         start = pos
       else if (end = @whithinCloseBounds(sel)) and start?
-        replacements.push(new Codewave.util.Replacement(start.start,end.end,@codewave.editor.textSubstr(start.end+1, end.start-1)).selectContent())
+        replacements.push(new Replacement(start.start,end.end,@codewave.editor.textSubstr(start.end+1, end.start-1)).selectContent())
         start = null
     @codewave.editor.applyReplacements(replacements)
   typed: ->
@@ -101,12 +105,12 @@ export class ClosingPromp
         return targetPos
     return false
   startPosAt: (index) ->
-    return new Codewave.util.Pos(
+    return new Pos(
         @replacements[index].selections[0].start + @typed().length * (index*2),
         @replacements[index].selections[0].end + @typed().length * (index*2 +1)
       ).wrappedBy(@codewave.brakets, @codewave.brakets)
   endPosAt: (index) ->
-    return new Codewave.util.Pos(
+    return new Pos(
         @replacements[index].selections[1].start + @typed().length * (index*2 +1),
         @replacements[index].selections[1].end + @typed().length * (index*2 +2)
       ).wrappedBy(@codewave.brakets + @codewave.closeChar, @codewave.brakets)
@@ -121,7 +125,7 @@ export class SimulatedClosingPromp extends ClosingPromp
       targetText = @codewave.brakets + @codewave.closeChar + @typed() + @codewave.brakets
       curClose = @whithinCloseBounds(@replacements[0].selections[1].copy().applyOffset(@typed().length))
       if curClose
-        repl = new Codewave.util.Replacement(curClose.start,curClose.end,targetText)
+        repl = new Replacement(curClose.start,curClose.end,targetText)
         if repl.withEditor(@codewave.editor).necessary()
           @codewave.editor.applyReplacements([repl])
       else

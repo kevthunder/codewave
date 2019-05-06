@@ -1,6 +1,10 @@
 # [pawa]
 #   replace 'replace(/\r/g' "replace('\r'"
 
+import { StringHelper } from './helpers/StringHelper';
+import { ArrayHelper } from './helpers/ArrayHelper';
+import { Pair } from './positioning/Pair';
+
 export class BoxHelper
   constructor: (@context, options = {}) ->
     @defaults = {
@@ -38,9 +42,9 @@ export class BoxHelper
     ln = @width + 2 * @pad + 2 * @deco.length - @closeText.length
     return @wrapComment(@closeText+@decoLine(ln)) + @suffix
   decoLine: (len) ->
-    return Codewave.util.repeatToLength(@deco, len)
+    return StringHelper.repeatToLength(@deco, len)
   padding: -> 
-    return Codewave.util.repeatToLength(" ", @pad)
+    return StringHelper.repeatToLength(" ", @pad)
   lines: (text = '', uptoHeight=true) ->
     text = text or ''
     lines = text.replace(/\r/g, '').split("\n")
@@ -49,12 +53,12 @@ export class BoxHelper
     else
       return (@line(l) for l in lines).join('\n') 
   line: (text = '') ->
-    return (Codewave.util.repeatToLength(" ",@indent) +
+    return (StringHelper.repeatToLength(" ",@indent) +
       @wrapComment(
         @deco +
         @padding() +
         text +
-        Codewave.util.repeatToLength(" ", @width - @removeIgnoredContent(text).length) + 
+        StringHelper.repeatToLength(" ", @width - @removeIgnoredContent(text).length) + 
         @padding() +
         @deco
       ))
@@ -65,22 +69,22 @@ export class BoxHelper
   removeIgnoredContent: (text) ->
     return @context.codewave.removeMarkers(@context.codewave.removeCarret(text))
   textBounds: (text) ->
-    return Codewave.util.getTxtSize(@removeIgnoredContent(text))
+    return StringHelper.getTxtSize(@removeIgnoredContent(text))
   getBoxForPos: (pos) ->
     depth = @getNestedLvl(pos.start)
     if depth > 0
       left = @left()
-      curLeft = Codewave.util.repeat(left,depth-1)
+      curLeft = StringHelper.repeat(left,depth-1)
       
       clone = @clone()
       placeholder = "###PlaceHolder###"
       clone.width = placeholder.length
       clone.openText = clone.closeText = @deco + @deco + placeholder + @deco + @deco
       
-      startFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.startSep()).replace(placeholder,'.*'))
-      endFind = RegExp(Codewave.util.escapeRegExp(curLeft + clone.endSep()).replace(placeholder,'.*'))
+      startFind = RegExp(StringHelper.escapeRegExp(curLeft + clone.startSep()).replace(placeholder,'.*'))
+      endFind = RegExp(StringHelper.escapeRegExp(curLeft + clone.endSep()).replace(placeholder,'.*'))
       
-      pair = new Codewave.util.Pair(startFind,endFind,{
+      pair = new Pair(startFind,endFind,{
         validMatch: (match)=>
           # console.log(match,left)
           f = @context.codewave.findAnyNext(match.start() ,[left,"\n","\r"],-1)
@@ -99,8 +103,8 @@ export class BoxHelper
       depth++
     return depth
   getOptFromLine: (line,getPad=true) ->
-    rStart = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentLeft(@deco))+")(\\s*)")
-    rEnd = new RegExp("(\\s*)("+Codewave.util.escapeRegExp(@context.wrapCommentRight(@deco))+")(\n|$)")
+    rStart = new RegExp("(\\s*)("+StringHelper.escapeRegExp(@context.wrapCommentLeft(@deco))+")(\\s*)")
+    rEnd = new RegExp("(\\s*)("+StringHelper.escapeRegExp(@context.wrapCommentRight(@deco))+")(\n|$)")
     resStart = rStart.exec(line)
     resEnd = rEnd.exec(line)
     if resStart? and resEnd?
@@ -118,10 +122,10 @@ export class BoxHelper
       defaults = {
         multiline: true
       }
-      opt = Codewave.util.merge(defaults,options)
-      ecl = Codewave.util.escapeRegExp(@context.wrapCommentLeft())
-      ecr = Codewave.util.escapeRegExp(@context.wrapCommentRight())
-      ed = Codewave.util.escapeRegExp(@deco)
+      opt = Object.assign({},defaults,options)
+      ecl = StringHelper.escapeRegExp(@context.wrapCommentLeft())
+      ecr = StringHelper.escapeRegExp(@context.wrapCommentRight())
+      ed = StringHelper.escapeRegExp(@deco)
       flag = if options['multiline'] then 'gm' else ''    # [pawa python] replace "'gm'" re.M
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}", flag)    # [pawa python] replace #{@pad} '"+str(self.pad)+"'
       re2 = new RegExp("\\s*(?:#{ed})*#{ecr}\\s*$", flag)

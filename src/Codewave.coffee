@@ -9,6 +9,9 @@ import { Context } from './Context';
 import { PositionedCmdInstance } from './PositionedCmdInstance';
 import { TextParser } from './TextParser';
 import { Command } from './Command';
+import { Logger } from './Logger';
+import { PosCollection } from './positioning/PosCollection';
+import { StringHelper } from './helpers/StringHelper';
 
 export class Codewave
   constructor: (@editor, options = {}) ->
@@ -42,9 +45,12 @@ export class Codewave
     @context = new Context(this)
     if @inInstance?
       @context.parent = @inInstance.context
+
+    @logger = new Logger()
+
   onActivationKey: ->
     @process = new Process()
-    Codewave.logger.log('activation key')
+    @logger.log('activation key')
     @runAtCursorPos()
     # Codewave.logger.resume()
     @process = null
@@ -62,7 +68,7 @@ export class Codewave
         if multiPos.length > 1
           cmd.setMultiPos(multiPos)
         cmd.init()
-        Codewave.logger.log(cmd)
+        @logger.log(cmd)
         cmd.execute()
       else
         if multiPos[0].start == multiPos[0].end
@@ -146,7 +152,7 @@ export class Codewave
         nested++
     null
   addBrakets: (pos) ->
-    pos = Codewave.util.posCollection(pos)
+    pos = new PosCollection(pos)
     replacements = pos.wrap(@brakets,@brakets).map( (r)->r.selectContent() )
     @editor.applyReplacements(replacements)
   promptClosingCmd: (selections) ->
@@ -182,11 +188,11 @@ export class Codewave
     else if @inInstance?
       return @inInstance.codewave.getRoot()
   removeCarret: (txt) ->
-    return Codewave.util.removeCarret(txt,@carretChar)
+    return StringHelper.removeCarret(txt,@carretChar)
   getCarretPos: (txt) ->
-    return Codewave.util.getCarretPos(txt,@carretChar)
+    return StringHelper.getCarretPos(txt,@carretChar)
   regMarker: (flags="g") -> # [pawa python] replace flags="g" flags=0 
-    return new RegExp(Codewave.util.escapeRegExp(@marker), flags)
+    return new RegExp(StringHelper.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->
     return text.replace(@regMarker(),'') # [pawa python] replace @regMarker() self.marker 
 

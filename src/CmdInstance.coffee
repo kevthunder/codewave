@@ -4,6 +4,7 @@
 import { Context } from './Context';
 import { Codewave } from './Codewave';
 import { TextParser } from './TextParser';
+import { StringHelper } from './helpers/StringHelper';
 
 export class CmdInstance
   constructor: (@cmd,@context = None) ->
@@ -56,10 +57,10 @@ export class CmdInstance
       res = {}
       aliased = @getAliased()
       if aliased?
-        res = Codewave.util.merge(res,aliased.getDefaults())
-      res = Codewave.util.merge(res,@cmd.defaults)
+        res = Object.assign(res,aliased.getDefaults())
+      res = Object.assign(res,@cmd.defaults)
       if @cmdObj?
-        res = Codewave.util.merge(res,@cmdObj.getDefaults())
+        res = Object.assign(res,@cmdObj.getDefaults())
       return res
   getAliased: ->
     if @cmd?
@@ -86,7 +87,7 @@ export class CmdInstance
         return @cmdOptions
       opt = @cmd._optionsForAliased(@getAliased())
       if @cmdObj?
-        opt = Codewave.util.merge(opt,@cmdObj.getOptions())
+        opt = Object.assign(opt,@cmdObj.getOptions())
       @cmdOptions = opt
       return opt
   getOption: (key) ->
@@ -146,4 +147,4 @@ export class CmdInstance
     else
       return text
   applyIndent: (text) ->
-    return Codewave.util.indentNotFirst(text,@getIndent()," ")
+    return StringHelper.indentNotFirst(text,@getIndent()," ")

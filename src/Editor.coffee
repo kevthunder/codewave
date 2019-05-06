@@ -1,3 +1,6 @@
+import { Pos } from './positioning/Pos';
+import { StrPos } from './positioning/StrPos';
+
 export class Editor
   constructor: ->
     @namespace = null
@@ -44,7 +47,7 @@ export class Editor
     throw "Not Implemented"
   
   getLineAt: (pos) ->
-    return new Codewave.util.Pos(@findLineStart(pos),@findLineEnd(pos))
+    return new Pos(@findLineStart(pos),@findLineEnd(pos))
   findLineStart: (pos) -> 
     p = @findAnyNext(pos ,["\n"], -1)
     return if p then p.pos+1 else 0
@@ -65,7 +68,7 @@ export class Editor
           bestPos = pos
           bestStr = stri
     if bestStr?
-      return new Codewave.util.StrPos((if direction > 0 then bestPos + start else bestPos),bestStr)
+      return new StrPos((if direction > 0 then bestPos + start else bestPos),bestStr)
     return null
   
   applyReplacements: (replacements) ->

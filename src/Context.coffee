@@ -1,6 +1,7 @@
 
 import { CmdFinder } from './CmdFinder';
 import { CmdInstance } from './CmdInstance';
+import { ArrayHelper } from 'helpers/ArrayHelper';
 
 export class Context
   constructor: (@codewave) ->
@@ -24,7 +25,7 @@ export class Context
       npcs = ['core'].concat(@nameSpaces)
       if @parent?
         npcs = npcs.concat(@parent.getNameSpaces())
-      @_namespaces = Codewave.util.unique(npcs)
+      @_namespaces = ArrayHelper.unique(npcs)
     return @_namespaces
   getCmd: (cmdName,nameSpaces = []) ->
     finder = @getFinder(cmdName,nameSpaces)

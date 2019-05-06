@@ -2,6 +2,7 @@
 #   replace Codewave.CmdFinder CmdFinder
 
 import { Context } from './Context';
+import { NamespaceHelper } from 'helpers/NamespaceHelper';
 
 export class CmdFinder
   constructor: (names, options) ->
@@ -47,16 +48,16 @@ export class CmdFinder
   getNamesWithPaths: ->
     paths = {}
     for name in @names 
-      [space,rest] = Codewave.util.splitFirstNamespace(name)
+      [space,rest] = NamespaceHelper.splitFirst(name)
       if space? and !(space in @context.getNameSpaces())
         unless space of paths 
           paths[space] = []
         paths[space].push(rest)
     return paths
   applySpaceOnNames: (namespace) ->
-    [space,rest] = Codewave.util.splitFirstNamespace(namespace,true)
+    [space,rest] = NamespaceHelper.splitFirst(namespace,true)
     @names.map( (name) ->
-      [cur_space,cur_rest] = Codewave.util.splitFirstNamespace(name)
+      [cur_space,cur_rest] = NamespaceHelper.splitFirst(name)
       if cur_space? and cur_space == space
         name = cur_rest
       if rest?
@@ -94,7 +95,7 @@ export class CmdFinder
       for next in nexts
         posibilities = posibilities.concat(new CmdFinder(names, {parent: this, root: next}).findPosibilities())
     for nspc in @context.getNameSpaces()
-      [nspcName,rest] = Codewave.util.splitFirstNamespace(nspc,true)
+      [nspcName,rest] = NamespaceHelper.splitFirst(nspc,true)
       nexts = @getCmdFollowAlias(nspcName)
       for next in nexts
         posibilities = posibilities.concat(new CmdFinder(@applySpaceOnNames(nspc), {parent: this, root: next}).findPosibilities())

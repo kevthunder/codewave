@@ -1,4 +1,4 @@
-export Logger = ( 
+export class Logger
   log: (args...) ->
     if window.console and this.enabled
       for msg in args
@@ -31,4 +31,3 @@ export Logger = (
     res
   resume: ->
     console.log(this.monitorData)
-)

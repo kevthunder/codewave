@@ -1,4 +1,8 @@
-export class TestEditor extends Codewave.TextAreaEditor
+
+import { Pos } from './positioning/Pos';
+import { TextAreaEditor } from './TextAreaEditor';
+
+export class TestEditor extends TextAreaEditor
   constructor: (target) ->
     super(target)
     @selections = []
@@ -9,7 +13,7 @@ export class TestEditor extends Codewave.TextAreaEditor
     old = @getCursorPos()
     if start != old.start or end != old.end
       super(start, end)
-      @selections = [new Codewave.util.Pos(start, end)]
+      @selections = [new Pos(start, end)]
   setMultiSel: (selections) ->
     if selections.length > 0
       @setCursorPos(selections[0].start, selections[0].end)
@@ -21,6 +25,6 @@ export class TestEditor extends Codewave.TextAreaEditor
     selections[0] = @getCursorPos()
     selections
   addSel: (start, end) ->
-    @selections.push(new Codewave.util.Pos(start, end))
+    @selections.push(new Pos(start, end))
   resetSel: (start, end) ->
     @selections = [@getCursorPos()]

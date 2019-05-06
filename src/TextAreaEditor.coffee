@@ -1,3 +1,6 @@
+import { TextParser } from './TextParser';
+import { Pos } from './positioning/Pos';
+
 export class DomKeyListener
   startListening: (target) ->
   
@@ -100,7 +103,7 @@ export class TextAreaEditor extends TextParser
     return @tmpCursorPos if @tmpCursorPos?
     if @hasFocus
       if @selectionPropExists
-        new Codewave.util.Pos(@obj.selectionStart,@obj.selectionEnd)
+        new Pos(@obj.selectionStart,@obj.selectionEnd)
       else
         @getCursorPosFallback()
   getCursorPosFallback: ->
@@ -115,7 +118,7 @@ export class TextAreaEditor extends TextParser
           len++
           rng.moveEnd("character", -1)
         rng.setEndPoint "StartToStart", @obj.createTextRange()
-        pos = new Codewave.util.Pos(0,len)
+        pos = new Pos(0,len)
         while rng.compareEndPoints("EndToStart", rng) > 0
           pos.start++
           pos.end++
@@ -124,7 +127,7 @@ export class TextAreaEditor extends TextParser
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
     if @selectionPropExists
-      @tmpCursorPos = new Codewave.util.Pos(start,end)
+      @tmpCursorPos = new Pos(start,end)
       @obj.selectionStart = start
       @obj.selectionEnd = end
       setTimeout (=>

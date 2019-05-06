@@ -5,6 +5,7 @@
 
 import { Context } from './Context';
 import { Storage } from './Storage';
+import { NamespaceHelper } from 'helpers/NamespaceHelper';
 
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
@@ -88,8 +89,8 @@ export class Command
     res = {}
     aliased = @getAliased()
     if aliased?
-      res = Codewave.util.merge(res,aliased.getDefaults())
-    res = Codewave.util.merge(res,@defaults)
+      res = Object.assign(res,aliased.getDefaults())
+    res = Object.assign(res,@defaults)
     return res
   _aliasedFromFinder: (finder) ->
       finder.useFallbacks = false
@@ -106,10 +107,10 @@ export class Command
         @options[key] = val
   _optionsForAliased: (aliased) ->
     opt = {}
-    opt = Codewave.util.merge(opt,@defaultOptions)
+    opt = Object.assign(opt,@defaultOptions)
     if aliased?
-      opt = Codewave.util.merge(opt,aliased.getOptions())
-    return Codewave.util.merge(opt,@options)
+      opt = Object.assign(opt,aliased.getOptions())
+    return Object.assign(opt,@options)
   getOptions: ->
     return @_optionsForAliased(@getAliased())
   getOption: (key) ->
@@ -169,7 +170,7 @@ export class Command
     return cmd
   getCmd: (fullname) ->
     @init()
-    [space,name] = Codewave.util.splitFirstNamespace(fullname)
+    [space,name] = NamespaceHelper.splitFirst(fullname)
     if space?
       return @getCmd(space).getCmd(name)
     for cmd in @cmds
@@ -178,7 +179,7 @@ export class Command
   setCmdData: (fullname,data) ->
     @setCmd(fullname,new Command(fullname.split(':').pop(),data))
   setCmd: (fullname,cmd) ->
-    [space,name] = Codewave.util.splitFirstNamespace(fullname)
+    [space,name] = NamespaceHelper.splitFirst(fullname)
     if space?
       next = @getCmd(space)
       unless next?
@@ -205,7 +206,7 @@ export class Command
         }
       }
     })
-    for initialiser in Codewave.Command.cmdInitialisers
+    for initialiser in Command.cmdInitialisers
       initialiser()
 
   @saveCmd: (fullname, data) ->

@@ -3,6 +3,11 @@
 
 import { CmdInstance } from './CmdInstance';
 import { BoxHelper } from './BoxHelper';
+import { Pos } from './positioning/Pos';
+import { StrPos } from './positioning/StrPos';
+import { Replacement } from './positioning/Replacement';
+import { StringHelper } from './helpers/StringHelper';
+import { NamespaceHelper } from 'helpers/NamespaceHelper';
 
 export class PositionedCmdInstance extends CmdInstance
   constructor: (@codewave,@pos,@str) ->
@@ -17,7 +22,7 @@ export class PositionedCmdInstance extends CmdInstance
   _checkCloser: ->
     noBracket = @_removeBracket(@str)
     if noBracket.substring(0,@codewave.closeChar.length) == @codewave.closeChar and f = @_findOpeningPos()
-      @closingPos = new Codewave.util.StrPos(@pos, @str)
+      @closingPos = new StrPos(@pos, @str)
       @pos = f.pos
       @str = f.str
   _findOpeningPos: ->
@@ -67,7 +72,7 @@ export class PositionedCmdInstance extends CmdInstance
           @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
-      @content = Codewave.util.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
+      @content = StringHelper.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
       @str = @codewave.editor.textSubstr(@pos,f.pos+f.str.length)
   _findClosingPos: ->
     return @closingPos if @closingPos?
@@ -97,9 +102,9 @@ export class PositionedCmdInstance extends CmdInstance
       @_removeCommentFromContent()
   _removeCommentFromContent: ->
     if @content
-      ecl = Codewave.util.escapeRegExp(@context.wrapCommentLeft())
-      ecr = Codewave.util.escapeRegExp(@context.wrapCommentRight())
-      ed = Codewave.util.escapeRegExp(@codewave.deco)
+      ecl = StringHelper.escapeRegExp(@context.wrapCommentLeft())
+      ecr = StringHelper.escapeRegExp(@context.wrapCommentRight())
+      ed = StringHelper.escapeRegExp(@codewave.deco)
       re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm") # [pawa python] replace '"gm"' re.M
       re2 = new RegExp("^\\s*(?:#{ed})*#{ecr}\r?\n")
       re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*\\s*$")
@@ -144,7 +149,7 @@ export class PositionedCmdInstance extends CmdInstance
   _removeBracket: (str)->
     return str.substring(@codewave.brakets.length,str.length-@codewave.brakets.length)
   alterAliasOf: (aliasOf)->
-    [nspc, cmdName] = Codewave.util.splitNamespace(@cmdName)
+    [nspc, cmdName] = NamespaceHelper.split(@cmdName)
     return aliasOf.replace('%name%',cmdName)
   isEmpty: ->
     return @str == @codewave.brakets + @codewave.closeChar + @codewave.brakets or @str == @codewave.brakets + @codewave.brakets
@@ -166,9 +171,9 @@ export class PositionedCmdInstance extends CmdInstance
   getEndPos: ->
     return @pos+@str.length
   getPos: ->
-    return new Codewave.util.Pos(@pos,@pos+@str.length).withEditor(@codewave.editor)
+    return new Pos(@pos,@pos+@str.length).withEditor(@codewave.editor)
   getOpeningPos: ->
-    return new Codewave.util.Pos(@pos,@pos+@opening.length).withEditor(@codewave.editor)
+    return new Pos(@pos,@pos+@opening.length).withEditor(@codewave.editor)
   getIndent: ->
     unless @indentLen?
       if @inBox?
@@ -221,7 +226,7 @@ export class PositionedCmdInstance extends CmdInstance
     else
       return [repl]
   replaceWith: (text) ->
-    @applyReplacement(new Codewave.util.Replacement(@pos,@getEndPos(),text))
+    @applyReplacement(new Replacement(@pos,@getEndPos(),text))
   applyReplacement: (repl) ->
     repl.withEditor(@codewave.editor)
     if @inBox?
@@ -229,7 +234,7 @@ export class PositionedCmdInstance extends CmdInstance
     else
       repl.text = @applyIndent(repl.text)
     cursorPos = @getCursorFromResult(repl)
-    repl.selections = [new Codewave.util.Pos(cursorPos, cursorPos)]
+    repl.selections = [new Pos(cursorPos, cursorPos)]
     replacements = @checkMulti(repl)
     @codewave.editor.applyReplacements(replacements)
     
