@@ -1,7 +1,7 @@
 
 import { CmdFinder } from './CmdFinder';
 import { CmdInstance } from './CmdInstance';
-import { ArrayHelper } from 'helpers/ArrayHelper';
+import { ArrayHelper } from './helpers/ArrayHelper';
 
 export class Context
   constructor: (@codewave) ->

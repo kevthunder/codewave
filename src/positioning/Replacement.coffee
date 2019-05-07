@@ -4,12 +4,10 @@ import { OptionObject } from '../OptionObject';
 import { StringHelper } from '../helpers/StringHelper';
 
 export class Replacement extends Pos
-  CommonHelper.applyMixins(this,[OptionObject])
+  CommonHelper.applyMixins(this.prototype,[OptionObject])
   constructor: (@start, @end, @text, @options = {}) ->
     super()
-    @setOpts(@options)
-  setOpts: (options) ->
-    OptionObject.prototype.setOpts.call(this,options,{
+    @setOpts(@options,{
       prefix: ''
       suffix: ''
       selections: []

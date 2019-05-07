@@ -7,7 +7,7 @@ import { Pos } from './positioning/Pos';
 import { StrPos } from './positioning/StrPos';
 import { Replacement } from './positioning/Replacement';
 import { StringHelper } from './helpers/StringHelper';
-import { NamespaceHelper } from 'helpers/NamespaceHelper';
+import { NamespaceHelper } from './helpers/NamespaceHelper';
 
 export class PositionedCmdInstance extends CmdInstance
   constructor: (@codewave,@pos,@str) ->
@@ -126,7 +126,7 @@ export class PositionedCmdInstance extends CmdInstance
     unless @cmd?
       @_getParentCmds()
       if @noBracket.substring(0,@codewave.noExecuteChar.length) == @codewave.noExecuteChar
-        @cmd = Codewave.Command.cmds.getCmd('core:no_execute')
+        @cmd = Command.cmds.getCmd('core:no_execute')
         @context = @codewave.context
       else
         @finder = @getFinder(@cmdName)

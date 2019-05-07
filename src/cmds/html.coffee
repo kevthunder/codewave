@@ -3,9 +3,10 @@
 #   replace (BaseCommand (command.BaseCommand
 #   replace EditCmd.props editCmdProps
 #   replace EditCmd.setCmds editCmdSetCmds reparse
+import { Command } from '../Command';
 
 initCmds = ->
-  html = Codewave.Command.cmds.addCmd(new Codewave.Command('html'))
+  html = Codewave.Command.cmds.addCmd(new Command('html'))
   html.addCmds({
     'fallback':{
       'aliasOf' : 'core:emmet',
@@ -14,7 +15,7 @@ initCmds = ->
     },
   })
   
-  css = Codewave.Command.cmds.addCmd(new Codewave.Command('css'))
+  css = Codewave.Command.cmds.addCmd(new Command('css'))
   css.addCmds({
     'fallback':{
       'aliasOf' : 'core:emmet',

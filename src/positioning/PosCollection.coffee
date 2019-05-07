@@ -1,11 +1,12 @@
 import { Wrapping } from './Wrapping';
 import { Replacement } from './Replacement';
+import { CommonHelper } from '../helpers/CommonHelper';
 
 export class PosCollection
   constructor: (arr) ->
     if !Array.isArray(arr)
       arr = [arr]
-    Object.assign(arr, PosCollection.prototype)
+    CommonHelper.applyMixins(arr,[PosCollection])
     return arr
     
   wrap: (prefix,suffix)->

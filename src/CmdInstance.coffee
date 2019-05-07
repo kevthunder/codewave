@@ -7,7 +7,7 @@ import { TextParser } from './TextParser';
 import { StringHelper } from './helpers/StringHelper';
 
 export class CmdInstance
-  constructor: (@cmd,@context = None) ->
+  constructor: (@cmd,@context) ->
   
   init: ->
     unless @isEmpty() or @inited

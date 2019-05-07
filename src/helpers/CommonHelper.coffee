@@ -8,12 +8,7 @@ export class CommonHelper
     fn(o)
     o
 
-  @applyMixins(derivedCtor, baseCtors) -> 
-    baseCtors.forEach(baseCtor => {
-        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-            Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name));
-        });
-    });
-}
-
-)
+  @applyMixins: (derivedCtor, baseCtors) -> 
+    baseCtors.forEach (baseCtor) => 
+      Object.getOwnPropertyNames(baseCtor.prototype).forEach (name)=> 
+          Object.defineProperty(derivedCtor, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name))

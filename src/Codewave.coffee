@@ -16,7 +16,6 @@ import { StringHelper } from './helpers/StringHelper';
 export class Codewave
   constructor: (@editor, options = {}) ->
     Codewave.init()
-    # Codewave.logger.toMonitor(this,'runAtCursorPos')
     @marker = '[[[[codewave_marquer]]]]'
     @vars = {}
     

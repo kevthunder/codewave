@@ -3,10 +3,11 @@
 #   replace (BaseCommand (command.BaseCommand
 #   replace EditCmd.props editCmdProps
 #   replace EditCmd.setCmds editCmdSetCmds reparse
+import { Command } from '../Command';
 
 initCmds = ->
-  js = Codewave.Command.cmds.addCmd(new Codewave.Command('js'))
-  Codewave.Command.cmds.addCmd(new Codewave.Command('javascript',{ aliasOf: 'js' }))
+  js = Codewave.Command.cmds.addCmd(new Command('js'))
+  Codewave.Command.cmds.addCmd(new Command('javascript',{ aliasOf: 'js' }))
   js.addCmds({
     'comment': '/* ~~content~~ */',
     'if':  'if(|){\n\t~~content~~\n}',

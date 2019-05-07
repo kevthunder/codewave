@@ -1,5 +1,3 @@
-import { WrappedPos } from './WrappedPos';
-
 export class Pos
   constructor: (@start,@end) ->
     @end = @start unless @end?
@@ -8,6 +6,7 @@ export class Pos
   containsPos: (pos) ->
     return @start <= pos.start and pos.end <= @end
   wrappedBy: (prefix,suffix) ->
+    WrappedPos = require('./WrappedPos');
     return new WrappedPos(@start-prefix.length,@start,@end,@end+suffix.length)
   withEditor: (val)->
     @_editor = val

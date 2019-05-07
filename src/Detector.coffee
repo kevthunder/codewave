@@ -14,14 +14,14 @@ export class Detector
   detected: (finder) ->
     #
 
-class LangDetector extends Detector
+export class LangDetector extends Detector
   detect: (finder) ->
     if finder.codewave? 
       lang = finder.codewave.editor.getLang()
       if lang? 
         return lang.toLowerCase()
         
-class PairDetector extends Detector
+export class PairDetector extends Detector
   detected: (finder) ->
     if @data.opener? and @data.closer? and finder.instance?
       pair = new Pair(@data.opener, @data.closer, @data)

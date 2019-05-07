@@ -2,7 +2,8 @@
 #   replace Codewave.CmdFinder CmdFinder
 
 import { Context } from './Context';
-import { NamespaceHelper } from 'helpers/NamespaceHelper';
+import { NamespaceHelper } from './helpers/NamespaceHelper';
+import { Command } from './Command';
 
 export class CmdFinder
   constructor: (names, options) ->
@@ -15,7 +16,7 @@ export class CmdFinder
       namespaces: []
       parentContext: null
       context: null
-      root: Codewave.Command.cmds
+      root: Command.cmds
       mustExecute: true
       useDetectors: true
       useFallbacks: true

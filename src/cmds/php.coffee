@@ -5,9 +5,11 @@
 #   replace EditCmd.setCmds editCmdSetCmds reparse
 
 import { StringHelper } from '../helpers/StringHelper';
+import { Command } from '../Command';
+import { PairDetector } from '../Detector';
 
 initCmds = ->
-  php = Codewave.Command.cmds.addCmd(new Codewave.Command('php'))
+  php = Codewave.Command.cmds.addCmd(new Command('php'))
   php.addDetector(new Codewave.PairDetector({
     result: 'php:inner',
     opener: '<?php',
@@ -16,7 +18,7 @@ initCmds = ->
     'else': 'php:outer'
   })) 
 
-  phpOuter = php.addCmd(new Codewave.Command('outer'))
+  phpOuter = php.addCmd(new Command('outer'))
   phpOuter.addCmds({
     'fallback':{
       'cmds' : {
@@ -43,7 +45,7 @@ initCmds = ->
     php: '<?php\n\t~~content~~|\n?>',
   })
   
-  phpInner = php.addCmd(new Codewave.Command('inner'))
+  phpInner = php.addCmd(new Command('inner'))
   phpInner.addCmds({
     'any_content': { aliasOf: 'core:content' },
     'comment': '/* ~~content~~ */',

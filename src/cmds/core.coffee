@@ -7,6 +7,7 @@
 import { Command, BaseCommand } from '../Command';
 import { LangDetector } from '../LangDetector';
 import { BoxHelper } from '../BoxHelper';
+import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
 import { Replacement } from '../positioning/Replacement';
 
@@ -507,14 +508,14 @@ EditCmd.setCmds = (base) ->
     p.setCmd(base)
   return base
 EditCmd.props = [
-  new Codewave.EditCmdProp.revBool('no_carret',         {opt:'checkCarret'}),
-  new Codewave.EditCmdProp.revBool('no_parse',          {opt:'parse'}),
-  new Codewave.EditCmdProp.bool(   'prevent_parse_all', {opt:'preventParseAll'}),
-  new Codewave.EditCmdProp.bool(   'replace_box',       {opt:'replaceBox'}),
-  new Codewave.EditCmdProp.string( 'name_to_param',     {opt:'nameToParam'}),
-  new Codewave.EditCmdProp.string( 'alias_of',          {var:'aliasOf', carret:true}),
-  new Codewave.EditCmdProp.source( 'help',              {funct:'help', showEmpty:true}),
-  new Codewave.EditCmdProp.source( 'source',            {var:'resultStr', dataName:'result', showEmpty:true, carret:true}),
+  new EditCmdProp.revBool('no_carret',         {opt:'checkCarret'}),
+  new EditCmdProp.revBool('no_parse',          {opt:'parse'}),
+  new EditCmdProp.bool(   'prevent_parse_all', {opt:'preventParseAll'}),
+  new EditCmdProp.bool(   'replace_box',       {opt:'replaceBox'}),
+  new EditCmdProp.string( 'name_to_param',     {opt:'nameToParam'}),
+  new EditCmdProp.string( 'alias_of',          {var:'aliasOf', carret:true}),
+  new EditCmdProp.source( 'help',              {funct:'help', showEmpty:true}),
+  new EditCmdProp.source( 'source',            {var:'resultStr', dataName:'result', showEmpty:true, carret:true}),
 ]
 class NameSpaceCmd extends BaseCommand
   init: ->

@@ -46,7 +46,6 @@ isElement = (obj) ->
 export class TextAreaEditor extends TextParser
   constructor: (@target) ->
     super()
-    # Codewave.logger.toMonitor(this,'textEventChange')
     @obj = if isElement(@target) then @target else document.getElementById(@target)
     unless @obj?
       throw "TextArea not found"
@@ -76,10 +75,10 @@ export class TextAreaEditor extends TextParser
         @obj.value = val
     @obj.value
   spliceText: (start, end, text) ->
-    @textEventChange(text, start, end) or super(start, end, text)
+    @textEventChange(text, start, end) or @spliceTextWithExecCommand(text, start, end) or super(start, end, text)
   textEventChange: (text, start = 0, end = null) ->
     event = document.createEvent('TextEvent') if document.createEvent?
-    if event? and event.initTextEvent?
+    if event? and event.initTextEvent? and event.isTrusted != false
       end = @textLen() unless end?
       if text.length < 1
         if start != 0
@@ -99,6 +98,15 @@ export class TextAreaEditor extends TextParser
       true
     else 
       false
+  spliceTextWithExecCommand: (text, start = 0, end = null) ->
+    if document.execCommand?
+      end = @textLen() unless end?
+      @obj.selectionStart = start
+      @obj.selectionEnd = end
+      document.execCommand('insertText', false, text);
+    else 
+      false
+
   getCursorPos: ->
     return @tmpCursorPos if @tmpCursorPos?
     if @hasFocus

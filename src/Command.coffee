@@ -1,11 +1,7 @@
-# [pawa python]
-#   replace Codewave.Command.cmds cmds
-#   replace Codewave.Command Command
-#   replace @Codewave.Command. ''
 
 import { Context } from './Context';
 import { Storage } from './Storage';
-import { NamespaceHelper } from 'helpers/NamespaceHelper';
+import { NamespaceHelper } from './helpers/NamespaceHelper';
 
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
@@ -211,7 +207,7 @@ export class Command
 
   @saveCmd: (fullname, data) ->
     storage = new Storage()
-    Codewave.Command.cmds.setCmdData(fullname,data)
+    Command.cmds.setCmdData(fullname,data)
     savedCmds = storage.load('cmds')
     unless savedCmds?
       savedCmds = {}
@@ -223,7 +219,7 @@ export class Command
     savedCmds = storage.load('cmds')
     if savedCmds? 
       for fullname, data of savedCmds
-        Codewave.Command.cmds.setCmdData(fullname, data)
+        Command.cmds.setCmdData(fullname, data)
 
   @resetSaved: ->
     storage = new Storage()
