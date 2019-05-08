@@ -23,7 +23,7 @@ export class EditCmdProp
         this[key] = val
         
   setCmd: (cmds) ->
-    cmds[@name] = Command.setVarCmd(@name)
+    cmds[@name] = Command.makeVarCmd(@name)
   
   writeFor: (parser,obj) ->
     if parser.vars[@name]?
@@ -55,7 +55,7 @@ class EditCmdProp.source extends EditCmdProp
       res = res.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
     return res
   setCmd: (cmds)->
-    cmds[@name] = Command.setVarCmd(@name,{'preventParseAll' : true})
+    cmds[@name] = Command.makeVarCmd(@name,{'preventParseAll' : true})
   showForCmd: (cmd) ->
     val = @valFromCmd(cmd)
     return (@showEmpty and !(cmd? and cmd.aliasOf?)) or val?
@@ -69,7 +69,7 @@ class EditCmdProp.string extends EditCmdProp
     
 class EditCmdProp.revBool extends EditCmdProp
   setCmd: (cmds) ->
-    cmds[@name] = Command.setBoolVarCmd(@name)
+    cmds[@name] = Command.makeBoolVarCmd(@name)
   writeFor: (parser,obj) ->
     if parser.vars[@name]?
       obj[@dataName] = !parser.vars[@name]
@@ -81,6 +81,6 @@ class EditCmdProp.revBool extends EditCmdProp
     
 class EditCmdProp.bool extends EditCmdProp
   setCmd: (cmds) ->
-    cmds[@name] = Command.setBoolVarCmd(@name)
+    cmds[@name] = Command.makeBoolVarCmd(@name)
   display: (cmd) ->
     "~~!#{@name}~~" if @valFromCmd(cmd)

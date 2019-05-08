@@ -8,6 +8,7 @@ import { StrPos } from './positioning/StrPos';
 import { Replacement } from './positioning/Replacement';
 import { StringHelper } from './helpers/StringHelper';
 import { NamespaceHelper } from './helpers/NamespaceHelper';
+import { Command } from './Command';
 
 export class PositionedCmdInstance extends CmdInstance
   constructor: (@codewave,@pos,@str) ->

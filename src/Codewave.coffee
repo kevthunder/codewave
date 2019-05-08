@@ -1,9 +1,3 @@
-# [pawa]
-#   replace 'class @Codewave' 'class Codewave():'
-#   replace /cpos.(\w+)/ cpos['$1']
-#   replace 'new Codewave(' Codewave(
-#   replace '@Codewave.init = ->' 'def init():'
-
 import { Process } from './Process';
 import { Context } from './Context';
 import { PositionedCmdInstance } from './PositionedCmdInstance';
@@ -12,6 +6,7 @@ import { Command } from './Command';
 import { Logger } from './Logger';
 import { PosCollection } from './positioning/PosCollection';
 import { StringHelper } from './helpers/StringHelper';
+import { ClosingPromp } from './ClosingPromp';
 
 export class Codewave
   constructor: (@editor, options = {}) ->
@@ -51,7 +46,6 @@ export class Codewave
     @process = new Process()
     @logger.log('activation key')
     @runAtCursorPos()
-    # Codewave.logger.resume()
     @process = null
   runAtCursorPos: ->
     if @editor.allowMultiSelection()
@@ -156,7 +150,7 @@ export class Codewave
     @editor.applyReplacements(replacements)
   promptClosingCmd: (selections) ->
     @closingPromp.stop() if @closingPromp?
-    @closingPromp = Codewave.ClosingPromp.newFor(this,selections).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
+    @closingPromp = ClosingPromp.newFor(this,selections).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
   parseAll: (recursive = true) ->
     if @nested > 100
       throw "Infinite parsing Recursion"

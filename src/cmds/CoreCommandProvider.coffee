@@ -1,18 +1,14 @@
-# [pawa python]
-#   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
-#   replace (BaseCommand (command.BaseCommand
-#   replace EditCmd.props editCmdProps
-#   replace EditCmd.setCmds editCmdSetCmds reparse
 
 import { Command, BaseCommand } from '../Command';
-import { LangDetector } from '../LangDetector';
+import { LangDetector } from '../Detector';
 import { BoxHelper } from '../BoxHelper';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
 import { Replacement } from '../positioning/Replacement';
 
-initCmds = ->
-  core = Codewave.Command.cmds.addCmd(new Command('core'))
+export class CoreCommandProvider
+ register: (cmds)-> 
+  core = cmds.addCmd(new Command('core'))
   core.addDetector(new LangDetector())
   
   core.addCmds({
@@ -292,27 +288,6 @@ initCmds = ->
     
   })
   
-@Codewave.Command.cmdInitialisers.push(initCmds)
-
-@Codewave.Command.setVarCmd = (name,base={}) -> 
-  base.execute = (instance) ->
-    val = if (p = instance.getParam(0))?
-      p
-    else if instance.content
-      instance.content
-    instance.codewave.vars[name] = val if val?
-  return base
-
-@Codewave.Command.setBoolVarCmd = (name,base={}) -> 
-  base.execute = (instance) ->
-    val = if (p = instance.getParam(0))?
-      p
-    else if instance.content
-      instance.content
-    unless val? and val in ['0','false','no']
-      instance.codewave.vars[name] = true
-  return base
-  
 no_execute = (instance) ->
   reg = new RegExp("^("+StringHelper.escapeRegExp(instance.codewave.brakets) + ')' + StringHelper.escapeRegExp(instance.codewave.noExecuteChar))
   return instance.str.replace(reg,'$1')
@@ -344,7 +319,7 @@ renameCommand = (instance) ->
       unless newName.indexOf(':') > -1
         newName = cmd.fullName.replace(origninalName,'') + newName
       cmdData = savedCmds[origninalName]
-      Codewave.Command.cmds.setCmdData(newName,cmdData)
+      Command.cmds.setCmdData(newName,cmdData)
       cmd.unregister()
       savedCmds[newName] = cmdData
       delete savedCmds[origninalName]
@@ -379,7 +354,7 @@ aliasCommand = (instance) ->
       cmd = cmd.getAliased() or cmd
       # unless alias.indexOf(':') > -1
         # alias = cmd.fullName.replace(name,'') + alias
-      Codewave.Command.saveCmd(alias, { aliasOf: cmd.fullName })
+      Command.saveCmd(alias, { aliasOf: cmd.fullName })
       return ""
     else 
       return "~~not_found~~"
@@ -486,7 +461,7 @@ class EditCmd extends BaseCommand
       data = {}
       for p in EditCmd.props
         p.writeFor(parser,data)
-      Codewave.Command.saveCmd(@cmdName, data)
+      Command.saveCmd(@cmdName, data)
       return ''
   propsDisplay: ->
       cmd = @cmd

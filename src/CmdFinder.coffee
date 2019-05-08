@@ -1,14 +1,9 @@
-# [pawa]
-#   replace Codewave.CmdFinder CmdFinder
-
 import { Context } from './Context';
 import { NamespaceHelper } from './helpers/NamespaceHelper';
 import { Command } from './Command';
 
 export class CmdFinder
   constructor: (names, options) ->
-    # Codewave.logger.toMonitor(this,'findIn')
-    # Codewave.logger.toMonitor(this,'triggerDetectors')
     if typeof names == 'string'
       names = [names]
     defaults = {

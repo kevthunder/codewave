@@ -1,6 +1,7 @@
 
 import { Pos } from './Pos';
 import { StringHelper } from '../helpers/StringHelper';
+import { PairMatch } from './PairMatch';
 
 export class Pair
   constructor: (@opener,@closer,@options = {}) ->

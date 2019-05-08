@@ -1,3 +1,5 @@
+import { Size } from '../positioning/Size';
+
 export class StringHelper
   @trimEmptyLine: (txt) ->
     return txt.replace(/^\s*\r?\n/, '').replace(/\r?\n\s*$/, '')

@@ -6,8 +6,7 @@ export class Pos
   containsPos: (pos) ->
     return @start <= pos.start and pos.end <= @end
   wrappedBy: (prefix,suffix) ->
-    WrappedPos = require('./WrappedPos');
-    return new WrappedPos(@start-prefix.length,@start,@end,@end+suffix.length)
+    return new Pos.wrapClass(@start-prefix.length,@start,@end,@end+suffix.length)
   withEditor: (val)->
     @_editor = val
     return this

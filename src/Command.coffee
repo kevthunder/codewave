@@ -3,6 +3,7 @@ import { Context } from './Context';
 import { Storage } from './Storage';
 import { NamespaceHelper } from './helpers/NamespaceHelper';
 
+
 _optKey = (key,dict,defVal = null) ->
   # optional Dictionary key
   return if key of dict then dict[key] else defVal
@@ -187,7 +188,7 @@ export class Command
   addDetector: (detector) ->
     @detectors.push(detector)
     
-  @cmdInitialisers = []
+  @providers = []
 
   @initCmds: ->
     Command.cmds = new Command(null,{
@@ -202,8 +203,8 @@ export class Command
         }
       }
     })
-    for initialiser in Command.cmdInitialisers
-      initialiser()
+    for provider in @providers
+      provider.register(Command.cmds)
 
   @saveCmd: (fullname, data) ->
     storage = new Storage()
@@ -224,6 +225,25 @@ export class Command
   @resetSaved: ->
     storage = new Storage()
     storage.save('cmds',{})
+
+  @makeVarCmd = (name,base={}) -> 
+    base.execute = (instance) ->
+      val = if (p = instance.getParam(0))?
+        p
+      else if instance.content
+        instance.content
+      instance.codewave.vars[name] = val if val?
+    return base
+
+  @makeBoolVarCmd = (name,base={}) -> 
+    base.execute = (instance) ->
+      val = if (p = instance.getParam(0))?
+        p
+      else if instance.content
+        instance.content
+      unless val? and val in ['0','false','no']
+        instance.codewave.vars[name] = true
+    return base
   
 
 export class BaseCommand
