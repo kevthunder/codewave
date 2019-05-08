@@ -2,6 +2,7 @@
 import { Command, BaseCommand } from '../Command';
 import { LangDetector } from '../Detector';
 import { BoxHelper } from '../BoxHelper';
+import { Storage } from '../Storage';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
 import { Replacement } from '../positioning/Replacement';

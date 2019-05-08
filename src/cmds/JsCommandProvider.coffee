@@ -5,9 +5,10 @@
 #   replace EditCmd.setCmds editCmdSetCmds reparse
 import { Command } from '../Command';
 
-initCmds = ->
-  js = Codewave.Command.cmds.addCmd(new Command('js'))
-  Codewave.Command.cmds.addCmd(new Command('javascript',{ aliasOf: 'js' }))
+export class JsCommandProvider
+ register: (cmds)-> 
+  js = cmds.addCmd(new Command('js'))
+  cmds.addCmd(new Command('javascript',{ aliasOf: 'js' }))
   js.addCmds({
     'comment': '/* ~~content~~ */',
     'if':  'if(|){\n\t~~content~~\n}',
@@ -34,5 +35,3 @@ initCmds = ->
       }
       """,
   })
-
-@Codewave.Command.cmdInitialisers.push(initCmds)

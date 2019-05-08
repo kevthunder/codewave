@@ -10,16 +10,14 @@ Create abbreviation for you own code snippets and expand them with a push of a b
 git clone https://github.com/kevthunder/codewave.git
 ```
 
-You may need to put it on a web server to be able to use the localstorage
-
-
 ## Getting started
 
-* Browse to index.html
+* Do ```npm install```
+* Do ```npm start```, it sould start a server and open the browser
 * Click on the big text area to give it focus 
-* Press ```Ctrl+E``` ( or ```Cmd+E``` in osX) 
+* Press ```Ctrl+Shift+E``` ( or ```Cmd+Shift+E``` in osX) 
 * Type ```help``` 
-* Press ```Ctrl+E``` again to show help
+* Press ```Ctrl+Shift+E``` again to show help
 
 ```
 ~~help~~

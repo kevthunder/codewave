@@ -1,16 +1,12 @@
-# [pawa python]
-#   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
-#   replace (BaseCommand (command.BaseCommand
-#   replace EditCmd.props editCmdProps
-#   replace EditCmd.setCmds editCmdSetCmds reparse
 
 import { StringHelper } from '../helpers/StringHelper';
 import { Command } from '../Command';
 import { PairDetector } from '../Detector';
 
-initCmds = ->
-  php = Codewave.Command.cmds.addCmd(new Command('php'))
-  php.addDetector(new Codewave.PairDetector({
+export class PhpCommandProvider
+ register: (cmds)-> 
+  php = cmds.addCmd(new Command('php'))
+  php.addDetector(new PairDetector({
     result: 'php:inner',
     opener: '<?php',
     closer: '?>',
@@ -113,9 +109,6 @@ initCmds = ->
     },
   })
   
-
-@Codewave.Command.cmdInitialisers.push(initCmds)
-
 
 wrapWithPhp = (result,instance) ->
   inline = instance.getParam(['php_inline','inline'],true)
