@@ -1,6 +1,6 @@
 {
   "name": "codewave",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Codewave : The text editor helper.",
   "scripts": {
     "start": "gulp demo",
@@ -9,7 +9,7 @@
     "build-debug": "node --inspect-brk ./node_modules/gulp/bin/gulp build",
     "test-debug": "gulp test-debug"
   },
-  "main": "js/codewave.js",
+  "main": "lib/bootstrap.js",
   "author": "kevthunder",
   "license": "ISC",
   "repository": {
