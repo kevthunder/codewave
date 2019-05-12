@@ -4,20 +4,14 @@
   <meta charset="UTF-8">
   <title>Document</title>
   <link rel="stylesheet" type="text/css" href="css/app.css" media="all" />
-  <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-  
-  <script src="//localhost:35729/livereload.js"></script>
+
   <script type="text/javascript" src="js/codewave.js"></script>
-  <script type="text/javascript" src="js/vendors/emmet-min.js"></script>
-  
+  <script type="text/javascript" src="js/emmet-min.js"></script>
   
   <script type="text/javascript">
-    (function( $ ) {
-      $(function(){
-        window.cw = Codewave.detect('Editor');
-        //window.cw = new Codewave(new Codewave.TestEditor('Editor'));
-      })
-    })( jQuery );
+    document.addEventListener("DOMContentLoaded", function(){
+      window.cw = Codewave.detect('Editor');
+    });
   </script>
 </head>
 <body>

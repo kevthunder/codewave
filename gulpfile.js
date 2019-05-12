@@ -3,6 +3,7 @@ require('source-map-support').install();
 var gulp = require('gulp');
 var browserify = require('browserify');
 var babelify = require('babelify');
+var babel = require('gulp-babel');
 var source = require('vinyl-source-stream');
 var coffee = require('gulp-coffee');
 var uglify = require('gulp-uglify-es').default;
@@ -11,10 +12,23 @@ var sourcemaps = require('gulp-sourcemaps');
 var gls = require('gulp-live-server');
 var open = require('gulp-open');
 
+babelPreset = function(){
+  return babel({
+      presets: [
+        ["@babel/preset-env", {
+          "targets": {
+            "node": true
+          }
+        }]
+      ]
+  });
+}
+
 gulp.task('coffee', function() {
   return gulp.src(['./src/**/*.coffee'])
     .pipe(sourcemaps.init())
     .pipe(coffee({bare: true}))
+    .pipe(babelPreset())
     .pipe(sourcemaps.write('./maps'))
     .pipe(gulp.dest('./lib/'));
 });
@@ -25,6 +39,7 @@ gulp.task('concat', function() {
     entries: './lib/entry.js',
     debug: true
   })
+    .external('emmet')
     .transform(babelify.configure({
       presets: ["@babel/preset-env"]
     }));
@@ -35,9 +50,10 @@ gulp.task('concat', function() {
 });
 
 gulp.task('coffeeTest', function() {
-  return gulp.src('./test/src/*.coffee')
+  return gulp.src('./test/src/**/*.coffee')
     .pipe(sourcemaps.init())
     .pipe(coffee())
+    .pipe(babelPreset())
     .pipe(sourcemaps.write('./maps'))
     .pipe(gulp.dest('./test/'));
 });

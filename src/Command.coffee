@@ -10,7 +10,7 @@ _optKey = (key,dict,defVal = null) ->
 
 
 export class Command
-  constructor: (@name,@data=null,@parent=null) ->
+  constructor: (@name,@data=null,parent=null) ->
     @cmds = []
     @detectors = []
     @executeFunct = @resultFunct = @resultStr = @aliasOf = @cls = null
@@ -169,7 +169,7 @@ export class Command
     @init()
     [space,name] = NamespaceHelper.splitFirst(fullname)
     if space?
-      return @getCmd(space).getCmd(name)
+      return @getCmd(space)?.getCmd(name)
     for cmd in @cmds
       if cmd.name == name
         return cmd

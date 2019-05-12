@@ -3,11 +3,11 @@
 #   replace @text()  self.text
 
 import { Editor } from './Editor';
+import { Pos } from './positioning/Pos';
 
 export class TextParser extends Editor
   constructor: (@_text) ->
     super()
-    self.namespace = 'text_parser'
   text: (val) ->
     @_text = val if val?
     @_text
@@ -25,7 +25,4 @@ export class TextParser extends Editor
     return @target
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
-    @target = (
-        start: start
-        end: end
-      )
+    @target = new Pos( start, end )

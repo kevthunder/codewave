@@ -9,16 +9,21 @@
 #   replace /expect\((.*)\).to.exist/ 'self.assertIsNotNone($1)'
 #   replace /expect\((.*)\).to.not.exist/ 'self.assertIsNone($1)'
 
+import {expect} from 'chai'
+import {Codewave} from '../lib/bootstrap'
+import {Logger} from '../lib/Logger'
+import {TextParser} from '../lib/TextParser'
+import {setEditorContent, assertEditorResult} from './testHelpers/test_utils'
+import { StringHelper } from '../lib/helpers/StringHelper';
+
 describe 'Codewave', ->
   beforeEach ->
-    createTextArea('Editor')
-    Codewave.logger.enabled = false;
-    @codewave = Codewave.detect('Editor')
+    Logger.enabled = false;
+    @codewave = new Codewave(new TextParser())
     
 
   afterEach ->
     delete @codewave
-    removeTextArea('Editor')
 
   it 'should use tilde brakets', ->
     expect(@codewave).property('brakets', '~~')
@@ -158,7 +163,7 @@ describe 'Codewave', ->
        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
     @codewave.onActivationKey()
     expect(@codewave.editor.text()).to.match(
-      RegExp('^'+Codewave.util.escapeRegExp(
+      RegExp('^'+StringHelper.escapeRegExp(
         """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
            <!-- ~  Lorem ipsum dolor                     ~ -->
            <!-- ~  ##spaces## ~ -->
@@ -178,7 +183,7 @@ describe 'Codewave', ->
        <!-- ~  adipiscing elit.                      ~ -->
        <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->"""
     @codewave.onActivationKey()
-    matchExp = RegExp('^'+Codewave.util.escapeRegExp(
+    matchExp = RegExp('^'+StringHelper.escapeRegExp(
         """<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
            <!-- ~  Lorem ipsum dolor                     ~ -->
            <!-- ~  ##spaces##  ~ -->

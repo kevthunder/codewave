@@ -23,6 +23,7 @@
     "browserify": "^16.2.3",
     "chai": "^4.1",
     "gulp": "^4.0",
+    "gulp-babel": "^8.0.0",
     "gulp-coffee": "^3.0.2",
     "gulp-live-server": "0.0.31",
     "gulp-mocha": "^6.0.0",
@@ -33,5 +34,8 @@
     "mocha": "^5.2.0",
     "source-map-support": "^0.5.9",
     "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "emmet": "^1.6.3"
   }
 }

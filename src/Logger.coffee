@@ -1,8 +1,11 @@
 export class Logger
+  @enabled = true
   log: (args...) ->
-    if window.console and this.enabled
+    if @isEnabled()
       for msg in args
         console.log(msg)
+  isEnabled: ->
+    console?.log? and this.enabled and Logger.enabled
   enabled: true
   runtime: (funct,name = "function") ->
     t0 = performance.now()

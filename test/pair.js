@@ -1,12 +1,14 @@
-(function() {
-  describe('Pair', function() {
-    beforeEach(function() {
+"use strict";
+
+(function () {
+  describe('Pair', function () {
+    beforeEach(function () {
       return this.pair = null;
     });
-    afterEach(function() {
+    afterEach(function () {
       return delete this.pair;
     });
-    it('should find next opening', function() {
+    it('should find next opening', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('1', '2');
       text = "abc 1 2 1 2";
@@ -15,7 +17,7 @@
       expect(res.start()).to.eql(4);
       return expect(res.name()).to.eql('opener');
     });
-    it('should find after offset', function() {
+    it('should find after offset', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('1', '2');
       text = "abc 1 2 1 2";
@@ -24,7 +26,7 @@
       expect(res.start()).to.eql(6);
       return expect(res.name()).to.eql('closer');
     });
-    it('should find next regexp opening', function() {
+    it('should find next regexp opening', function () {
       var res, text;
       this.pair = new Codewave.util.Pair(/\d/, /\$/);
       text = "abc 1 $ 1 $";
@@ -33,7 +35,7 @@
       expect(res.start()).to.eql(4);
       return expect(res.name()).to.eql('opener');
     });
-    it('should find last closing', function() {
+    it('should find last closing', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('1', '2');
       text = "abc 1 2 1 2";
@@ -42,7 +44,7 @@
       expect(res.start()).to.eql(10);
       return expect(res.name()).to.eql('closer');
     });
-    it('should find last regexp closing', function() {
+    it('should find last regexp closing', function () {
       var res, text;
       this.pair = new Codewave.util.Pair(/\d/, /\$/);
       text = "abc 1 $ 1 $";
@@ -51,7 +53,7 @@
       expect(res.start()).to.eql(10);
       return expect(res.name()).to.eql('closer');
     });
-    it('should match text openner and closer', function() {
+    it('should match text openner and closer', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('((', '))');
       text = "abc (( def )) end";
@@ -59,14 +61,14 @@
       expect(res).to.exist;
       return expect(res.raw()).to.eql([4, 13]);
     });
-    it('should return null on no match', function() {
+    it('should return null on no match', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('((', '))');
       text = "abc (( def ) end";
       res = this.pair.wrapperPos(new Codewave.util.Pos(8), text);
       return expect(res).to.not.exist;
     });
-    it('should match regexp openner and closer', function() {
+    it('should match regexp openner and closer', function () {
       var res, text;
       this.pair = new Codewave.util.Pair(/#+-+/, /-+#+/);
       text = "abc ##-- def --## end";
@@ -74,7 +76,7 @@
       expect(res).to.exist;
       return expect(res.raw()).to.eql([4, 17]);
     });
-    it('should match identical openner and closer', function() {
+    it('should match identical openner and closer', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('##', '##');
       text = "abc ## def ## end";
@@ -82,7 +84,7 @@
       expect(res).to.exist;
       return expect(res.raw()).to.eql([4, 13]);
     });
-    it('should match identical regexp openner and closer', function() {
+    it('should match identical regexp openner and closer', function () {
       var res, text;
       this.pair = new Codewave.util.Pair(/##/, /##/);
       text = "abc ## def ## end";
@@ -90,7 +92,7 @@
       expect(res).to.exist;
       return expect(res.raw()).to.eql([4, 13]);
     });
-    it('should match with optionnal close', function() {
+    it('should match with optionnal close', function () {
       var res, text;
       this.pair = new Codewave.util.Pair('((', '))', {
         optionnal_end: true
@@ -100,10 +102,10 @@
       expect(res).to.exist;
       return expect(res.raw()).to.eql([4, 14]);
     });
-    return it('should allow match validation', function() {
+    return it('should allow match validation', function () {
       var res, text;
       this.pair = new Codewave.util.Pair(/#+-+/, /-+#+/, {
-        validMatch: function(match) {
+        validMatch: function (match) {
           return match.length() < 6;
         }
       });
@@ -113,7 +115,5 @@
       return expect(res.raw()).to.eql([4, 24]);
     });
   });
-
-}).call(this);
-
-//# sourceMappingURL=pair.js.map
+}).call(void 0);
+//# sourceMappingURL=maps/pair.js.map
