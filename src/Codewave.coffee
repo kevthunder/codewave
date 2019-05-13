@@ -45,8 +45,8 @@ export class Codewave
   onActivationKey: ->
     @process = new Process()
     @logger.log('activation key')
-    @runAtCursorPos()
-    @process = null
+    @runAtCursorPos().then =>
+      @process = null
   runAtCursorPos: ->
     if @editor.allowMultiSelection()
       @runAtMultiPos(@editor.getMultiSel())
@@ -55,19 +55,20 @@ export class Codewave
   runAtPos: (pos)->
     @runAtMultiPos([pos])
   runAtMultiPos: (multiPos)->
-    if multiPos.length > 0
-      cmd = @commandOnPos(multiPos[0].end)
-      if cmd?
-        if multiPos.length > 1
-          cmd.setMultiPos(multiPos)
-        cmd.init()
-        @logger.log(cmd)
-        cmd.execute()
-      else
-        if multiPos[0].start == multiPos[0].end
-          @addBrakets(multiPos)
+    Promise.resolve().then =>
+      if multiPos.length > 0
+        cmd = @commandOnPos(multiPos[0].end)
+        if cmd?
+          if multiPos.length > 1
+            cmd.setMultiPos(multiPos)
+          cmd.init()
+          @logger.log(cmd)
+          cmd.execute()
         else
-          @promptClosingCmd(multiPos)
+          if multiPos[0].start == multiPos[0].end
+            @addBrakets(multiPos)
+          else
+            @promptClosingCmd(multiPos)
   commandOnPos: (pos) ->
     if @precededByBrakets(pos) and @followedByBrakets(pos) and @countPrevBraket(pos) % 2 == 1 
       prev = pos-@brakets.length
@@ -163,7 +164,10 @@ export class Codewave
       if recursive and cmd.content? and (!cmd.getCmd()? or !cmd.getOption('preventParseAll'))
         parser = new Codewave(new TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
-      if cmd.execute()?
+      res =  cmd.execute()
+      if res.then?
+        throw new Error('Async nested commands are not supported')
+      if res?
         if cmd.replaceEnd?
           pos = cmd.replaceEnd
         else

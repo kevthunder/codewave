@@ -1,5 +1,6 @@
 import { Pos } from './positioning/Pos';
 import { StrPos } from './positioning/StrPos';
+import { optionalPromise } from './helpers/OptionalPromise';
 
 export class Editor
   constructor: ->
@@ -72,16 +73,20 @@ export class Editor
     return null
   
   applyReplacements: (replacements) ->
-    selections = []
-    offset = 0
-    for repl in replacements
-      repl.withEditor(this)
-      repl.applyOffset(offset)
-      repl.apply()
-      offset += repl.offsetAfter(this)
-      
-      selections = selections.concat(repl.selections)
-    @applyReplacementsSelections(selections)
+    replacements.reduce((promise,repl)=>
+        promise.then (opt)=>
+          repl.withEditor(this)
+          repl.applyOffset(opt.offset)
+          optionalPromise(repl.apply()).then =>
+            {
+              selections: opt.selections.concat(repl.selections),
+              offset: opt.offset+repl.offsetAfter(this) 
+            }
+      , optionalPromise({selections: [],offset: 0}))
+    .then (opt)=>
+      @applyReplacementsSelections(opt.selections)
+    .result()
+    
       
   applyReplacementsSelections: (selections) ->
     if selections.length > 0

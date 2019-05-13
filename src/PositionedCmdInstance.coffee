@@ -166,7 +166,6 @@ export class PositionedCmdInstance extends CmdInstance
       if @resultIsAvailable()
         if (res = @result())?
           @replaceWith(res)
-          return true
       else
           return @runExecuteFunct()
   getEndPos: ->
@@ -237,7 +236,7 @@ export class PositionedCmdInstance extends CmdInstance
     cursorPos = @getCursorFromResult(repl)
     repl.selections = [new Pos(cursorPos, cursorPos)]
     replacements = @checkMulti(repl)
-    @codewave.editor.applyReplacements(replacements)
-    
     @replaceStart = repl.start
     @replaceEnd = repl.resEnd()
+    @codewave.editor.applyReplacements(replacements)
+    

@@ -1,6 +1,7 @@
 import { PosCollection } from './positioning/PosCollection';
 import { Replacement } from './positioning/Replacement';
 import { Pos } from './positioning/Pos';
+import { optionalPromise } from './helpers/OptionalPromise';
 
 export class ClosingPromp
   constructor: (@codewave,selections) ->
@@ -11,13 +12,12 @@ export class ClosingPromp
     @selections = new PosCollection(selections)
   begin: ->
     @started = true
-    @addCarrets()
-    if @codewave.editor.canListenToChange()
-      @proxyOnChange = (ch=null)=> @onChange(ch)
-      @codewave.editor.addChangeListener( @proxyOnChange )
-      
-    
-    return this
+    optionalPromise(@addCarrets()).then =>
+      if @codewave.editor.canListenToChange()
+        @proxyOnChange = (ch=null)=> @onChange(ch)
+        @codewave.editor.addChangeListener( @proxyOnChange )
+      return this
+    .result()
   addCarrets: ->
     @replacements = @selections.wrap(
       @codewave.brakets + @codewave.carretChar + @codewave.brakets + "\n",
