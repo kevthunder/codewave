@@ -165,9 +165,9 @@ export class Codewave
         parser = new Codewave(new TextParser(cmd.content), {parent: this})
         cmd.content = parser.parseAll()
       res =  cmd.execute()
-      if res.then?
-        throw new Error('Async nested commands are not supported')
       if res?
+        if res.then?
+          throw new Error('Async nested commands are not supported')
         if cmd.replaceEnd?
           pos = cmd.replaceEnd
         else

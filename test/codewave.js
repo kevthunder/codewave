@@ -48,7 +48,6 @@ describe('Codewave', function () {
   it('should wrap selection with brakets', function () {
     (0, _test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
     return this.codewave.onActivationKey().then(() => {
-      console.log('assertEditorResult', this.codewave.editor.text());
       return (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/~~');
     });
   });

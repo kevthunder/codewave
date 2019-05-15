@@ -41,7 +41,6 @@ describe 'Codewave', ->
   it 'should wrap selection with brakets', ->
     setEditorContent @codewave.editor, '|[lorem ipsum]'
     @codewave.onActivationKey().then =>
-      console.log('assertEditorResult',@codewave.editor.text())
       assertEditorResult @codewave.editor, '~~|~~\nlorem ipsum\n~~/~~'
     
   it 'should create brakets at end', ->

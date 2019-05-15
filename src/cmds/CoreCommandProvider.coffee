@@ -474,7 +474,7 @@ class EditCmd extends BaseCommand
         """
         ~~box cmd:"#{@instance.cmd.fullName} #{name}"~~
         #{@propsDisplay()}
-        ~~save~~ ~~!close~~
+        ~~!save~~ ~~!close~~
         ~~/box~~
         """)
       parser.checkCarret = no

@@ -1,31 +1,37 @@
-describe 'Codewave', ->
+
+import {expect} from 'chai'
+import {Codewave} from '../lib/bootstrap'
+import {Logger} from '../lib/Logger'
+import {Command} from '../lib/Command'
+import {TextParser} from '../lib/TextParser'
+import {setEditorContent, assertEditorResult} from './testHelpers/test_utils'
+
+
+describe 'Codewave - Command Authoring', ->
   beforeEach ->
-    createTextArea('Editor')
-    Codewave.logger.enabled = false;
-    Codewave.Command.resetSaved()
-    @codewave = Codewave.detect('Editor')
+    Logger.enabled = false;
+    @codewave = new Codewave(new TextParser())
     
 
   afterEach ->
     delete @codewave
-    Codewave.Command.resetSaved()
-    removeTextArea('Editor')
+    Command.resetSaved()
 
   it 'should show edit box for new command', ->
     @codewave.editor.setLang('js')
     setEditorContent @codewave.editor, '~~e|dit new_cmd~~'
-    @codewave.onActivationKey()
-    assertEditorResult @codewave.editor, """
-      /* ~~core:edit new_cmd~~~~~ */
-      /* ~  ~~help~~            ~ */
-      /* ~                      ~ */
-      /* ~  ~~/help~~           ~ */
-      /* ~  ~~source~~          ~ */
-      /* ~  |                    ~ */
-      /* ~  ~~/source~~         ~ */
-      /* ~  ~~save~~ ~~close~~  ~ */
-      /* ~~/core:edit~~~~~~~~~~~~ */
-      """
+    @codewave.onActivationKey().then =>
+      assertEditorResult @codewave.editor, """
+        /* ~~core:edit new_cmd~~~~~ */
+        /* ~  ~~help~~            ~ */
+        /* ~                      ~ */
+        /* ~  ~~/help~~           ~ */
+        /* ~  ~~source~~          ~ */
+        /* ~  |                    ~ */
+        /* ~  ~~/source~~         ~ */
+        /* ~  ~~save~~ ~~close~~  ~ */
+        /* ~~/core:edit~~~~~~~~~~~~ */
+        """
       
   it 'should save new command', ->
     expect(@codewave.context.getCmd('new_cmd')).to.not.exist
@@ -41,9 +47,9 @@ describe 'Codewave', ->
       /* ~  ~~|save~~ ~~close~~  ~ */
       /* ~~/core:edit~~~~~~~~~~~~ */
       """
-    @codewave.onActivationKey()
-    expect(@codewave.context.getCmd('new_cmd')).to.exist
-    assertEditorResult @codewave.editor, '|'
+    @codewave.onActivationKey().then =>
+      expect(@codewave.context.getCmd('new_cmd')).to.exist
+      assertEditorResult @codewave.editor, '|'
     
   
   it 'new command should expand', ->
@@ -59,15 +65,17 @@ describe 'Codewave', ->
       /* ~  ~~|save~~ ~~close~~  ~ */
       /* ~~/core:edit~~~~~~~~~~~~ */
       """
-    @codewave.onActivationKey()
-    setEditorContent @codewave.editor, """~~new_cmd|~~"""
-    @codewave.onActivationKey()
-    assertEditorResult @codewave.editor, 'Lorem ipsum|'
+    @codewave.onActivationKey().then =>
+      setEditorContent @codewave.editor, """~~new_cmd|~~"""
+      @codewave.onActivationKey()
+    .then =>
+      assertEditorResult @codewave.editor, 'Lorem ipsum|'
     
   it 'should allow command alias', ->
     @codewave.editor.setLang('js')
     setEditorContent @codewave.editor, '~~alias hello hello2|~~'
-    @codewave.onActivationKey()
-    setEditorContent @codewave.editor, """~~hello2|~~"""
-    @codewave.onActivationKey()
-    assertEditorResult @codewave.editor, 'Hello, World!|'
+    @codewave.onActivationKey().then =>
+      setEditorContent @codewave.editor, """~~hello2|~~"""
+      @codewave.onActivationKey()
+    .then =>
+      assertEditorResult @codewave.editor, 'Hello, World!|'
