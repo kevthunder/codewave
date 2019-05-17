@@ -5,18 +5,30 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.TestEditor = void 0;
 
-var _Pos = require("./positioning/Pos");
+var _Pos = require("../../lib/positioning/Pos");
 
-var _TextAreaEditor = require("./TextAreaEditor");
+var _TextParser = require("../../lib/TextParser");
 
-var TestEditor = class TestEditor extends _TextAreaEditor.TextAreaEditor {
+var TestEditor = class TestEditor extends _TextParser.TextParser {
   constructor(target) {
     super(target);
     this.selections = [];
+    this.changeListeners = [];
   }
 
   allowMultiSelection() {
     return true;
+  }
+
+  getCursorPos() {
+    var res;
+    res = super.getCursorPos();
+
+    if (res != null) {
+      return res;
+    } else {
+      return new _Pos.Pos(0, 0);
+    }
   }
 
   setCursorPos(start, end) {
@@ -63,6 +75,35 @@ var TestEditor = class TestEditor extends _TextAreaEditor.TextAreaEditor {
     return this.selections = [this.getCursorPos()];
   }
 
+  canListenToChange() {
+    return true;
+  }
+
+  addChangeListener(callback) {
+    return this.changeListeners.push(callback);
+  }
+
+  removeChangeListener(callback) {
+    var i;
+
+    if ((i = this.changeListeners.indexOf(callback)) > -1) {
+      return this.changeListeners.splice(i, 1);
+    }
+  }
+
+  onAnyChange(e) {
+    var callback, j, len, ref, results;
+    ref = this.changeListeners;
+    results = [];
+
+    for (j = 0, len = ref.length; j < len; j++) {
+      callback = ref[j];
+      results.push(callback());
+    }
+
+    return results;
+  }
+
 };
 exports.TestEditor = TestEditor;
-//# sourceMappingURL=maps/TestEditor.js.map
+//# sourceMappingURL=../maps/testHelpers/TestEditor.js.map

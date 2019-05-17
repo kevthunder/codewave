@@ -1,13 +1,20 @@
 
-import { Pos } from './positioning/Pos';
-import { TextAreaEditor } from './TextAreaEditor';
+import { Pos } from '../../lib/positioning/Pos';
+import { TextParser } from '../../lib/TextParser';
 
-export class TestEditor extends TextAreaEditor
+export class TestEditor extends TextParser
   constructor: (target) ->
     super(target)
     @selections = []
+    @changeListeners = []
   allowMultiSelection: ->
     return true
+  getCursorPos: ->
+    res = super()
+    if res?
+      res
+    else
+      new Pos(0, 0)
   setCursorPos: (start, end) ->
     end = start if arguments.length < 2
     old = @getCursorPos()
@@ -28,3 +35,13 @@ export class TestEditor extends TextAreaEditor
     @selections.push(new Pos(start, end))
   resetSel: (start, end) ->
     @selections = [@getCursorPos()]
+  canListenToChange: ->
+    return true
+  addChangeListener: (callback) ->
+    @changeListeners.push(callback)
+  removeChangeListener: (callback) ->
+    if (i = @changeListeners.indexOf(callback)) > -1
+      @changeListeners.splice(i, 1)
+  onAnyChange: (e) ->
+    for callback in @changeListeners
+      callback()

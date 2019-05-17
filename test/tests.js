@@ -20,5 +20,9 @@ require("./codewave");
 
 require("./cmd_authoring");
 
+require("./php");
+
+require("./closing_promp");
+
 _Command.Command.providers.push(new _TestCommandProvider.TestCommandProvider());
 //# sourceMappingURL=maps/tests.js.map
