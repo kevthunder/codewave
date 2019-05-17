@@ -2,7 +2,7 @@
 import { Pos } from '../../lib/positioning/Pos';
 import { TextParser } from '../../lib/TextParser';
 
-export class TestEditor extends TextParser
+export class TestMultiEditor extends TextParser
   constructor: (target) ->
     super(target)
     @selections = []

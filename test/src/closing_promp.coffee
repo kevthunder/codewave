@@ -1,14 +1,14 @@
 import {expect} from 'chai'
 import {Codewave} from '../lib/bootstrap'
 import {Logger} from '../lib/Logger'
-import {TestEditor} from './testHelpers/TestEditor'
-import {TextParser} from '../lib/TextParser'
+import {TestMultiEditor} from './testHelpers/TestMultiEditor'
+import {TestMonoEditor} from './testHelpers/TestMonoEditor'
 import {setEditorContent, assertEditorResult} from './testHelpers/test_utils'
 
 describe 'ClosingPromp', ->
   beforeEach ->
     Logger.enabled = false;
-    @codewave = new Codewave(new TestEditor())
+    @codewave = new Codewave(new TestMultiEditor())
     
 
   afterEach ->
@@ -115,27 +115,24 @@ describe 'ClosingPromp', ->
       assertEditorResult @codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~'
 
 
-describe.skip 'SimulatedClosingPromp', ->
+describe 'SimulatedClosingPromp', ->
   beforeEach ->
     Logger.enabled = false;
-    @codewave = new Codewave(new TextParser())
+    @codewave = new Codewave(new TestMonoEditor())
     
 
   afterEach ->
     delete @codewave
     
-  it 'should react to change', (done) ->
+  it 'should react to change', ->
     setEditorContent @codewave.editor, '|[lorem ipsum]'
     @codewave.onActivationKey().then =>
       closingPromp = @codewave.closingPromp
       expect(closingPromp).property('nbChanges', 0)
       assertEditorResult @codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~'
       setEditorContent @codewave.editor, '~~e|~~\nlorem ipsum\n~~/~~'
-      @codewave.editor.onSkipedChange = =>
-        @codewave.editor.onAnyChange()
-        expect(closingPromp).property('nbChanges', 1)
-        done()
       @codewave.editor.onAnyChange()
+      expect(closingPromp).property('nbChanges', 1)
     
     
   it 'should replicate changes', (done)->
@@ -144,24 +141,25 @@ describe.skip 'SimulatedClosingPromp', ->
       closingPromp = @codewave.closingPromp
       assertEditorResult @codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~'
       setEditorContent @codewave.editor, '~~test|~~\nlorem ipsum\n~~/~~'
-      @codewave.editor.onSkipedChange = =>
-        @codewave.editor.onAnyChange()
       closingPromp.onTypeSimulated = =>
         assertEditorResult @codewave.editor, '~~test|~~\nlorem ipsum\n~~/test~~'
         done()
       @codewave.editor.onAnyChange()
+    null
     
     
-  it 'should stop after space', ->
+  it 'should stop after space', (done)->
     setEditorContent @codewave.editor, '|[lorem ipsum]'
     @codewave.onActivationKey().then =>
       closingPromp = @codewave.closingPromp
       assertEditorResult @codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~'
-      setEditorContent @codewave.editor, '~~test |~~\nlorem ipsum\n~~/~~'
-      @codewave.editor.onSkipedChange = =>
-        @codewave.editor.onAnyChange()
+      setEditorContent @codewave.editor, '~~test|~~\nlorem ipsum\n~~/~~'
       closingPromp.onTypeSimulated = =>
-        assertEditorResult @codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~'
+        expect(closingPromp).property('started', true)
+        assertEditorResult @codewave.editor, '~~test|~~\nlorem ipsum\n~~/test~~'
+        setEditorContent @codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~'
+        @codewave.editor.onAnyChange()
         expect(closingPromp).property('started', false)
         done()
       @codewave.editor.onAnyChange()
+    null

@@ -12,6 +12,11 @@ var sourcemaps = require('gulp-sourcemaps');
 var gls = require('gulp-live-server');
 var open = require('gulp-open');
 
+function swallowError (error) {
+  console.log(error.toString())
+  this.emit('end')
+}
+
 babelPreset = function(){
   return babel({
       presets: [
@@ -29,7 +34,7 @@ gulp.task('coffee', function() {
     .pipe(sourcemaps.init())
     .pipe(coffee({bare: true}))
     .pipe(babelPreset())
-    .pipe(sourcemaps.write('./maps'))
+    .pipe(sourcemaps.write('./maps', {sourceRoot: '../src'}))
     .pipe(gulp.dest('./lib/'));
 });
 
@@ -54,7 +59,7 @@ gulp.task('coffeeTest', function() {
     .pipe(sourcemaps.init())
     .pipe(coffee())
     .pipe(babelPreset())
-    .pipe(sourcemaps.write('./maps'))
+    .pipe(sourcemaps.write('./maps', {sourceRoot: './src'}))
     .pipe(gulp.dest('./test/'));
 });
 
@@ -82,7 +87,8 @@ gulp.task('serve', function(done) {
   var server = gls.static('demo');
   server.start();
 
-  var watcher = gulp.watch(['./demo/**/*.*']);
+  var watcher = gulp.watch(['./demo/**/*.*'])
+  .on('error', swallowError)
   watcher.on('all', function(event,path, stats) {
     console.log('notify',path);
     server.notify({path:path});
@@ -100,7 +106,8 @@ gulp.task('open', function(){
 });
 
 gulp.task('watchCoffee', function() {
-  return gulp.watch(['./src/**/*.coffee'], gulp.series('build', 'copy-lib'));
+  return gulp.watch(['./src/**/*.coffee'], gulp.series('build', 'copy-lib'))
+  .on('error', swallowError)
 });
 
 gulp.task('watch', gulp.parallel('watchCoffee'));

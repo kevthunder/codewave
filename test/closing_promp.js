@@ -6,16 +6,16 @@ var _bootstrap = require("../lib/bootstrap");
 
 var _Logger = require("../lib/Logger");
 
-var _TestEditor = require("./testHelpers/TestEditor");
+var _TestMultiEditor = require("./testHelpers/TestMultiEditor");
 
-var _TextParser = require("../lib/TextParser");
+var _TestMonoEditor = require("./testHelpers/TestMonoEditor");
 
 var _test_utils = require("./testHelpers/test_utils");
 
 describe('ClosingPromp', function () {
   beforeEach(function () {
     _Logger.Logger.enabled = false;
-    return this.codewave = new _bootstrap.Codewave(new _TestEditor.TestEditor());
+    return this.codewave = new _bootstrap.Codewave(new _TestMultiEditor.TestMultiEditor());
   });
   afterEach(function () {
     return delete this.codewave;
@@ -138,15 +138,15 @@ describe('ClosingPromp', function () {
     });
   });
 });
-describe.skip('SimulatedClosingPromp', function () {
+describe('SimulatedClosingPromp', function () {
   beforeEach(function () {
     _Logger.Logger.enabled = false;
-    return this.codewave = new _bootstrap.Codewave(new _TextParser.TextParser());
+    return this.codewave = new _bootstrap.Codewave(new _TestMonoEditor.TestMonoEditor());
   });
   afterEach(function () {
     return delete this.codewave;
   });
-  it('should react to change', function (done) {
+  it('should react to change', function () {
     (0, _test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
     return this.codewave.onActivationKey().then(() => {
       var closingPromp;
@@ -154,27 +154,17 @@ describe.skip('SimulatedClosingPromp', function () {
       (0, _chai.expect)(closingPromp).property('nbChanges', 0);
       (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, _test_utils.setEditorContent)(this.codewave.editor, '~~e|~~\nlorem ipsum\n~~/~~');
-
-      this.codewave.editor.onSkipedChange = () => {
-        this.codewave.editor.onAnyChange();
-        (0, _chai.expect)(closingPromp).property('nbChanges', 1);
-        return done();
-      };
-
-      return this.codewave.editor.onAnyChange();
+      this.codewave.editor.onAnyChange();
+      return (0, _chai.expect)(closingPromp).property('nbChanges', 1);
     });
   });
   it('should replicate changes', function (done) {
     (0, _test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
-    return this.codewave.onActivationKey().then(() => {
+    this.codewave.onActivationKey().then(() => {
       var closingPromp;
       closingPromp = this.codewave.closingPromp;
       (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, _test_utils.setEditorContent)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/~~');
-
-      this.codewave.editor.onSkipedChange = () => {
-        return this.codewave.editor.onAnyChange();
-      };
 
       closingPromp.onTypeSimulated = () => {
         (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/test~~');
@@ -183,27 +173,28 @@ describe.skip('SimulatedClosingPromp', function () {
 
       return this.codewave.editor.onAnyChange();
     });
+    return null;
   });
-  return it('should stop after space', function () {
+  return it('should stop after space', function (done) {
     (0, _test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
-    return this.codewave.onActivationKey().then(() => {
+    this.codewave.onActivationKey().then(() => {
       var closingPromp;
       closingPromp = this.codewave.closingPromp;
       (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
-      (0, _test_utils.setEditorContent)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/~~');
-
-      this.codewave.editor.onSkipedChange = () => {
-        return this.codewave.editor.onAnyChange();
-      };
+      (0, _test_utils.setEditorContent)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/~~');
 
       closingPromp.onTypeSimulated = () => {
-        (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~');
+        (0, _chai.expect)(closingPromp).property('started', true);
+        (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/test~~');
+        (0, _test_utils.setEditorContent)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~');
+        this.codewave.editor.onAnyChange();
         (0, _chai.expect)(closingPromp).property('started', false);
         return done();
       };
 
       return this.codewave.editor.onAnyChange();
     });
+    return null;
   });
 });
 //# sourceMappingURL=maps/closing_promp.js.map
