@@ -9,4 +9,5 @@ Codewave.detect = (target) ->
 Codewave.require = require
 
 window.Codewave = Codewave
+
   

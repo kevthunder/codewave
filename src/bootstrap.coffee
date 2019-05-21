@@ -6,6 +6,7 @@ import { PhpCommandProvider } from './cmds/PhpCommandProvider';
 import { HtmlCommandProvider } from './cmds/HtmlCommandProvider';
 import { Pos } from './positioning/Pos';
 import { WrappedPos } from './positioning/WrappedPos';
+import { LocalStorageEngine } from './storageEngines/LocalStorageEngine';
 
 Pos.wrapClass = WrappedPos
 
@@ -17,5 +18,8 @@ Command.providers = [
   new PhpCommandProvider()
   new HtmlCommandProvider()
 ]
+
+if localStorage?
+  Command.storage = new LocalStorageEngine()
 
 export { Codewave }

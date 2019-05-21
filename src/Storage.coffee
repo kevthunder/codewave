@@ -1,11 +1,22 @@
 
+import { Logger } from './Logger';
+
 export class Storage
-  constructor: () ->
+  constructor: (@engine) ->
+
   save: (key,val) ->
-    if localStorage?
-      localStorage.setItem(@fullKey(key), JSON.stringify(val))
+    if @engineAvailable()
+      @engine.save(key,val)
+
   load: (key) ->
-    if localStorage?
-      JSON.parse(localStorage.getItem(@fullKey(key)))
-  fullKey: (key) ->
-    'CodeWave_'+key
+    if @engineAvailable()
+      @engine.load(key)
+
+  engineAvailable: () ->
+    if engine?
+      true
+    else
+      @logger = @logger || new Logger()
+      @logger.log('No storage engine available')
+      false
+    

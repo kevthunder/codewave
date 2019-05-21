@@ -190,6 +190,8 @@ export class Command
     
   @providers = []
 
+  @storage = new Storage()
+
   @initCmds: ->
     Command.cmds = new Command(null,{
       'cmds':{
@@ -207,24 +209,21 @@ export class Command
       provider.register(Command.cmds)
 
   @saveCmd: (fullname, data) ->
-    storage = new Storage()
     Command.cmds.setCmdData(fullname,data)
-    savedCmds = storage.load('cmds')
+    savedCmds = @storage.load('cmds')
     unless savedCmds?
       savedCmds = {}
     savedCmds[fullname] = data
-    storage.save('cmds',savedCmds)
+    @storage.save('cmds',savedCmds)
 
   @loadCmds: ->
-    storage = new Storage()
-    savedCmds = storage.load('cmds')
+    savedCmds = @storage.load('cmds')
     if savedCmds? 
       for fullname, data of savedCmds
         Command.cmds.setCmdData(fullname, data)
 
   @resetSaved: ->
-    storage = new Storage()
-    storage.save('cmds',{})
+    @storage.save('cmds',{})
 
   @makeVarCmd = (name,base={}) -> 
     base.execute = (instance) ->

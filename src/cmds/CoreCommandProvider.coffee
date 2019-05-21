@@ -2,7 +2,6 @@
 import { Command, BaseCommand } from '../Command';
 import { LangDetector } from '../Detector';
 import { BoxHelper } from '../BoxHelper';
-import { Storage } from '../Storage';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
 import { Replacement } from '../positioning/Replacement';
@@ -310,7 +309,7 @@ getContent = (instance) ->
   if affixes_empty
     return prefix + suffix
 renameCommand = (instance) ->
-  storage = new Storage()
+  storage = Command.storage
   savedCmds = storage.load('cmds')
   origninalName = instance.getParam([0,'from'])
   newName = instance.getParam([1,'to'])
@@ -333,7 +332,7 @@ renameCommand = (instance) ->
 removeCommand = (instance) ->
   name = instance.getParam([0,'name'])
   if name?
-    storage = new Storage()
+    storage = Command.storage
     savedCmds = storage.load('cmds')
     cmd = instance.context.getCmd(name)
     if savedCmds[name]? and cmd?
