@@ -209,18 +209,18 @@ export class Command
       provider.register(Command.cmds)
 
   @saveCmd: (fullname, data) ->
-    Command.cmds.setCmdData(fullname,data)
-    savedCmds = @storage.load('cmds')
-    unless savedCmds?
-      savedCmds = {}
-    savedCmds[fullname] = data
-    @storage.save('cmds',savedCmds)
+    Promise.resolve().then =>
+      Command.cmds.setCmdData(fullname,data)
+    .then =>
+      @storage.saveInPath('cmds', fullname, data)
 
   @loadCmds: ->
-    savedCmds = @storage.load('cmds')
-    if savedCmds? 
-      for fullname, data of savedCmds
-        Command.cmds.setCmdData(fullname, data)
+    Promise.resolve().then =>
+      savedCmds = @storage.load('cmds')
+    .then (savedCmds)=>
+      if savedCmds? 
+        for fullname, data of savedCmds
+          Command.cmds.setCmdData(fullname, data)
 
   @resetSaved: ->
     @storage.save('cmds',{})

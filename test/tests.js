@@ -14,6 +14,8 @@ require("./wrapping");
 
 require("./replacement");
 
+require("./fileStorageEngine");
+
 require("./box_helper");
 
 require("./codewave");
@@ -21,8 +23,6 @@ require("./codewave");
 require("./cmd_authoring");
 
 require("./php");
-
-require("./closing_promp");
 
 _Command.Command.providers.push(new _TestCommandProvider.TestCommandProvider());
 //# sourceMappingURL=maps/tests.js.map

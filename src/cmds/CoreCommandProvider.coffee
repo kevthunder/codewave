@@ -309,42 +309,51 @@ getContent = (instance) ->
   if affixes_empty
     return prefix + suffix
 renameCommand = (instance) ->
-  storage = Command.storage
-  savedCmds = storage.load('cmds')
-  origninalName = instance.getParam([0,'from'])
-  newName = instance.getParam([1,'to'])
-  if origninalName? and newName?
-    cmd = instance.context.getCmd(origninalName)
-    if savedCmds[origninalName]? and cmd?
-      unless newName.indexOf(':') > -1
-        newName = cmd.fullName.replace(origninalName,'') + newName
-      cmdData = savedCmds[origninalName]
-      Command.cmds.setCmdData(newName,cmdData)
-      cmd.unregister()
-      savedCmds[newName] = cmdData
-      delete savedCmds[origninalName]
-      storage.save('cmds',savedCmds)
-      return ""
-    else if cmd? 
-      return "~~not_applicable~~"
-    else 
-      return "~~not_found~~"
-removeCommand = (instance) ->
-  name = instance.getParam([0,'name'])
-  if name?
+  Promise.resolve().then =>
     storage = Command.storage
-    savedCmds = storage.load('cmds')
-    cmd = instance.context.getCmd(name)
-    if savedCmds[name]? and cmd?
-      cmdData = savedCmds[name]
-      cmd.unregister()
-      delete savedCmds[name]
-      storage.save('cmds',savedCmds)
-      return ""
-    else if cmd? 
-      return "~~not_applicable~~"
-    else 
-      return "~~not_found~~"
+    storage.load('cmds')
+  .then (savedCmds)=>
+    origninalName = instance.getParam([0,'from'])
+    newName = instance.getParam([1,'to'])
+    if origninalName? and newName?
+      cmd = instance.context.getCmd(origninalName)
+      if savedCmds[origninalName]? and cmd?
+        unless newName.indexOf(':') > -1
+          newName = cmd.fullName.replace(origninalName,'') + newName
+        cmdData = savedCmds[origninalName]
+        Command.cmds.setCmdData(newName,cmdData)
+        cmd.unregister()
+        savedCmds[newName] = cmdData
+        delete savedCmds[origninalName]
+        Promise.resolve().then =>
+          storage.save('cmds',savedCmds)
+        .then =>
+          return ""
+      else if cmd? 
+        return "~~not_applicable~~"
+      else 
+        return "~~not_found~~"
+removeCommand = (instance) ->
+  Promise.resolve().then =>
+    name = instance.getParam([0,'name'])
+    if name?
+      Promise.resolve().then =>
+        storage = Command.storage
+        savedCmds = storage.load('cmds')
+      .then (savedCmds)=>
+        cmd = instance.context.getCmd(name)
+        if savedCmds[name]? and cmd?
+          cmdData = savedCmds[name]
+          cmd.unregister()
+          delete savedCmds[name]
+          Promise.resolve().then =>
+            storage.save('cmds',savedCmds)
+          .then =>
+            return ""
+        else if cmd? 
+          return "~~not_applicable~~"
+        else 
+          return "~~not_found~~"
 aliasCommand = (instance) ->
   name = instance.getParam([0,'name'])
   alias = instance.getParam([1,'alias'])

@@ -8,12 +8,16 @@ export class Storage
     if @engineAvailable()
       @engine.save(key,val)
 
-  load: (key) ->
+  saveInPath: (path, key, val) ->
     if @engineAvailable()
+      @engine.saveInPath(path, key, val)
+
+  load: (key) ->
+    if @engine?
       @engine.load(key)
 
   engineAvailable: () ->
-    if engine?
+    if @engine?
       true
     else
       @logger = @logger || new Logger()
