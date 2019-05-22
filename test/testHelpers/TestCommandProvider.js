@@ -7,11 +7,6 @@ exports.TestCommandProvider = void 0;
 
 var _Command = require("../../lib/Command");
 
-// [pawa python]
-//   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
-//   replace (BaseCommand (command.BaseCommand
-//   replace EditCmd.props editCmdProps
-//   replace EditCmd.setCmds editCmdSetCmds reparse
 var TestCommandProvider = class TestCommandProvider {
   register(cmds) {
     var test;

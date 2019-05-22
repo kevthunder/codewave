@@ -15,7 +15,7 @@ export class StringHelper
     Array(nb+1).join(txt)
     
   @getTxtSize: (txt) ->
-    lines = txt.replace(/\r/g,'').split("\n")  # [pawa python] replace '/\r/g' "'\r'"
+    lines = txt.replace(/\r/g,'').split("\n")
     w = 0
     for l in lines
       w = Math.max(w,l.length)
@@ -23,7 +23,7 @@ export class StringHelper
 
   @indentNotFirst: (text,nb=1,spaces='  ') ->
     if text?
-      reg = /\n/g  # [pawa python] replace '/\n/g' "re.compile(r'\n',re.M)"
+      reg = /\n/g
       return text.replace(reg, "\n" + @repeat(spaces, nb))
     else
       return text
@@ -53,6 +53,6 @@ export class StringHelper
       
   @getCarretPos: (txt, carretChar = '|') ->
     reQuoted = new RegExp(@escapeRegExp(carretChar+carretChar), "g")
-    txt = txt.replace(reQuoted, ' ') # [pawa python] replace reQuoted carretChar+carretChar
+    txt = txt.replace(reQuoted, ' ')
     if (i = txt.indexOf(carretChar)) > -1
       return i

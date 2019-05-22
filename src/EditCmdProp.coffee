@@ -1,6 +1,3 @@
-# [pawa]
-#   replace Codewave.Command.set codewave_core.core_cmds.set
-
 import { Command } from './Command';
 
 export class EditCmdProp
@@ -52,7 +49,7 @@ class EditCmdProp.source extends EditCmdProp
   valFromCmd: (cmd)->
     res = super(cmd)
     if res?
-      res = res.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
+      res = res.replace(/\|/g, '||')
     return res
   setCmd: (cmds)->
     cmds[@name] = Command.makeVarCmd(@name,{'preventParseAll' : true})

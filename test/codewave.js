@@ -12,16 +12,6 @@ var _test_utils = require("./testHelpers/test_utils");
 
 var _StringHelper = require("../lib/helpers/StringHelper");
 
-// [pawa]
-//   replace /it 'should (.*)', ->/ 'def test_${slug}(self):' alter:$1,slug,/[\s()]/,'_' 
-//   replace /it '(.*)', ->/ 'def test_${slug}(self):' alter:$1,slug,/[\s()]/,'_' 
-//   replace /setEditorContent @(.*)$/ 'test_helper.setEditorContent(self.$1)'
-//   replace /assertEditorResult @(.*)$/ 'test_helper.assertEditorResult(self,self.$1)'
-//   replace /expect\((.*)\).property\('([^']*)',(.*)\)$/ 'self.assertEqual($1.$2,$3)'
-//   replace /expect\((.*)\).to.contain\((.*)\)/ 'self.assertIn($2, $1)'
-//   replace /expect\((.*)\).to.eql\((.*)\)/ 'self.assertEqual($1, $2)'
-//   replace /expect\((.*)\).to.exist/ 'self.assertIsNotNone($1)'
-//   replace /expect\((.*)\).to.not.exist/ 'self.assertIsNone($1)'
 describe('Codewave', function () {
   beforeEach(function () {
     _Logger.Logger.enabled = false;

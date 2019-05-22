@@ -37,7 +37,7 @@ export class Pair
   matchAnyReg: ->
     groups = []
     for key, reg of @matchAnyParts()
-      groups.push('('+reg.source+')')  # [pawa python] replace reg.source reg.pattern
+      groups.push('('+reg.source+')')
     return new RegExp(groups.join('|'))
   matchAny: (text,offset=0) ->
     while (match = @_matchAny(text,offset))? and !match.valid()

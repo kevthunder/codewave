@@ -151,7 +151,7 @@ export class Codewave
     @editor.applyReplacements(replacements)
   promptClosingCmd: (selections) ->
     @closingPromp.stop() if @closingPromp?
-    @closingPromp = ClosingPromp.newFor(this,selections).begin() # [pawa python] replace /\(new (.*)\).begin/ $1.begin reparse
+    @closingPromp = ClosingPromp.newFor(this,selections).begin()
   parseAll: (recursive = true) ->
     if @nested > 100
       throw "Infinite parsing Recursion"
@@ -188,10 +188,10 @@ export class Codewave
     return StringHelper.removeCarret(txt,@carretChar)
   getCarretPos: (txt) ->
     return StringHelper.getCarretPos(txt,@carretChar)
-  regMarker: (flags="g") -> # [pawa python] replace flags="g" flags=0 
+  regMarker: (flags="g") ->
     return new RegExp(StringHelper.escapeRegExp(@marker), flags)
   removeMarkers: (text) ->
-    return text.replace(@regMarker(),'') # [pawa python] replace @regMarker() self.marker 
+    return text.replace(@regMarker(),'')
 
   @init: ->
     unless @inited

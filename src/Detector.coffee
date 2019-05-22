@@ -1,7 +1,3 @@
-# [pawa python]
-#   replace /data.(\w+)/ data['$1']
-#   replace codewave.editor.text() codewave.editor.text
-
 import { Pair } from './positioning/Pair';
 
 export class Detector

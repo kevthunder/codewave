@@ -1,6 +1,3 @@
-# [pawa]
-#   replace 'replace(/\t/g' 'replace("\t"'
-
 import { Context } from './Context';
 import { Codewave } from './Codewave';
 import { TextParser } from './TextParser';

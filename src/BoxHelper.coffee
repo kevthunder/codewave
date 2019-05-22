@@ -1,6 +1,3 @@
-# [pawa]
-#   replace 'replace(/\r/g' "replace('\r'"
-
 import { StringHelper } from './helpers/StringHelper';
 import { ArrayHelper } from './helpers/ArrayHelper';
 import { Pair } from './positioning/Pair';
@@ -111,8 +108,8 @@ export class BoxHelper
       if getPad
         @pad = Math.min(resStart[3].length,resEnd[1].length)
       @indent = resStart[1].length
-      startPos = resStart.index + resStart[1].length + resStart[2].length + @pad # [pawa python] replace 'resStart.index + resStart[1].length + resStart[2].length' resStart.end(2)
-      endPos = resEnd.index + resEnd[1].length - @pad # [pawa python] replace 'resEnd.index + resEnd[1].length' resEnd.start(2)
+      startPos = resStart.index + resStart[1].length + resStart[2].length + @pad
+      endPos = resEnd.index + resEnd[1].length - @pad
       @width = endPos - startPos
     return this
   reformatLines: (text,options={}) ->
@@ -126,8 +123,8 @@ export class BoxHelper
       ecl = StringHelper.escapeRegExp(@context.wrapCommentLeft())
       ecr = StringHelper.escapeRegExp(@context.wrapCommentRight())
       ed = StringHelper.escapeRegExp(@deco)
-      flag = if options['multiline'] then 'gm' else ''    # [pawa python] replace "'gm'" re.M
-      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}", flag)    # [pawa python] replace #{@pad} '"+str(self.pad)+"'
+      flag = if options['multiline'] then 'gm' else ''
+      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})*\\s{0,#{@pad}}", flag)
       re2 = new RegExp("\\s*(?:#{ed})*#{ecr}\\s*$", flag)
       return text.replace(re1,'').replace(re2,'')
    

@@ -1,8 +1,4 @@
-# [pawa python]
-#   replace @Codewave.Command.cmdInitialisers command.cmdInitialisersBaseCommand
-#   replace (BaseCommand (command.BaseCommand
-#   replace EditCmd.props editCmdProps
-#   replace EditCmd.setCmds editCmdSetCmds reparse
+
 import { Command } from '../Command';
 
 export class JsCommandProvider

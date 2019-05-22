@@ -124,7 +124,7 @@ export class Command
       @resultStr = data
       @options['parse'] = true
       return true
-    else if data? # [pawa python] replace data? "isinstance(data,dict)"
+    else if data?
       return @parseDictData(data)
     return false
   parseDictData: (data) ->
@@ -250,7 +250,7 @@ export class BaseCommand
   init: ->
     #
   resultIsAvailable: ->
-    return this["result"]? # [pawa] replace this["result"]? 'hasattr(self,"result")'
+    return this["result"]?
   getDefaults: ->
     return {}
   getOptions: ->

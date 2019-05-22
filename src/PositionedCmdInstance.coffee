@@ -1,6 +1,3 @@
-# [pawa]
-#   replace 'replace(/\t/g' 'replace("\t"'
-
 import { CmdInstance } from './CmdInstance';
 import { BoxHelper } from './BoxHelper';
 import { Pos } from './positioning/Pos';
@@ -106,7 +103,7 @@ export class PositionedCmdInstance extends CmdInstance
       ecl = StringHelper.escapeRegExp(@context.wrapCommentLeft())
       ecr = StringHelper.escapeRegExp(@context.wrapCommentRight())
       ed = StringHelper.escapeRegExp(@codewave.deco)
-      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm") # [pawa python] replace '"gm"' re.M
+      re1 = new RegExp("^\\s*#{ecl}(?:#{ed})+\\s*(.*?)\\s*(?:#{ed})+#{ecr}$", "gm")
       re2 = new RegExp("^\\s*(?:#{ed})*#{ecr}\r?\n")
       re3 = new RegExp("\n\\s*#{ecl}(?:#{ed})*\\s*$")
       @content = @content.replace(re1,'$1').replace(re2,'').replace(re3,'')

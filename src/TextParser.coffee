@@ -1,7 +1,3 @@
-# [pawa python]
-#   replace (Editor) (editor.Editor)
-#   replace @text()  self.text
-
 import { Editor } from './Editor';
 import { Pos } from './positioning/Pos';
 

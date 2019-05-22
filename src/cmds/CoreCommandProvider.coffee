@@ -293,7 +293,7 @@ no_execute = (instance) ->
   return instance.str.replace(reg,'$1')
   
 quote_carret = (instance) ->
-  return instance.content.replace(/\|/g, '||') # [pawa python] replace '/\|/g' "'|'"
+  return instance.content.replace(/\|/g, '||')
 exec_parent = (instance) ->
   if instance.parent?
     res = instance.parent.execute()
