@@ -24,14 +24,10 @@ git clone https://github.com/kevthunder/codewave.git
 ```
 
 ## ToDo
-* better php
-  * any_content should be alias
-* comment styles
-  * php outer
 * Create some more default commands
 
-## devloppement
+## running tests
 
 ```sh
-grunt watch --force
+npm tests
 ```
