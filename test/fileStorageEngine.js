@@ -35,7 +35,7 @@ describe('FileStorageEngine', function () {
       return (0, _chai.expect)(exists).to.be.true;
     });
   });
-  return it('can delete everything stored', function () {
+  it('can delete everything stored', function () {
     return this.storage.load('foo').then(res => {
       (0, _chai.expect)(res).to.not.exist;
       return this.storage.save('foo', "bar");
@@ -51,6 +51,26 @@ describe('FileStorageEngine', function () {
       return (0, _util.promisify)(_fs.exists)(this.file);
     }).then(exists => {
       return (0, _chai.expect)(exists).to.be.false;
+    });
+  });
+  return it('can save in a given path', function () {
+    return this.storage.load('foo').then(res => {
+      (0, _chai.expect)(res).to.not.exist;
+      return this.storage.saveInPath('foo', 'baz', "bar");
+    }).then(() => {
+      return this.storage.load('foo');
+    }).then(res => {
+      (0, _chai.expect)(res).to.deep.eql({
+        baz: "bar"
+      });
+      return this.storage.saveInPath('foo', 'foobar', "bar");
+    }).then(() => {
+      return this.storage.load('foo');
+    }).then(res => {
+      return (0, _chai.expect)(res).to.deep.eql({
+        baz: "bar",
+        foobar: "bar"
+      });
     });
   });
 });

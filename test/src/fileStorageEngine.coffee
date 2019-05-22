@@ -45,3 +45,18 @@ describe 'FileStorageEngine', ->
         promisify(exists)(@file)
     .then (exists)=>
         expect(exists).to.be.false
+
+
+  it 'can save in a given path', ->
+    @storage.load('foo').then (res)=>
+        expect(res).to.not.exist
+        @storage.saveInPath('foo','baz', "bar")
+    .then =>
+        @storage.load('foo')
+    .then (res)=>
+        expect(res).to.deep.eql({baz:"bar"})
+        @storage.saveInPath('foo','foobar', "bar")
+    .then =>
+        @storage.load('foo')
+    .then (res)=>
+        expect(res).to.deep.eql({baz:"bar",foobar:"bar"})
