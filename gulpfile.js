@@ -6,6 +6,7 @@ var babelify = require('babelify');
 var babel = require('gulp-babel');
 var source = require('vinyl-source-stream');
 var coffee = require('gulp-coffee');
+var rename = require('gulp-rename');
 var uglify = require('gulp-uglify-es').default;
 var mocha = require('gulp-mocha');
 var sourcemaps = require('gulp-sourcemaps');
@@ -54,6 +55,13 @@ gulp.task('concat', function() {
     .pipe(gulp.dest('./dist/'));
 });
 
+gulp.task("uglify", function () {
+  return gulp.src("./dist/codewave.js")
+      .pipe(rename("codewave.min.js"))
+      .pipe(uglify())
+      .pipe(gulp.dest("./dist/"));
+});
+
 gulp.task('coffeeTest', function() {
   return gulp.src('./test/src/**/*.coffee')
     .pipe(sourcemaps.init())
@@ -63,7 +71,7 @@ gulp.task('coffeeTest', function() {
     .pipe(gulp.dest('./test/'));
 });
 
-gulp.task('build',  gulp.series('coffee', 'concat', function (done) {
+gulp.task('build',  gulp.series('coffee', 'concat', 'uglify', function (done) {
     console.log('Build Complete');
     done();
 }));
