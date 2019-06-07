@@ -43,7 +43,7 @@ export class PositionedCmdInstance extends CmdInstance
         @named[nameToParam] = @cmdName
     if params.length
       if @cmd?
-        allowedNamed = @getOption('allowedNamed') 
+        allowedNamed = @cmd.allowedNamed
       inStr = false
       param = ''
       name = false

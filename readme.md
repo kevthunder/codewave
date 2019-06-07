@@ -26,6 +26,7 @@ git clone https://github.com/kevthunder/codewave.git
 ```
 
 ## ToDo
+* Help for edit is not working
 * Create some more default commands
 
 ## running tests

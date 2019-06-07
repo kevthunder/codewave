@@ -39,6 +39,11 @@ export class Context
     })
   isRoot: ->
     return !@parent?
+  getParentOrRoot: () ->
+    if @parent?
+      @parent
+    else
+      this
   wrapComment: (str) ->
     cc = @getCommentChar()
     if cc.indexOf('%s') > -1

@@ -138,6 +138,7 @@ export class Command
     if typeof execute == "function"
       @executeFunct = execute
     @aliasOf = _optKey('aliasOf',data)
+    @allowedNamed = _optKey('allowedNamed',data)
     @cls = _optKey('cls',data)
     @defaults = _optKey('defaults',data,@defaults)
     
@@ -227,6 +228,7 @@ export class Command
 
   @makeVarCmd = (name,base={}) -> 
     base.execute = (instance) ->
+      debugger
       val = if (p = instance.getParam(0))?
         p
       else if instance.content

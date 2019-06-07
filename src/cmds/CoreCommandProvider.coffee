@@ -14,46 +14,78 @@ export class CoreCommandProvider
   core.addCmds({
     'help':{
       'replaceBox' : true,
-      'result' : """
-        ~~box~~
-        ~~quote_carret~~
-          ___         _   __      __
-         / __|___  __| |__\\ \\    / /_ ___ ______
-        / /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/
-        \\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|
-        The text editor helper
-        ~~/quote_carret~~
-        
-        When using Codewave you will be writing commands within 
-        your text editor. These commands must be placed between two 
-        pairs of "~" (tilde) and then, they can be executed by pressing 
-        "ctrl"+"shift"+"e", with your cursor inside the command
-        Ex: ~~!hello~~
-        
-        You dont need to actually type any "~" (tilde). 
-        Pressing "ctrl"+"shift"+"e" will add them if you are not already
-        within a command.
-        
-        Codewave does not use UI to display any information. 
-        Instead, it uses text within code comments to mimic UIs. 
-        The generated comment blocks will be referred to as windows 
-        in the help sections.
-        
-        To close this window (i.e. remove this comment block), press 
-        "ctrl"+"shift"+"e" with your cursor on the line bellow.
-        ~~!close|~~
-        
-        Use the following command for a walkthrough of some of the many
-        features of Codewave
-        ~~!help:get_started~~ or ~~!help:demo~~
-        
-        List of all help subjects 
-        ~~!help:subjects~~ or ~~!help:sub~~ 
-        
-        ~~!close~~
-        ~~/box~~
-        """
+      'result' : help,
+      'parse' : true,
+      'allowedNamed' : ['cmd'],
+      'help' : """
+        To get help on a pecific command, do :
+        ~~help hello~~ (hello being the command)
+        """ 
       'cmds' : {
+        'overview':{
+          'replaceBox' : true,
+          'result' : """
+            ~~box~~
+            ~~quote_carret~~
+              ___         _   __      __
+             / __|___  __| |__\\ \\    / /_ ___ ______
+            / /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/
+            \\____\\___/\\__,_\\___|\\_/\\_/\\__,_|\\_/\\___|
+            The text editor helper
+            ~~/quote_carret~~
+            
+            When using Codewave you will be writing commands within 
+        When using Codewave you will be writing commands within 
+            When using Codewave you will be writing commands within 
+            your text editor. These commands must be placed between two 
+        your text editor. These commands must be placed between two 
+            your text editor. These commands must be placed between two 
+            pairs of "~" (tilde) and then, they can be executed by pressing 
+        pairs of "~" (tilde) and then, they can be executed by pressing 
+            pairs of "~" (tilde) and then, they can be executed by pressing 
+            "ctrl"+"shift"+"e", with your cursor inside the command
+            Ex: ~~!hello~~
+            
+            You dont need to actually type any "~" (tilde). 
+        You dont need to actually type any "~" (tilde). 
+            You dont need to actually type any "~" (tilde). 
+            Pressing "ctrl"+"shift"+"e" will add them if you are not already
+            within a command.
+            
+            Codewave does not use UI to display any information. 
+        Codewave does not use UI to display any information. 
+            Codewave does not use UI to display any information. 
+            Instead, it uses text within code comments to mimic UIs. 
+        Instead, it uses text within code comments to mimic UIs. 
+            Instead, it uses text within code comments to mimic UIs. 
+            The generated comment blocks will be referred to as windows 
+        The generated comment blocks will be referred to as windows 
+            The generated comment blocks will be referred to as windows 
+            in the help sections.
+            
+            To close this window (i.e. remove this comment block), press 
+        To close this window (i.e. remove this comment block), press 
+            To close this window (i.e. remove this comment block), press 
+            "ctrl"+"shift"+"e" with your cursor on the line bellow.
+            ~~!close|~~
+            
+            Use the following command for a walkthrough of some of the many
+            features of Codewave
+            ~~!help:get_started~~ or ~~!help:demo~~
+            
+            List of all help subjects 
+        List of all help subjects 
+            List of all help subjects 
+            ~~!help:subjects~~ or ~~!help:sub~~ 
+        ~~!help:subjects~~ or ~~!help:sub~~ 
+            ~~!help:subjects~~ or ~~!help:sub~~ 
+
+            ~~help:help~~
+            
+            ~~!close~~
+            ~~/box~~
+            """
+        }
         'subjects':{
           'replaceBox' : true,
           'result' : """
@@ -193,32 +225,68 @@ export class CoreCommandProvider
         'edit':{
           'aliasOf': 'help:editing'
         }
+        'not_found' : """
+          ~~box~~
+          Command not found
+          ~~!close|~~
+          ~~/box~~
+          """
       }
     },
     'no_execute':{
       'result' : no_execute
+      'help': """
+        Prevent everything inside the open and close tag from executing
+        """
     },
     'escape_pipes':{
       'result' : quote_carret,
       'checkCarret' : false
+      'help': """
+        Escape all carrets (from "|" to "||")
+        """
     },
     'quote_carret':{
       'aliasOf': 'core:escape_pipes'
     }
     'exec_parent':{
       'execute' : exec_parent
+      'help': """
+        Execute the first command that wrap this in it's open and close tag
+        """
     },
     'content':{
       'result' : getContent
+      'help': """
+        Mainly used for command edition, 
+        this will return what was between the open and close tag of a command
+        """
     },
     'box':{
       'cls' : BoxCmd
+      'help': """
+        Create the apparence of a box composed from characters. 
+        Usually wrapped in a comment.
+
+        The box will try to ajust it's size from the content
+        """
     },
     'close':{
       'cls' : CloseCmd
+      'help': """
+        Will close the first box around this
+        """
     },
     'param':{
       'result' : getParam
+      'help': """
+        Mainly used for command edition, 
+        this will return a parameter from this command call
+
+        You can pass a number, a string, or both. 
+        A number for a positioned argument and a string
+        for a named parameter
+        """
     },
     'edit':{
       'cmds' : EditCmd.setCmds({
@@ -226,7 +294,12 @@ export class CoreCommandProvider
           'aliasOf': 'core:exec_parent'
         }
       }),
-      'cls' : EditCmd
+      'cls' : EditCmd,
+      'allowedNamed':['cmd']
+      'help': """
+        Allows to edit a command. 
+        See ~~!help:editing~~ for a quick tutorial
+        """
     },
     'rename':{
       'cmds' : {
@@ -244,7 +317,17 @@ export class CoreCommandProvider
           """
       }
       'result' : renameCommand,
-      'parse' : true
+      'parse' : true,
+      'allowedNamed':['from','to']
+      'help': """
+        Allows to rename a command and change it's namespace. 
+        You can only rename commands that you created yourself.
+        - The first param is the old name
+        - Then second param is the new name, if it has no namespace,
+          it will use the one from the original command.
+
+        ex.: ~~!rename my_command my_command2~~
+        """
     },
     'remove':{
       'cmds' : {
@@ -263,6 +346,11 @@ export class CoreCommandProvider
       }
       'result' : removeCommand,
       'parse' : true
+      'allowedNamed':['cmd']
+      'help': """
+        Allows to remove a command. 
+        You can only remove commands that you created yourself.
+        """
     },
     'alias':{
       'cmds' : {
@@ -278,16 +366,52 @@ export class CoreCommandProvider
     },
     'namespace':{
       'cls' : NameSpaceCmd
+      'help': """
+        Show the current namespaces.
+
+        A name space could be the name of the language
+        or other kind of contexts
+
+        If you pass a param to this command, it will 
+        add the param as a namespace for the current editor
+        """
     },
     'nspc':{
       'aliasOf' : 'core:namespace'
     },
     'emmet':{
       'cls' : EmmetCmd
+      'help': """
+        CodeWave comes with the excellent Emmet ( http://emmet.io/ ) to 
+        provide event more abbreviations.
+
+        Pass the Emmet abbreviation as a param to expend it.
+        """
     },
     
   })
   
+help = (instance) ->
+  cmdName = instance.getParam([0,'cmd'])
+  if cmdName?
+    cmd = instance.context.getParentOrRoot().getCmd(cmdName)
+    if cmd?
+      helpCmd = cmd.getCmd('help')
+      text = if helpCmd then "~~#{helpCmd.fullName}~~" else "This command has no help text"
+      return """
+        ~~box~~
+        Help for ~~!#{cmd.fullName}~~ :
+
+        #{text}
+
+        ~~!close|~~
+        ~~/box~~
+        """
+    else 
+      return "~~not_found~~"
+  else
+    return '~~help:overview~~'
+
 no_execute = (instance) ->
   reg = new RegExp("^("+StringHelper.escapeRegExp(instance.codewave.brakets) + ')' + StringHelper.escapeRegExp(instance.codewave.noExecuteChar))
   return instance.str.replace(reg,'$1')
@@ -316,7 +440,7 @@ renameCommand = (instance) ->
     origninalName = instance.getParam([0,'from'])
     newName = instance.getParam([1,'to'])
     if origninalName? and newName?
-      cmd = instance.context.getCmd(origninalName)
+      cmd = instance.context.getParentOrRoot().getCmd(origninalName)
       if savedCmds[origninalName]? and cmd?
         unless newName.indexOf(':') > -1
           newName = cmd.fullName.replace(origninalName,'') + newName
@@ -335,13 +459,13 @@ renameCommand = (instance) ->
         return "~~not_found~~"
 removeCommand = (instance) ->
   Promise.resolve().then =>
-    name = instance.getParam([0,'name'])
+    name = instance.getParam([0,'cmd'])
     if name?
       Promise.resolve().then =>
         storage = Command.storage
         savedCmds = storage.load('cmds')
       .then (savedCmds)=>
-        cmd = instance.context.getCmd(name)
+        cmd = instance.context.getParentOrRoot().getCmd(name)
         if savedCmds[name]? and cmd?
           cmdData = savedCmds[name]
           cmd.unregister()
@@ -451,14 +575,10 @@ class EditCmd extends BaseCommand
     @cmdName = @instance.getParam([0,'cmd'])
     @verbalize = @instance.getParam([1]) in ['v','verbalize']
     if @cmdName?
-      @finder = @instance.context.getFinder(@cmdName) 
+      @finder = @instance.context.getParentOrRoot().getFinder(@cmdName) 
       @finder.useFallbacks = false
       @cmd = @finder.find()
     @editable = if @cmd? then @cmd.isEditable() else true
-  getOptions: ->
-    return {
-      allowedNamed: ['cmd']
-    }
   result: ->
     if @instance.content
       return @resultWithContent()
@@ -488,7 +608,9 @@ class EditCmd extends BaseCommand
       parser.checkCarret = no
       return if @verbalize then parser.getText() else parser.parseAll()
 EditCmd.setCmds = (base) ->
+  # inInstance = base.in_instance = {cmds:{}}
   for p in EditCmd.props
+    # p.setCmd(inInstance.cmds)
     p.setCmd(base)
   return base
 EditCmd.props = [
