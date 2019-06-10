@@ -12,6 +12,7 @@ var mocha = require('gulp-mocha');
 var sourcemaps = require('gulp-sourcemaps');
 var gls = require('gulp-live-server');
 var open = require('gulp-open');
+var clean = require('gulp-clean');
 
 function swallowError (error) {
   console.log(error.toString())
@@ -62,6 +63,16 @@ gulp.task("uglify", function () {
       .pipe(gulp.dest("./dist/"));
 });
 
+gulp.task('clean', function() {
+  return gulp.src(['./lib','./dist'], {read: false})
+  .pipe(clean());
+});
+
+gulp.task('build',  gulp.series('clean', 'coffee', 'concat', 'uglify', function (done) {
+    console.log('Build Complete');
+    done();
+}));
+
 gulp.task('coffeeTest', function() {
   return gulp.src('./test/src/**/*.coffee')
     .pipe(sourcemaps.init())
@@ -71,12 +82,12 @@ gulp.task('coffeeTest', function() {
     .pipe(gulp.dest('./test/'));
 });
 
-gulp.task('build',  gulp.series('coffee', 'concat', 'uglify', function (done) {
-    console.log('Build Complete');
-    done();
-}));
+gulp.task('clean-test', function() {
+  return gulp.src(['./test/*','!./test/src'], {read: false})
+  .pipe(clean());
+});
 
-gulp.task('test', gulp.series('build','coffeeTest', function() {
+gulp.task('test', gulp.series('build','clean-test','coffeeTest', function() {
   return gulp.src('./test/tests.js')
     .pipe(mocha({require:['source-map-support/register']}));
 }));

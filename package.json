@@ -24,6 +24,7 @@
     "chai": "^4.1",
     "gulp": "^4.0",
     "gulp-babel": "^8.0.0",
+    "gulp-clean": "^0.4.0",
     "gulp-coffee": "^3.0.2",
     "gulp-live-server": "0.0.31",
     "gulp-mocha": "^6.0.0",
