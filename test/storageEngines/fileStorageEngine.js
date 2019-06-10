@@ -1,6 +1,6 @@
 "use strict";
 
-var _FileStorageEngine = require("../lib/storageEngines/FileStorageEngine");
+var _FileStorageEngine = require("../../lib/storageEngines/FileStorageEngine");
 
 var _chai = require("chai");
 
@@ -74,4 +74,4 @@ describe('FileStorageEngine', function () {
     });
   });
 });
-//# sourceMappingURL=maps/fileStorageEngine.js.map
+//# sourceMappingURL=../maps/storageEngines/fileStorageEngine.js.map

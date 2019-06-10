@@ -1,6 +1,6 @@
 "use strict";
 
-var _StringHelper = require("../lib/helpers/StringHelper");
+var _StringHelper = require("../../lib/helpers/StringHelper");
 
 var _chai = require("chai");
 
@@ -17,4 +17,4 @@ describe('StringHelper', function () {
     return (0, _chai.expect)(_StringHelper.StringHelper.reverseStr('abcd')).to.eql('dcba');
   });
 });
-//# sourceMappingURL=maps/stringHelper.js.map
+//# sourceMappingURL=../maps/helpers/stringHelper.js.map

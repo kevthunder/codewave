@@ -1,8 +1,8 @@
 "use strict";
 
-var _Pair = require("../lib/positioning/Pair");
+var _Pair = require("../../lib/positioning/Pair");
 
-var _Pos = require("../lib/positioning/Pos");
+var _Pos = require("../../lib/positioning/Pos");
 
 var _chai = require("chai");
 
@@ -120,4 +120,4 @@ describe('Pair', function () {
     return (0, _chai.expect)(res.raw()).to.eql([4, 24]);
   });
 });
-//# sourceMappingURL=maps/pair.js.map
+//# sourceMappingURL=../maps/positioning/pair.js.map

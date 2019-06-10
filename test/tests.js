@@ -6,23 +6,25 @@ var _Command = require("../lib/Command");
 
 var _TestCommandProvider = require("./testHelpers/TestCommandProvider");
 
-require("./stringHelper");
+require("./helpers/stringHelper");
 
-require("./pair");
+require("./positioning/pair");
 
-require("./wrapping");
+require("./positioning/wrapping");
 
-require("./replacement");
+require("./positioning/replacement");
 
-require("./fileStorageEngine");
+require("./storageEngines/fileStorageEngine");
 
 require("./box_helper");
 
 require("./codewave");
 
-require("./cmd_authoring");
+require("./cmds/core");
 
-require("./php");
+require("./cmds/cmd_authoring");
+
+require("./cmds/php");
 
 _Command.Command.providers.push(new _TestCommandProvider.TestCommandProvider());
 //# sourceMappingURL=maps/tests.js.map

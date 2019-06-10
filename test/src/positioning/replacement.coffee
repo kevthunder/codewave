@@ -1,7 +1,7 @@
 
 import {expect} from 'chai'
-import {TextParser} from '../lib/TextParser'
-import { Replacement } from '../lib/positioning/Replacement';
+import {TextParser} from '../../lib/TextParser'
+import { Replacement } from '../../lib/positioning/Replacement';
 
 describe 'Replacement', ->
   beforeEach ->

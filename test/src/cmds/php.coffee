@@ -1,8 +1,8 @@
 import {expect} from 'chai'
-import {Codewave} from '../lib/bootstrap'
-import {Logger} from '../lib/Logger'
-import {TextParser} from '../lib/TextParser'
-import {setEditorContent, assertEditorResult} from './testHelpers/test_utils'
+import {Codewave} from '../../lib/bootstrap'
+import {Logger} from '../../lib/Logger'
+import {TextParser} from '../../lib/TextParser'
+import {setEditorContent, assertEditorResult} from '../testHelpers/test_utils'
 
 describe 'Codewave for PHP', ->
   beforeEach ->

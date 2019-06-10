@@ -1,7 +1,7 @@
 
 import {expect} from 'chai'
-import {TextParser} from '../lib/TextParser'
-import { Wrapping } from '../lib/positioning/Wrapping';
+import {TextParser} from '../../lib/TextParser'
+import { Wrapping } from '../../lib/positioning/Wrapping';
 
 describe 'Wrapping', ->  
   beforeEach ->

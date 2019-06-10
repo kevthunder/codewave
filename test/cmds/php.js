@@ -2,13 +2,13 @@
 
 var _chai = require("chai");
 
-var _bootstrap = require("../lib/bootstrap");
+var _bootstrap = require("../../lib/bootstrap");
 
-var _Logger = require("../lib/Logger");
+var _Logger = require("../../lib/Logger");
 
-var _TextParser = require("../lib/TextParser");
+var _TextParser = require("../../lib/TextParser");
 
-var _test_utils = require("./testHelpers/test_utils");
+var _test_utils = require("../testHelpers/test_utils");
 
 describe('Codewave for PHP', function () {
   beforeEach(function () {
@@ -61,4 +61,4 @@ describe('Codewave for PHP', function () {
     });
   });
 });
-//# sourceMappingURL=maps/php.js.map
+//# sourceMappingURL=../maps/cmds/php.js.map

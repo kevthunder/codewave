@@ -1,5 +1,5 @@
 
-import { StringHelper } from '../lib/helpers/StringHelper';
+import { StringHelper } from '../../lib/helpers/StringHelper';
 import {expect} from 'chai'
 
 describe 'StringHelper', ->

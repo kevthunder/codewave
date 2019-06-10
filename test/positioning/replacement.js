@@ -2,9 +2,9 @@
 
 var _chai = require("chai");
 
-var _TextParser = require("../lib/TextParser");
+var _TextParser = require("../../lib/TextParser");
 
-var _Replacement = require("../lib/positioning/Replacement");
+var _Replacement = require("../../lib/positioning/Replacement");
 
 describe('Replacement', function () {
   beforeEach(function () {
@@ -31,4 +31,4 @@ describe('Replacement', function () {
     return (0, _chai.expect)(this.replacement.prefix).to.eql('test');
   });
 });
-//# sourceMappingURL=maps/replacement.js.map
+//# sourceMappingURL=../maps/positioning/replacement.js.map

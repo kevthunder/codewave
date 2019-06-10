@@ -2,9 +2,9 @@
 
 var _chai = require("chai");
 
-var _TextParser = require("../lib/TextParser");
+var _TextParser = require("../../lib/TextParser");
 
-var _Wrapping = require("../lib/positioning/Wrapping");
+var _Wrapping = require("../../lib/positioning/Wrapping");
 
 describe('Wrapping', function () {
   beforeEach(function () {
@@ -24,4 +24,4 @@ describe('Wrapping', function () {
     return (0, _chai.expect)(this.wrapping.editor()).to.eql(this.editor);
   });
 });
-//# sourceMappingURL=maps/wrapping.js.map
+//# sourceMappingURL=../maps/positioning/wrapping.js.map

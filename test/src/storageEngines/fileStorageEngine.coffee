@@ -1,4 +1,4 @@
-import { FileStorageEngine } from '../lib/storageEngines/FileStorageEngine';
+import { FileStorageEngine } from '../../lib/storageEngines/FileStorageEngine';
 import { expect } from 'chai'
 import { resolve } from 'path'
 import { promisify } from 'util'

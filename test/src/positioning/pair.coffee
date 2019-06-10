@@ -1,5 +1,5 @@
-import { Pair } from '../lib/positioning/Pair';
-import { Pos } from '../lib/positioning/Pos';
+import { Pair } from '../../lib/positioning/Pair';
+import { Pos } from '../../lib/positioning/Pos';
 import {expect} from 'chai'
 
 describe 'Pair', ->

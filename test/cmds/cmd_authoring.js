@@ -2,15 +2,15 @@
 
 var _chai = require("chai");
 
-var _bootstrap = require("../lib/bootstrap");
+var _bootstrap = require("../../lib/bootstrap");
 
-var _Logger = require("../lib/Logger");
+var _Logger = require("../../lib/Logger");
 
-var _Command = require("../lib/Command");
+var _Command = require("../../lib/Command");
 
-var _TextParser = require("../lib/TextParser");
+var _TextParser = require("../../lib/TextParser");
 
-var _test_utils = require("./testHelpers/test_utils");
+var _test_utils = require("../testHelpers/test_utils");
 
 describe('Codewave - Command Authoring', function () {
   beforeEach(function () {
@@ -58,4 +58,4 @@ describe('Codewave - Command Authoring', function () {
     });
   });
 });
-//# sourceMappingURL=maps/cmd_authoring.js.map
+//# sourceMappingURL=../maps/cmds/cmd_authoring.js.map
