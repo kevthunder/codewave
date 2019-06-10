@@ -357,6 +357,20 @@ export class CoreCommandProvider
     'nspc':{
       'aliasOf' : 'core:namespace'
     },
+    'list':{
+      'result' : listCommand
+      'allowedNamed':['name']
+      'parse' : true
+      'help': """
+        List available commands
+
+        You can use the first argument to choose a specific namespace, 
+        by default all curent namespace will be shown
+        """
+    },
+    'ls':{
+      'aliasOf' : 'core:list'
+    },
     'emmet':{
       'cls' : EmmetCmd
       'help': """
@@ -469,6 +483,37 @@ aliasCommand = (instance) ->
       return ""
     else 
       return "~~not_found~~"
+
+listCommand = (instance) ->
+  
+  box = instance.getBoolParam(['box'],true)
+  name = instance.getParam([0,'name'])
+  namespaces = if name 
+    [name] 
+  else 
+    instance.context.getNameSpaces().filter((nspc) => nspc != instance.cmd.fullName)
+
+  commands = namespaces.reduce (commands, nspc) => 
+      cmd = instance.context.getParentOrRoot().getCmd(nspc,mustExecute:false)
+      if cmd?
+        cmd.init()
+        if cmd.cmds
+          commands = commands.concat(cmd.cmds)
+        commands
+    , []
+
+  text = commands.map((cmd)=>cmd.fullName).join("\n")
+  if box
+    """
+      ~~box~~
+      #{text}
+
+      ~~!close|~~
+      ~~/box~~
+      """
+  else
+    text
+
       
 getParam = (instance) ->
   if instance.codewave.inInstance?

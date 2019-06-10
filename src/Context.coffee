@@ -27,16 +27,16 @@ export class Context
         npcs = npcs.concat(@parent.getNameSpaces())
       @_namespaces = ArrayHelper.unique(npcs)
     return @_namespaces
-  getCmd: (cmdName,nameSpaces = []) ->
-    finder = @getFinder(cmdName,nameSpaces)
+  getCmd: (cmdName,options = {}) ->
+    finder = @getFinder(cmdName,options)
     return finder.find()
-  getFinder: (cmdName,nameSpaces = []) ->
-    return new CmdFinder(cmdName, {
-      namespaces: nameSpaces
+  getFinder: (cmdName,options = {}) ->
+    return new CmdFinder(cmdName, Object.assign({
+      namespaces: []
       useDetectors: @isRoot()
       codewave: @codewave
       parentContext: this
-    })
+    },options))
   isRoot: ->
     return !@parent?
   getParentOrRoot: () ->

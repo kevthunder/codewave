@@ -23,7 +23,7 @@ export class CmdInstance
       @context = new Context()
     return @context or new Context()
   getFinder: (cmdName)->
-    finder = @getContext().getFinder(cmdName,@_getParentNamespaces())
+    finder = @getContext().getFinder(cmdName,namespaces:@_getParentNamespaces())
     finder.instance = this
     return finder
   _getCmdObj: ->
@@ -97,6 +97,10 @@ export class CmdInstance
       return @named[n] if @named[n]?
       return @params[n] if @params[n]?
     return defVal
+  getBoolParam: (names, defVal = null) ->
+    falseVals = ["","0","false","no","none",false,null,0]
+    val = @getParam(names, defVal)
+    !falseVals.includes(val)
   ancestorCmds: ->
     if @context.codewave?.inInstance?
       return @context.codewave.inInstance.ancestorCmdsAndSelf()

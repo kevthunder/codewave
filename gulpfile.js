@@ -64,7 +64,7 @@ gulp.task("uglify", function () {
 });
 
 gulp.task('clean', function() {
-  return gulp.src(['./lib','./dist'], {read: false})
+  return gulp.src(['./lib','./dist'], {read: false, allowEmpty:true})
   .pipe(clean());
 });
 
@@ -125,7 +125,9 @@ gulp.task('open', function(){
 });
 
 gulp.task('watchCoffee', function() {
-  return gulp.watch(['./src/**/*.coffee'], gulp.series('build', 'copy-lib'))
+  return gulp.watch(['./src/**/*.coffee'], function(done){
+    gulp.series('build', 'copy-lib')(function(){done()});
+  })
   .on('error', swallowError)
 });
 

@@ -134,7 +134,7 @@ export class PositionedCmdInstance extends CmdInstance
           @context.addNameSpace(@cmd.fullName)
     return @cmd
   getFinder: (cmdName)->
-    finder = @codewave.context.getFinder(cmdName,@_getParentNamespaces())
+    finder = @codewave.context.getFinder(cmdName,namespaces:@_getParentNamespaces())
     finder.instance = this
     return finder
   _getParentNamespaces: ->
