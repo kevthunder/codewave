@@ -228,7 +228,6 @@ export class Command
 
   @makeVarCmd = (name,base={}) -> 
     base.execute = (instance) ->
-      debugger
       val = if (p = instance.getParam(0))?
         p
       else if instance.content

@@ -86,7 +86,7 @@ export class CmdFinder
       return []
     @root.init()
     posibilities = []
-    if @codewave?.inInstance == @root
+    if @codewave?.inInstance?.cmd == @root
       posibilities = posibilities.concat(@getPosibilitiesFromCommand('in_instance'))
     for space, names of @getNamesWithPaths()
       posibilities = posibilities.concat(@getPosibilitiesFromCommand(space, names))

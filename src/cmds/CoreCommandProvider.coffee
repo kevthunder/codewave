@@ -35,36 +35,20 @@ export class CoreCommandProvider
             ~~/quote_carret~~
             
             When using Codewave you will be writing commands within 
-        When using Codewave you will be writing commands within 
-            When using Codewave you will be writing commands within 
             your text editor. These commands must be placed between two 
-        your text editor. These commands must be placed between two 
-            your text editor. These commands must be placed between two 
-            pairs of "~" (tilde) and then, they can be executed by pressing 
-        pairs of "~" (tilde) and then, they can be executed by pressing 
             pairs of "~" (tilde) and then, they can be executed by pressing 
             "ctrl"+"shift"+"e", with your cursor inside the command
             Ex: ~~!hello~~
             
             You dont need to actually type any "~" (tilde). 
-        You dont need to actually type any "~" (tilde). 
-            You dont need to actually type any "~" (tilde). 
             Pressing "ctrl"+"shift"+"e" will add them if you are not already
             within a command.
             
             Codewave does not use UI to display any information. 
-        Codewave does not use UI to display any information. 
-            Codewave does not use UI to display any information. 
             Instead, it uses text within code comments to mimic UIs. 
-        Instead, it uses text within code comments to mimic UIs. 
-            Instead, it uses text within code comments to mimic UIs. 
-            The generated comment blocks will be referred to as windows 
-        The generated comment blocks will be referred to as windows 
             The generated comment blocks will be referred to as windows 
             in the help sections.
             
-            To close this window (i.e. remove this comment block), press 
-        To close this window (i.e. remove this comment block), press 
             To close this window (i.e. remove this comment block), press 
             "ctrl"+"shift"+"e" with your cursor on the line bellow.
             ~~!close|~~
@@ -74,13 +58,7 @@ export class CoreCommandProvider
             ~~!help:get_started~~ or ~~!help:demo~~
             
             List of all help subjects 
-        List of all help subjects 
-            List of all help subjects 
             ~~!help:subjects~~ or ~~!help:sub~~ 
-        ~~!help:subjects~~ or ~~!help:sub~~ 
-            ~~!help:subjects~~ or ~~!help:sub~~ 
-
-            ~~help:help~~
             
             ~~!close~~
             ~~/box~~
@@ -608,10 +586,10 @@ class EditCmd extends BaseCommand
       parser.checkCarret = no
       return if @verbalize then parser.getText() else parser.parseAll()
 EditCmd.setCmds = (base) ->
-  # inInstance = base.in_instance = {cmds:{}}
+  inInstance = base.in_instance = {cmds:{}}
   for p in EditCmd.props
-    # p.setCmd(inInstance.cmds)
-    p.setCmd(base)
+    p.setCmd(inInstance.cmds)
+    # p.setCmd(base)
   return base
 EditCmd.props = [
   new EditCmdProp.revBool('no_carret',         {opt:'checkCarret'}),
