@@ -178,7 +178,7 @@ export class Codewave
   isRoot: ->
     return !@parent? and (!@inInstance? or !@inInstance.finder?)
   getRoot: ->
-    if @isRoot
+    if @isRoot()
       return this
     else if @parent?
       return @parent.getRoot()

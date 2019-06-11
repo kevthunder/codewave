@@ -359,7 +359,8 @@ export class CoreCommandProvider
     },
     'list':{
       'result' : listCommand
-      'allowedNamed':['name']
+      'allowedNamed':['name','box','context']
+      'replaceBox' : true,
       'parse' : true
       'help': """
         List available commands
@@ -390,11 +391,20 @@ help = (instance) ->
     if cmd?
       helpCmd = cmd.getCmd('help')
       text = if helpCmd then "~~#{helpCmd.fullName}~~" else "This command has no help text"
+      subcommands = if cmd.cmds.length
+        """
+
+        Sub-Commands :
+        ~~ls #{cmd.fullName} box:no context:no~~
+        """
+      else 
+        ""
       return """
         ~~box~~
         Help for ~~!#{cmd.fullName}~~ :
 
         #{text}
+        #{subcommands}
 
         ~~!close|~~
         ~~/box~~
@@ -485,24 +495,36 @@ aliasCommand = (instance) ->
       return "~~not_found~~"
 
 listCommand = (instance) ->
-  
   box = instance.getBoolParam(['box'],true)
+  useContext = instance.getBoolParam(['context'],true)
   name = instance.getParam([0,'name'])
   namespaces = if name 
     [name] 
   else 
-    instance.context.getNameSpaces().filter((nspc) => nspc != instance.cmd.fullName)
+    instance.context.getNameSpaces().filter((nspc) => nspc != instance.cmd.fullName).concat("_root")
+
+  context = if useContext
+    instance.context.getParentOrRoot()
+  else
+    instance.codewave.getRoot().context
 
   commands = namespaces.reduce (commands, nspc) => 
-      cmd = instance.context.getParentOrRoot().getCmd(nspc,mustExecute:false)
+      cmd = if nspc == "_root" then Command.cmds else context.getCmd(nspc,mustExecute:false)
       if cmd?
         cmd.init()
         if cmd.cmds
           commands = commands.concat(cmd.cmds)
-        commands
+      commands
     , []
 
-  text = commands.map((cmd)=>cmd.fullName).join("\n")
+  text = if commands.length 
+    commands.map((cmd)=> 
+      cmd.init()
+      (if cmd.isExecutable() then '~~!' else '~~!ls ')+cmd.fullName+'~~'
+    ).join("\n")
+  else
+    "This contains no sub-commands"
+
   if box
     """
       ~~box~~

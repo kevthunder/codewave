@@ -29,6 +29,7 @@ export class Command
       alterResult: null,
       preventParseAll: false,
       replaceBox: false,
+      allowedNamed: null
     }
     @options = {}
     @finalOptions = null
@@ -138,7 +139,6 @@ export class Command
     if typeof execute == "function"
       @executeFunct = execute
     @aliasOf = _optKey('aliasOf',data)
-    @allowedNamed = _optKey('allowedNamed',data)
     @cls = _optKey('cls',data)
     @defaults = _optKey('defaults',data,@defaults)
     
