@@ -166,4 +166,72 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.editor.text()).to.contain('~~close~~')
       expect(@codewave.editor.text()).to.contain('Allows to edit a command')
 
+  it ' can list all available commands', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~ls|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.contain('~~hello~~')
+      expect(@codewave.editor.text()).to.contain('~~ls core~~')
+      expect(@codewave.editor.text()).to.contain('~~core:help~~')
+      expect(@codewave.editor.text()).to.contain('~~close~~')
+
+  it ' can list commands avaiable in a namespace', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~ls help|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.contain('~~core:help:overview~~')
+      expect(@codewave.editor.text()).to.contain('~~close~~')
+
+  it ' can set a variable', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~set test hello|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.vars).to.have.property('test');
+      expect(@codewave.vars.test).to.eq('hello')
+
+  it ' can set a variable from content', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~set test|~~hello~~/set~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.vars).to.have.property('test');
+      expect(@codewave.vars.test).to.eq('hello')
+
+  it ' can set a variable with path', ->
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~set test.test hello|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.vars).to.have.property('test');
+      expect(@codewave.vars.test).to.deep.eq({test:'hello'})
+
+  it ' can get a variable', ->
+    @codewave.vars.test = "hello"
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~get test|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.eq('hello')
+
+  it ' can get a variable with path', ->
+    @codewave.vars.test = {test:'hello'}
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~get test.test|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.eq('hello')
+
+  it ' can store json in a variable', ->
+    json = {test:'hello'}
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~store_json test|~~#{JSON.stringify(json)}~~/store_json~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.vars).to.have.property('test');
+      expect(@codewave.vars.test).to.deep.eq(json)
+
+
 

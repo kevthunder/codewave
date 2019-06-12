@@ -8,6 +8,8 @@ var _TestCommandProvider = require("./testHelpers/TestCommandProvider");
 
 require("./helpers/stringHelper");
 
+require("./helpers/pathHelper");
+
 require("./positioning/pair");
 
 require("./positioning/wrapping");

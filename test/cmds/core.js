@@ -103,12 +103,86 @@ describe('Codewave - Core namespace', function () {
       return (0, _chai.expect)(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands');
     });
   });
-  return it(' can get help for the edit command', function () {
+  it(' can get help for the edit command', function () {
     this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~help edit|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
       return (0, _chai.expect)(this.codewave.editor.text()).to.contain('Allows to edit a command');
+    });
+  });
+  it(' can list all available commands', function () {
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls|~~");
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~hello~~');
+      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~ls core~~');
+      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~core:help~~');
+      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+    });
+  });
+  it(' can list commands avaiable in a namespace', function () {
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls help|~~");
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~core:help:overview~~');
+      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+    });
+  });
+  it(' can set a variable', function () {
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test hello|~~");
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, _chai.expect)(this.codewave.vars.test).to.eq('hello');
+    });
+  });
+  it(' can set a variable from content', function () {
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test|~~hello~~/set~~");
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, _chai.expect)(this.codewave.vars.test).to.eq('hello');
+    });
+  });
+  it(' can set a variable with path', function () {
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test.test hello|~~");
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, _chai.expect)(this.codewave.vars.test).to.deep.eq({
+        test: 'hello'
+      });
+    });
+  });
+  it(' can get a variable', function () {
+    this.codewave.vars.test = "hello";
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
+    });
+  });
+  it(' can get a variable with path', function () {
+    this.codewave.vars.test = {
+      test: 'hello'
+    };
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test.test|~~");
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
+    });
+  });
+  return it(' can store json in a variable', function () {
+    var json;
+    json = {
+      test: 'hello'
+    };
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, `~~store_json test|~~${JSON.stringify(json)}~~/store_json~~`);
+    return this.codewave.onActivationKey().then(() => {
+      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, _chai.expect)(this.codewave.vars.test).to.deep.eq(json);
     });
   });
 });

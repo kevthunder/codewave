@@ -4,6 +4,7 @@ import { LangDetector } from '../Detector';
 import { BoxHelper } from '../BoxHelper';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
+import { PathHelper } from '../helpers/PathHelper';
 import { Replacement } from '../positioning/Replacement';
 
 export class CoreCommandProvider
@@ -372,6 +373,30 @@ export class CoreCommandProvider
     'ls':{
       'aliasOf' : 'core:list'
     },
+    'get':{
+      'result' : getCommand
+      'allowedNamed':['name']
+      'help': """
+        output the value of a variable
+        """
+    },
+    'set':{
+      'result' : setCommand
+      'allowedNamed':['name','value','val']
+      'help': """
+        set the value of a variable
+        """
+    },
+    'store_json':{
+      'result' : storeJsonCommand
+      'allowedNamed':['name','json']
+      'help': """
+        set a variable with some json data
+        """
+    },
+    'json':{
+      'aliasOf' : 'core:store_json'
+    },
     'emmet':{
       'cls' : EmmetCmd
       'help': """
@@ -535,8 +560,29 @@ listCommand = (instance) ->
       """
   else
     text
+  
+getCommand = (instance) ->
+  name = instance.getParam([0,'name'])
+  PathHelper.getPath(instance.codewave.vars,name)
 
-      
+setCommand = (instance) ->
+  name = instance.getParam([0,'name'])
+  val = if (p = instance.getParam([1,'value','val']))?
+    p
+  else if instance.content
+    instance.content
+  PathHelper.setPath(instance.codewave.vars,name,val)
+  ''
+
+storeJsonCommand = (instance) ->
+  name = instance.getParam([0,'name'])
+  val = if (p = instance.getParam([1,'json']))?
+    p
+  else if instance.content
+    instance.content
+  PathHelper.setPath(instance.codewave.vars,name, JSON.parse(val))
+  ''
+
 getParam = (instance) ->
   if instance.codewave.inInstance?
     return instance.codewave.inInstance.getParam(instance.params,instance.getParam(['def','default']))

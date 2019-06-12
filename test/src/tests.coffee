@@ -5,6 +5,7 @@ Command.providers.push(new TestCommandProvider())
 
 
 import './helpers/stringHelper'
+import './helpers/pathHelper'
 import './positioning/pair'
 import './positioning/wrapping'
 import './positioning/replacement'
