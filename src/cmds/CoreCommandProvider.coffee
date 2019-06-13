@@ -397,6 +397,20 @@ export class CoreCommandProvider
     'json':{
       'aliasOf' : 'core:store_json'
     },
+    'template':{
+      'cls' : TemplateCmd
+      'allowedNamed':['name','sep']
+      'help': """
+        render a template for a variable
+
+        If the first param is not set it will use all variables 
+        for the render
+        If the variable is an array the template will be repeated 
+        for each items
+        The `sep` param define what will separate each item 
+        and default to a line break
+        """
+    },
     'emmet':{
       'cls' : EmmetCmd
       'help': """
@@ -563,7 +577,11 @@ listCommand = (instance) ->
   
 getCommand = (instance) ->
   name = instance.getParam([0,'name'])
-  PathHelper.getPath(instance.codewave.vars,name)
+  res = PathHelper.getPath(instance.codewave.vars,name)
+  if typeof res == "object"
+    JSON.stringify(res,null,'  ')
+  else
+    res
 
 setCommand = (instance) ->
   name = instance.getParam([0,'name'])
@@ -731,6 +749,26 @@ class NameSpaceCmd extends BaseCommand
       parser = @instance.getParserForText(txt)
       return parser.parseAll()
 
+
+class TemplateCmd extends BaseCommand
+  init: ->
+    @name = @instance.getParam([0,'name'])
+    @sep = @instance.getParam(['sep'],"\n")
+  result: ->
+    data = if @name then PathHelper.getPath(@instance.codewave.vars, @name) else @instance.codewave.vars
+    if @instance.content and data? and data != false
+      if Array.isArray(data)
+        data.map (item)=>@renderTemplate(item)
+          .join(@sep)
+      else
+        @renderTemplate(data)
+    else
+      ''
+  renderTemplate: (data) ->
+      parser = @instance.getParserForText(@instance.content)
+      parser.vars = if typeof data == "object" then data else {value:data}
+      parser.checkCarret = no
+      parser.parseAll()
 
 
 class EmmetCmd extends BaseCommand

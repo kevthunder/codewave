@@ -173,7 +173,19 @@ describe('Codewave - Core namespace', function () {
       return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
     });
   });
-  return it(' can store json in a variable', function () {
+  it(' can get object variable as json', function () {
+    var data;
+    data = {
+      test: 'hello'
+    };
+    this.codewave.vars.test = data;
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _chai.expect)(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '));
+    });
+  });
+  it(' can store json in a variable', function () {
     var json;
     json = {
       test: 'hello'
@@ -183,6 +195,28 @@ describe('Codewave - Core namespace', function () {
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.vars).to.have.property('test');
       return (0, _chai.expect)(this.codewave.vars.test).to.deep.eq(json);
+    });
+  });
+  it(' can render a template', function () {
+    var data;
+    data = {
+      name: 'world'
+    };
+    this.codewave.vars.test = data;
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get name~~!~~/template~~");
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");
+    });
+  });
+  return it(' can render a template for an array', function () {
+    var data;
+    data = ['world', 'CodeWave'];
+    this.codewave.vars.test = data;
+    this.codewave.editor.setLang('html');
+    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get value~~!~~/template~~");
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!\nHello, CodeWave!");
     });
   });
 });

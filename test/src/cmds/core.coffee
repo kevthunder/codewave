@@ -223,6 +223,15 @@ describe 'Codewave - Core namespace', ->
       """~~get test.test|~~"""
     @codewave.onActivationKey().then =>
       expect(@codewave.editor.text()).to.eq('hello')
+      
+  it ' can get object variable as json', ->
+    data = {test:'hello'}
+    @codewave.vars.test = data
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~get test|~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.eq(JSON.stringify(data,null,'  '))
 
   it ' can store json in a variable', ->
     json = {test:'hello'}
@@ -232,6 +241,24 @@ describe 'Codewave - Core namespace', ->
     @codewave.onActivationKey().then =>
       expect(@codewave.vars).to.have.property('test');
       expect(@codewave.vars.test).to.deep.eq(json)
+      
+  it ' can render a template', ->
+    data = {name:'world'}
+    @codewave.vars.test = data
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~template test|~~Hello, ~~get name~~!~~/template~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.eq("Hello, world!")
+
+  it ' can render a template for an array', ->
+    data = ['world','CodeWave']
+    @codewave.vars.test = data
+    @codewave.editor.setLang('html')
+    setEditorContent @codewave.editor, 
+      """~~template test|~~Hello, ~~get value~~!~~/template~~"""
+    @codewave.onActivationKey().then =>
+      expect(@codewave.editor.text()).to.eq("Hello, world!\nHello, CodeWave!")
 
 
 
