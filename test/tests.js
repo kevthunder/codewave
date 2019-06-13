@@ -16,6 +16,8 @@ require("./positioning/wrapping");
 
 require("./positioning/replacement");
 
+require("./fileSystem/localFiles");
+
 require("./storageEngines/fileStorageEngine");
 
 require("./box_helper");
@@ -25,6 +27,8 @@ require("./codewave");
 require("./cmds/core");
 
 require("./cmds/cmd_authoring");
+
+require("./cmds/file");
 
 require("./cmds/php");
 

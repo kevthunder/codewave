@@ -2,6 +2,7 @@ import { Context } from './Context';
 import { Codewave } from './Codewave';
 import { TextParser } from './TextParser';
 import { StringHelper } from './helpers/StringHelper';
+import { optionalPromise } from './helpers/OptionalPromise';
 
 export class CmdInstance
   constructor: (@cmd,@context) ->
@@ -128,14 +129,16 @@ export class CmdInstance
   result: -> 
     @init()
     if @resultIsAvailable()
-      if (res = @rawResult())?
-        res = @formatIndent(res)
-        if res.length > 0 and @getOption('parse',this) 
-          parser = @getParserForText(res)
-          res = parser.parseAll()
-        if alterFunct = @getOption('alterResult',this)
-          res = alterFunct(res,this)
-        return res
+      optionalPromise(@rawResult()).then (res)=>
+        if res?
+          res = @formatIndent(res)
+          if res.length > 0 and @getOption('parse',this) 
+            parser = @getParserForText(res)
+            res = parser.parseAll()
+          if alterFunct = @getOption('alterResult',this)
+            res = alterFunct(res,this)
+          return res
+      .result()
   getParserForText: (txt='') ->
     parser = new Codewave(new TextParser(txt), {inInstance:this})
     parser.checkCarret = false

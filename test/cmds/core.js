@@ -104,7 +104,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can get help for the edit command', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~help edit|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
@@ -112,7 +111,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can list all available commands', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~hello~~');
@@ -122,7 +120,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can list commands avaiable in a namespace', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls help|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~core:help:overview~~');
@@ -130,7 +127,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can set a variable', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test hello|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.vars).to.have.property('test');
@@ -138,7 +134,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can set a variable from content', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test|~~hello~~/set~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.vars).to.have.property('test');
@@ -146,7 +141,6 @@ describe('Codewave - Core namespace', function () {
     });
   });
   it(' can set a variable with path', function () {
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test.test hello|~~");
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.vars).to.have.property('test');
@@ -157,7 +151,6 @@ describe('Codewave - Core namespace', function () {
   });
   it(' can get a variable', function () {
     this.codewave.vars.test = "hello";
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
     return this.codewave.onActivationKey().then(() => {
       return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
@@ -167,7 +160,6 @@ describe('Codewave - Core namespace', function () {
     this.codewave.vars.test = {
       test: 'hello'
     };
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test.test|~~");
     return this.codewave.onActivationKey().then(() => {
       return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
@@ -179,7 +171,6 @@ describe('Codewave - Core namespace', function () {
       test: 'hello'
     };
     this.codewave.vars.test = data;
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
     return this.codewave.onActivationKey().then(() => {
       return (0, _chai.expect)(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '));
@@ -190,7 +181,6 @@ describe('Codewave - Core namespace', function () {
     json = {
       test: 'hello'
     };
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, `~~store_json test|~~${JSON.stringify(json)}~~/store_json~~`);
     return this.codewave.onActivationKey().then(() => {
       (0, _chai.expect)(this.codewave.vars).to.have.property('test');
@@ -203,7 +193,6 @@ describe('Codewave - Core namespace', function () {
       name: 'world'
     };
     this.codewave.vars.test = data;
-    this.codewave.editor.setLang('html');
     (0, _test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get name~~!~~/template~~");
     return this.codewave.onActivationKey().then(() => {
       return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");

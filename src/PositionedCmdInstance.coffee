@@ -6,6 +6,7 @@ import { Replacement } from './positioning/Replacement';
 import { StringHelper } from './helpers/StringHelper';
 import { NamespaceHelper } from './helpers/NamespaceHelper';
 import { Command } from './Command';
+import { optionalPromise } from './helpers/OptionalPromise';
 
 export class PositionedCmdInstance extends CmdInstance
   constructor: (@codewave,@pos,@str) ->
@@ -160,8 +161,10 @@ export class PositionedCmdInstance extends CmdInstance
       if beforeFunct = @getOption('beforeExecute')
         beforeFunct(this)
       if @resultIsAvailable()
-        if (res = @result())?
-          @replaceWith(res)
+        optionalPromise(@result()).then (res)=>
+          if res?
+            @replaceWith(res)
+        .result()
       else
           return @runExecuteFunct()
   getEndPos: ->

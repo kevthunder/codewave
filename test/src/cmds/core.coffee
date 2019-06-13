@@ -159,7 +159,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.editor.text()).to.contain('Codewave allows you to make your own commands')
 
   it ' can get help for the edit command', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~help edit|~~"""
     @codewave.onActivationKey().then =>
@@ -167,7 +166,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.editor.text()).to.contain('Allows to edit a command')
 
   it ' can list all available commands', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~ls|~~"""
     @codewave.onActivationKey().then =>
@@ -177,7 +175,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.editor.text()).to.contain('~~close~~')
 
   it ' can list commands avaiable in a namespace', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~ls help|~~"""
     @codewave.onActivationKey().then =>
@@ -185,7 +182,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.editor.text()).to.contain('~~close~~')
 
   it ' can set a variable', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~set test hello|~~"""
     @codewave.onActivationKey().then =>
@@ -193,7 +189,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.vars.test).to.eq('hello')
 
   it ' can set a variable from content', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~set test|~~hello~~/set~~"""
     @codewave.onActivationKey().then =>
@@ -201,7 +196,6 @@ describe 'Codewave - Core namespace', ->
       expect(@codewave.vars.test).to.eq('hello')
 
   it ' can set a variable with path', ->
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~set test.test hello|~~"""
     @codewave.onActivationKey().then =>
@@ -210,7 +204,6 @@ describe 'Codewave - Core namespace', ->
 
   it ' can get a variable', ->
     @codewave.vars.test = "hello"
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~get test|~~"""
     @codewave.onActivationKey().then =>
@@ -218,7 +211,6 @@ describe 'Codewave - Core namespace', ->
 
   it ' can get a variable with path', ->
     @codewave.vars.test = {test:'hello'}
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~get test.test|~~"""
     @codewave.onActivationKey().then =>
@@ -227,7 +219,6 @@ describe 'Codewave - Core namespace', ->
   it ' can get object variable as json', ->
     data = {test:'hello'}
     @codewave.vars.test = data
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~get test|~~"""
     @codewave.onActivationKey().then =>
@@ -235,7 +226,6 @@ describe 'Codewave - Core namespace', ->
 
   it ' can store json in a variable', ->
     json = {test:'hello'}
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~store_json test|~~#{JSON.stringify(json)}~~/store_json~~"""
     @codewave.onActivationKey().then =>
@@ -245,7 +235,6 @@ describe 'Codewave - Core namespace', ->
   it ' can render a template', ->
     data = {name:'world'}
     @codewave.vars.test = data
-    @codewave.editor.setLang('html')
     setEditorContent @codewave.editor, 
       """~~template test|~~Hello, ~~get name~~!~~/template~~"""
     @codewave.onActivationKey().then =>

@@ -53,6 +53,8 @@ export class Codewave
     else
       @runAtPos(@editor.getCursorPos())
   runAtPos: (pos)->
+    unless pos?
+      throw new Error('Cursor Position is empty')
     @runAtMultiPos([pos])
   runAtMultiPos: (multiPos)->
     Promise.resolve().then =>
@@ -180,6 +182,15 @@ export class Codewave
   getRoot: ->
     if @isRoot()
       return this
+    else if @parent?
+      return @parent.getRoot()
+    else if @inInstance?
+      return @inInstance.codewave.getRoot()
+  getFileSystem: ->
+    if @editor.fileSystem
+      return @editor.fileSystem
+    else if @isRoot()
+      return null
     else if @parent?
       return @parent.getRoot()
     else if @inInstance?
