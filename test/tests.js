@@ -20,6 +20,8 @@ require("./fileSystem/localFiles");
 
 require("./storageEngines/fileStorageEngine");
 
+require("./paramParser");
+
 require("./box_helper");
 
 require("./codewave");

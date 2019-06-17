@@ -60,6 +60,8 @@ export class CmdInstance
       if @cmdObj?
         res = Object.assign(res,@cmdObj.getDefaults())
       return res
+    else
+      {}
   getAliased: ->
     if @cmd?
       unless @aliasedCmd?

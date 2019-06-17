@@ -1,5 +1,6 @@
 import { CmdInstance } from './CmdInstance';
 import { BoxHelper } from './BoxHelper';
+import { ParamParser } from './ParamParser';
 import { Pos } from './positioning/Pos';
 import { StrPos } from './positioning/StrPos';
 import { Replacement } from './positioning/Replacement';
@@ -36,38 +37,15 @@ export class PositionedCmdInstance extends CmdInstance
     @cmdName = parts.shift()
     @rawParams = parts.join(" ")
   _parseParams:(params) ->
-    @params = []
-    @named = @getDefaults()
+    parser = new ParamParser(params, {
+      allowedNamed: @getOption('allowedNamed')
+    })
+    @params = parser.params
+    @named = Object.assign(@getDefaults(), parser.named)
     if @cmd?
       nameToParam = @getOption('nameToParam')
       if nameToParam? 
         @named[nameToParam] = @cmdName
-    if params.length
-      allowedNamed = @getOption('allowedNamed')
-      inStr = false
-      param = ''
-      name = false
-      for i in [0..(params.length-1)]
-        chr = params[i]
-        if chr == ' ' and !inStr
-          if(name)
-            @named[name] = param
-          else
-            @params.push(param)
-          param = ''
-          name = false
-        else if chr in ['"',"'"] and (i == 0 or params[i-1] != '\\')
-          inStr = !inStr
-        else if chr == ':' and !name and !inStr and (!allowedNamed? or param in allowedNamed)
-          name = param
-          param = ''
-        else
-          param += chr
-      if param.length
-        if(name)
-          @named[name] = param
-        else
-          @params.push(param)
   _findClosing: ->
     if f = @_findClosingPos()
       @content = StringHelper.trimEmptyLine(@codewave.editor.textSubstr(@pos+@str.length,f.pos))
