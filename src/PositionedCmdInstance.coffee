@@ -1,6 +1,6 @@
 import { CmdInstance } from './CmdInstance';
 import { BoxHelper } from './BoxHelper';
-import { ParamParser } from './ParamParser';
+import { ParamParser } from './stringParsers/ParamParser';
 import { Pos } from './positioning/Pos';
 import { StrPos } from './positioning/StrPos';
 import { Replacement } from './positioning/Replacement';
@@ -38,7 +38,8 @@ export class PositionedCmdInstance extends CmdInstance
     @rawParams = parts.join(" ")
   _parseParams:(params) ->
     parser = new ParamParser(params, {
-      allowedNamed: @getOption('allowedNamed')
+      allowedNamed: @getOption('allowedNamed'),
+      vars: @codewave.vars
     })
     @params = parser.params
     @named = Object.assign(@getDefaults(), parser.named)

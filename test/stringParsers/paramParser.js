@@ -1,10 +1,10 @@
 "use strict";
 
-var _ParamParser = require("../lib/ParamParser");
+var _ParamParser = require("../../lib/stringParsers/ParamParser");
 
 var _chai = require("chai");
 
-describe('ParamParser', function () {
+describe.only('ParamParser', function () {
   it('can see positionned params', function () {
     var parser;
     parser = new _ParamParser.ParamParser('hello world');
@@ -59,18 +59,48 @@ describe('ParamParser', function () {
     parser = new _ParamParser.ParamParser('"hello there" world');
     (0, _chai.expect)(parser.params).to.deep.eq(['hello there', 'world']);
     return (0, _chai.expect)(parser.named).to.deep.eq({});
-  }); //   it 'can see escaped quote in string', ->
-  //     parser = new ParamParser('"hello \\"there" world');
-  //     expect(parser.params).to.deep.eq(['hello "there','world'])
-  //     expect(parser.named).to.deep.eq({})
-
-  return it('can see explicit string in named', function () {
+  });
+  it('can see escaped quote in string', function () {
     var parser;
-    parser = new _ParamParser.ParamParser('greeting:"hello there" world');
+    parser = new _ParamParser.ParamParser('"hello \\"there" world');
+    (0, _chai.expect)(parser.params).to.deep.eq(['hello "there', 'world']);
+    return (0, _chai.expect)(parser.named).to.deep.eq({});
+  });
+  it('can see explicit string in named', function () {
+    var parser;
+    parser = new _ParamParser.ParamParser('world greeting:"hello there"');
     (0, _chai.expect)(parser.params).to.deep.eq(['world']);
     return (0, _chai.expect)(parser.named).to.deep.eq({
       greeting: 'hello there'
     });
   });
+  it('can use variable placeholder', function () {
+    var parser;
+    parser = new _ParamParser.ParamParser('hello #{who}', {
+      vars: {
+        who: 'world'
+      }
+    });
+    (0, _chai.expect)(parser.params).to.deep.eq(['hello', 'world']);
+    return (0, _chai.expect)(parser.named).to.deep.eq({});
+  });
+  it('can use variable placeholder in string', function () {
+    var parser;
+    parser = new _ParamParser.ParamParser('hello "beautiful #{who}"', {
+      vars: {
+        who: 'world'
+      }
+    });
+    (0, _chai.expect)(parser.params).to.deep.eq(['hello', 'beautiful world']);
+    return (0, _chai.expect)(parser.named).to.deep.eq({});
+  });
+  return it('can use empty variable placeholder', function () {
+    var parser;
+    parser = new _ParamParser.ParamParser('hello "#{quality} world"', {
+      vars: {}
+    });
+    (0, _chai.expect)(parser.params).to.deep.eq(['hello', ' world']);
+    return (0, _chai.expect)(parser.named).to.deep.eq({});
+  });
 });
-//# sourceMappingURL=maps/paramParser.js.map
+//# sourceMappingURL=../maps/stringParsers/paramParser.js.map

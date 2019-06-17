@@ -1,8 +1,8 @@
 
-import { ParamParser } from '../lib/ParamParser';
+import { ParamParser } from '../../lib/stringParsers/ParamParser';
 import {expect} from 'chai'
 
-describe 'ParamParser', ->
+describe.only 'ParamParser', ->
   it 'can see positionned params', ->
     parser = new ParamParser('hello world');
     expect(parser.params).to.deep.eq(['hello','world'])
@@ -42,12 +42,33 @@ describe 'ParamParser', ->
     expect(parser.params).to.deep.eq(['hello there','world'])
     expect(parser.named).to.deep.eq({})
 
-#   it 'can see escaped quote in string', ->
-#     parser = new ParamParser('"hello \\"there" world');
-#     expect(parser.params).to.deep.eq(['hello "there','world'])
-#     expect(parser.named).to.deep.eq({})
+  it 'can see escaped quote in string', ->
+    parser = new ParamParser('"hello \\"there" world');
+    expect(parser.params).to.deep.eq(['hello "there','world'])
+    expect(parser.named).to.deep.eq({})
 
   it 'can see explicit string in named', ->
-    parser = new ParamParser('greeting:"hello there" world');
+    parser = new ParamParser('world greeting:"hello there"');
     expect(parser.params).to.deep.eq(['world'])
     expect(parser.named).to.deep.eq({greeting:'hello there'})
+
+  it 'can use variable placeholder', ->
+    parser = new ParamParser('hello #{who}',{
+      vars: {who:'world'}
+    });
+    expect(parser.params).to.deep.eq(['hello','world'])
+    expect(parser.named).to.deep.eq({})
+
+  it 'can use variable placeholder in string', ->
+    parser = new ParamParser('hello "beautiful #{who}"',{
+      vars: {who:'world'}
+    });
+    expect(parser.params).to.deep.eq(['hello','beautiful world'])
+    expect(parser.named).to.deep.eq({})
+
+  it 'can use empty variable placeholder', ->
+    parser = new ParamParser('hello "#{quality} world"',{
+      vars: {}
+    });
+    expect(parser.params).to.deep.eq(['hello',' world'])
+    expect(parser.named).to.deep.eq({})

@@ -20,7 +20,7 @@ require("./fileSystem/localFiles");
 
 require("./storageEngines/fileStorageEngine");
 
-require("./paramParser");
+require("./stringParsers/paramParser");
 
 require("./box_helper");
 
