@@ -1,6 +1,5 @@
 
 import { Command, BaseCommand } from '../Command';
-import { LangDetector } from '../Detector';
 import { BoxHelper } from '../BoxHelper';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';

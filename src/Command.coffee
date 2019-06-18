@@ -99,6 +99,8 @@ export class Command
     if @aliasOf?
       context = new Context()
       return @_aliasedFromFinder(context.getFinder(@aliasOf))
+  getAliasedOrThis: ->
+    @getAliased() || this
   setOptions: (data) ->
     for key, val of data
       if key of @defaultOptions

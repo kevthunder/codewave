@@ -1,7 +1,7 @@
 
 import { StringHelper } from '../helpers/StringHelper';
 import { Command } from '../Command';
-import { PairDetector } from '../Detector';
+import { PairDetector } from '../detectors/PairDetector';
 
 export class PhpCommandProvider
  register: (cmds)-> 

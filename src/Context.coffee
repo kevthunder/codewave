@@ -22,7 +22,7 @@ export class Context
 
   getNameSpaces: ->
     unless @_namespaces?
-      npcs = ['core'].concat(@nameSpaces)
+      npcs = @nameSpaces
       if @parent?
         npcs = npcs.concat(@parent.getNameSpaces())
       @_namespaces = ArrayHelper.unique(npcs)

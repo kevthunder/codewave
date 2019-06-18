@@ -65,7 +65,7 @@ export class CmdFinder
   triggerDetectors: ->
     if @useDetectors 
       @useDetectors = false
-      posibilities = new CmdFinder(@context.getNameSpaces(), {parent: this, mustExecute: false, useFallbacks: false}).findPosibilities()
+      posibilities = [@root].concat(new CmdFinder(@context.getNameSpaces(), {parent: this, mustExecute: false, useFallbacks: false}).findPosibilities())
       i = 0
       while i < posibilities.length
         cmd = posibilities[i]

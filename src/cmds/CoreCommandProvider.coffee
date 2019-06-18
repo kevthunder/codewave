@@ -1,6 +1,7 @@
 
 import { Command, BaseCommand } from '../Command';
-import { LangDetector } from '../Detector';
+import { LangDetector } from '../detectors/LangDetector';
+import { AlwaysEnabled } from '../detectors/AlwaysEnabled';
 import { BoxHelper } from '../BoxHelper';
 import { EditCmdProp } from '../EditCmdProp';
 import { StringHelper } from '../helpers/StringHelper';
@@ -10,6 +11,7 @@ import { Replacement } from '../positioning/Replacement';
 export class CoreCommandProvider
  register: (cmds)-> 
   core = cmds.addCmd(new Command('core'))
+  cmds.addDetector(new AlwaysEnabled('core'))
   core.addDetector(new LangDetector())
   
   core.addCmds({
@@ -78,7 +80,7 @@ export class CoreCommandProvider
             """
         }
         'sub':{
-          'aliasOf': 'help:subjects'
+          'aliasOf': 'core:help:subjects'
         }
         'get_started':{
           'replaceBox' : true,
@@ -137,7 +139,7 @@ export class CoreCommandProvider
             """
         }
         'demo':{
-          'aliasOf': 'help:get_started'
+          'aliasOf': 'core:help:get_started'
         }
         'editing':{
           'cmds' : {
@@ -202,7 +204,7 @@ export class CoreCommandProvider
             """
         }
         'edit':{
-          'aliasOf': 'help:editing'
+          'aliasOf': 'core:help:editing'
         }
         'not_found' : """
           ~~box~~
