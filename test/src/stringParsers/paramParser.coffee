@@ -2,7 +2,7 @@
 import { ParamParser } from '../../lib/stringParsers/ParamParser';
 import {expect} from 'chai'
 
-describe.only 'ParamParser', ->
+describe 'ParamParser', ->
   it 'can see positionned params', ->
     parser = new ParamParser('hello world');
     expect(parser.params).to.deep.eq(['hello','world'])

@@ -4,7 +4,7 @@ var _ParamParser = require("../../lib/stringParsers/ParamParser");
 
 var _chai = require("chai");
 
-describe.only('ParamParser', function () {
+describe('ParamParser', function () {
   it('can see positionned params', function () {
     var parser;
     parser = new _ParamParser.ParamParser('hello world');
