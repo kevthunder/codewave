@@ -18,4 +18,10 @@ describe 'Codewave - string namespace', ->
     @codewave.onActivationKey().then =>
       assertEditorResult @codewave.editor, 
         """HelloWorld"""
+        
+  it 'can camelize without first letter', ->
+    setEditorContent @codewave.editor, '~~camelize hello_world first:no|~~'
+    @codewave.onActivationKey().then =>
+      assertEditorResult @codewave.editor, 
+        """helloWorld"""
          

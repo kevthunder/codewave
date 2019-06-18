@@ -26,7 +26,7 @@ export class StringCommandProvider
         """
     },
     'camelize':{
-      'result' : (instance) -> inflection.camelize(instance.getParam([0,'str']),instance.getBoolParam([1,'first']))
+      'result' : (instance) -> inflection.camelize(instance.getParam([0,'str']),!instance.getBoolParam([1,'first'],true))
       'allowedNamed':['str','first']
       'help': """
         Transforms a String from underscore to camelcase

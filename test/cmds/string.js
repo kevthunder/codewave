@@ -18,10 +18,16 @@ describe('Codewave - string namespace', function () {
   afterEach(function () {
     return delete this.codewave;
   });
-  return it('can transforms a String from underscore to camelcase', function () {
+  it('can transforms a String from underscore to camelcase', function () {
     (0, _test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world|~~');
     return this.codewave.onActivationKey().then(() => {
       return (0, _test_utils.assertEditorResult)(this.codewave.editor, "HelloWorld");
+    });
+  });
+  return it('can transforms a String from underscore to camelcase without first letter', function () {
+    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world first:no|~~');
+    return this.codewave.onActivationKey().then(() => {
+      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "helloWorld");
     });
   });
 });
