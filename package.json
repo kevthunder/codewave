@@ -37,6 +37,7 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "emmet": "^1.6.3"
+    "emmet": "^1.6.3",
+    "inflection": "^1.12.0"
   }
 }

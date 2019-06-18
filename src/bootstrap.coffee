@@ -5,6 +5,7 @@ import { JsCommandProvider } from './cmds/JsCommandProvider';
 import { PhpCommandProvider } from './cmds/PhpCommandProvider';
 import { HtmlCommandProvider } from './cmds/HtmlCommandProvider';
 import { FileCommandProvider } from './cmds/FileCommandProvider';
+import { StringCommandProvider } from './cmds/StringCommandProvider';
 import { Pos } from './positioning/Pos';
 import { WrappedPos } from './positioning/WrappedPos';
 import { LocalStorageEngine } from './storageEngines/LocalStorageEngine';
@@ -19,6 +20,7 @@ Command.providers = [
   new PhpCommandProvider()
   new HtmlCommandProvider()
   new FileCommandProvider()
+  new StringCommandProvider()
 ]
 
 if localStorage?

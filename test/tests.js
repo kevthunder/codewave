@@ -28,6 +28,8 @@ require("./codewave");
 
 require("./cmds/core");
 
+require("./cmds/string");
+
 require("./cmds/cmd_authoring");
 
 require("./cmds/file");
