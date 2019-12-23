@@ -1,15 +1,11 @@
-require('source-map-support').install();
-
 var gulp = require('gulp');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var babel = require('gulp-babel');
 var source = require('vinyl-source-stream');
-var coffee = require('gulp-coffee');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify-es').default;
 var mocha = require('gulp-mocha');
-var sourcemaps = require('gulp-sourcemaps');
 var gls = require('gulp-live-server');
 var open = require('gulp-open');
 var clean = require('gulp-clean');
@@ -30,15 +26,6 @@ babelPreset = function(){
       ]
   });
 }
-
-gulp.task('coffee', function() {
-  return gulp.src(['./src/**/*.coffee'])
-    .pipe(sourcemaps.init())
-    .pipe(coffee({bare: true}))
-    .pipe(babelPreset())
-    .pipe(sourcemaps.write('./maps', {sourceRoot: '../src'}))
-    .pipe(gulp.dest('./lib/'));
-});
 
 gulp.task('concat', function() {
 
@@ -64,37 +51,23 @@ gulp.task("uglify", function () {
 });
 
 gulp.task('clean', function() {
-  return gulp.src(['./lib','./dist'], {read: false, allowEmpty:true})
+  return gulp.src(['./dist'], {read: false, allowEmpty:true})
   .pipe(clean());
 });
 
-gulp.task('build',  gulp.series('clean', 'coffee', 'concat', 'uglify', function (done) {
+gulp.task('build',  gulp.series('clean', 'concat', 'uglify', function (done) {
     console.log('Build Complete');
     done();
 }));
 
-gulp.task('coffeeTest', function() {
-  return gulp.src('./test/src/**/*.coffee')
-    .pipe(sourcemaps.init())
-    .pipe(coffee())
-    .pipe(babelPreset())
-    .pipe(sourcemaps.write('./maps', {sourceRoot: './src'}))
-    .pipe(gulp.dest('./test/'));
-});
-
-gulp.task('clean-test', function() {
-  return gulp.src(['./test/*','!./test/src'], {read: false})
-  .pipe(clean());
-});
-
-gulp.task('test', gulp.series('build','clean-test','coffeeTest', function() {
+gulp.task('test', gulp.series('build', function() {
   return gulp.src('./test/tests.js')
     .pipe(mocha({require:['source-map-support/register']}));
 }));
 
-gulp.task('test-debug', gulp.series('build','coffeeTest', function() {
+gulp.task('test-debug', gulp.series('build', function() {
   return gulp.src('./test/tests.js')
-    .pipe(mocha({"inspect-brk":true, require:['source-map-support/register']}));
+    .pipe(mocha({"inspect-brk":true}));
 }));
 
 gulp.task('copy-lib', function() {
