@@ -2,7 +2,7 @@
 
 const bootstrap = require("../lib/bootstrap");
 
-const Command = require("../lib/Command");
+const Command = require("../lib/Command").Command;
 
 const TestCommandProvider = require("./testHelpers/TestCommandProvider");
 
@@ -36,5 +36,5 @@ require("./cmds/file");
 
 require("./cmds/php");
 
-Command.Command.providers.push(new TestCommandProvider.TestCommandProvider());
+Command.providers.push(new TestCommandProvider.TestCommandProvider());
 

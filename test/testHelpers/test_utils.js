@@ -42,12 +42,13 @@ var setEditorContent = function (editor, val) {
 exports.setEditorContent = setEditorContent;
 
 var extractSelections = function (text) {
-  var finalText, match, pos, sels;
+  var finalText, pos, sels;
   sels = [];
   finalText = text;
 
   while (true) {
-    if (match = finalText.match(/\|\[(.*)\]/)) {
+    const match = finalText.match(/\|\[(.*)\]/)
+    if(match){
       sels.push(new Pos(match.index, match.index + match[1].length));
       finalText = finalText.replace(/\|\[(.*)\]/, '$1');
     } else if ((pos = finalText.indexOf('|')) > -1) {

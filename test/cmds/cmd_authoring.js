@@ -6,7 +6,7 @@ const bootstrap = require("../../lib/bootstrap");
 
 const Logger = require("../../lib/Logger").Logger;
 
-const Command = require("../../lib/Command");
+const Command = require("../../lib/Command").Command;
 
 const TextParser = require("../../lib/TextParser").TextParser;
 
@@ -19,7 +19,7 @@ describe('Codewave - Command Authoring', function () {
   });
   afterEach(function () {
     delete this.codewave;
-    return Command.Command.resetSaved();
+    return Command.resetSaved();
   });
   it('should show edit box for new command', function () {
     this.codewave.editor.setLang('js');

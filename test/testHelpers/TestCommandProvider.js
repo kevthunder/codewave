@@ -1,11 +1,11 @@
 
 
-const Command = require("../../lib/Command");
+const Command = require("../../lib/Command").Command;
 
 var TestCommandProvider = class TestCommandProvider {
   register(cmds) {
     var test;
-    test = cmds.addCmd(new Command.Command('test'));
+    test = cmds.addCmd(new Command('test'));
     return test.addCmds({
       'replace_box': {
         'replaceBox': true,

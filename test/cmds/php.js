@@ -46,7 +46,7 @@ describe('Codewave for PHP', function () {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, "<?php\n  function |() {\n    \n  }\n?>");
     });
   });
-  it(' should add php tag to boxes', function () {
+  it('should add php tag to boxes', function () {
     this.codewave.editor.setLang('php');
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
     return this.codewave.onActivationKey().then(() => {
