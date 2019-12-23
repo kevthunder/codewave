@@ -1,56 +1,56 @@
 "use strict";
 
-var _chai = require("chai");
+const chai = require("chai");
 
-var _bootstrap = require("../../lib/bootstrap");
+const bootstrap = require("../../lib/bootstrap");
 
-var _Logger = require("../../lib/Logger");
+const Logger = require("../../lib/Logger");
 
-var _TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser");
 
-var _test_utils = require("../testHelpers/test_utils");
+const test_utils = require("../testHelpers/test_utils");
 
-var _StringHelper = require("../../lib/helpers/StringHelper");
+const StringHelper = require("../../lib/helpers/StringHelper");
 
-var _path = require("path");
+const path = require("path");
 
-var _util = require("util");
+const util = require("util");
 
-var _fs = require("fs");
+const fs = require("fs");
 
-var _LocalFiles = require("../../lib/fileSystem/LocalFiles");
+const LocalFiles = require("../../lib/fileSystem/LocalFiles");
 
 describe('Codewave - file namespace', function () {
   beforeEach(function () {
-    _Logger.Logger.enabled = false;
-    this.root = (0, _path.resolve)("./test/tmp/");
-    this.storage = new _LocalFiles.LocalFiles(this.root);
-    this.editor = new _TextParser.TextParser();
+    Logger.Logger.enabled = false;
+    this.root = (0, path.resolve)("./test/tmp/");
+    this.storage = new LocalFiles.LocalFiles(this.root);
+    this.editor = new TextParser.TextParser();
     this.editor.fileSystem = this.storage;
-    return this.codewave = new _bootstrap.Codewave(this.editor);
+    return this.codewave = new bootstrap.Codewave(this.editor);
   });
   afterEach(function () {
     delete this.codewave;
     delete this.storage;
-    return (0, _util.promisify)(_fs.unlink)(this.file).catch(() => {
+    return (0, util.promisify)(fs.unlink)(this.file).catch(() => {
       return null;
     });
   });
   it('read a file', function () {
     return this.storage.writeFile('hello', 'Hello, world!').then(() => {
-      (0, _test_utils.setEditorContent)(this.codewave.editor, "~~file:read hello|~~");
+      (0, test_utils.setEditorContent)(this.codewave.editor, "~~file:read hello|~~");
       return this.codewave.onActivationKey();
     }).then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");
     });
   });
   return it('write a file', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~file:write hello Hello|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~file:write hello Hello|~~");
     return this.codewave.onActivationKey().then(() => {
       return this.storage.readFile('hello');
     }).then(content => {
-      return (0, _chai.expect)(content).to.eq("Hello");
+      return (0, chai.expect)(content).to.eq("Hello");
     });
   });
 });
-//# sourceMappingURL=../maps/cmds/file.js.map
+

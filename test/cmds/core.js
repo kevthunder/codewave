@@ -1,168 +1,168 @@
 "use strict";
 
-var _chai = require("chai");
+const chai = require("chai");
 
-var _bootstrap = require("../../lib/bootstrap");
+const bootstrap = require("../../lib/bootstrap");
 
-var _Logger = require("../../lib/Logger");
+const Logger = require("../../lib/Logger");
 
-var _TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser");
 
-var _test_utils = require("../testHelpers/test_utils");
+const test_utils = require("../testHelpers/test_utils");
 
-var _StringHelper = require("../../lib/helpers/StringHelper");
+const StringHelper = require("../../lib/helpers/StringHelper");
 
 describe('Codewave - Core namespace', function () {
   beforeEach(function () {
-    _Logger.Logger.enabled = false;
-    return this.codewave = new _bootstrap.Codewave(new _TextParser.TextParser());
+    Logger.Logger.enabled = false;
+    return this.codewave = new bootstrap.Codewave(new TextParser.TextParser());
   });
   afterEach(function () {
     return delete this.codewave;
   });
   it('should create box', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
+    test_utils.setEditorContent(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~   Lorem Ipsum ~~close~~   ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~   Lorem Ipsum ~~close~~   ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|");
     });
   });
   it(' boxes should use different comment style', function () {
     this.codewave.editor.setLang('js');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~box|~~ Lorem Ipsum ~~close~~ ~~/box~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~   Lorem Ipsum ~~close~~   ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */|");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~   Lorem Ipsum ~~close~~   ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */|");
     });
   });
   it('should close box', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~   Lorem Ipsum ~~close|~~   ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~   Lorem Ipsum ~~close|~~   ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '|');
     });
   });
   it('should create nested box', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ~~box|~~                               ~ -->\n<!-- ~  sit amet, consectetur                 ~ -->\n<!-- ~  ~~/box~~                              ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ~~box|~~                               ~ -->\n<!-- ~  sit amet, consectetur                 ~ -->\n<!-- ~  ~~/box~~                              ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     });
   });
   it('should close nested box', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.match(RegExp('^' + _StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '\\s*') + '$'));
+      return (0, chai.expect)(this.codewave.editor.text()).to.match(RegExp('^' + StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '\\s*') + '$'));
     });
   });
   it('closed nested box should be aligned', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
       var match, matchExp;
-      matchExp = RegExp('^' + _StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '(\\s*)') + '$');
-      (0, _chai.expect)(this.codewave.editor.text()).to.match(matchExp);
+      matchExp = RegExp('^' + StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '(\\s*)') + '$');
+      (0, chai.expect)(this.codewave.editor.text()).to.match(matchExp);
       match = this.codewave.editor.text().match(matchExp);
-      (0, _chai.expect)(match[1]).property('length', 36);
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  |                                      ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+      (0, chai.expect)(match[1]).property('length', 36);
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  |                                      ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     });
   });
   it('should close parent of nested box', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~  ~~close|~~                             ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~  ~~close|~~                             ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '|');
     });
   });
   it('should be able to use emmet', function () {
     // console.log(module)
     // console.log(define)
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~ul>li|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~ul>li|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "<ul>\n  <li>|</li>\n</ul>");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "<ul>\n  <li>|</li>\n</ul>");
     });
   });
   it('should display help', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~help|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~help|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('Codewave');
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/'); // slice from the ascii logo
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('Codewave');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/'); // slice from the ascii logo
 
-      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
     });
   });
   it(' help demo should expend editing intro', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~help:demo|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~help:demo|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
-      (0, _chai.expect)(this.codewave.editor.text()).to.not.contain('~~help:editing:intro~~');
-      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.not.contain('~~help:editing:intro~~');
+      return (0, chai.expect)(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands');
     });
   });
   it(' can get help for the edit command', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~help edit|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~help edit|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
-      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('Allows to edit a command');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+      return (0, chai.expect)(this.codewave.editor.text()).to.contain('Allows to edit a command');
     });
   });
   it(' can list all available commands', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~ls|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~hello~~');
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~ls core~~');
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~core:help~~');
-      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~hello~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~ls core~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~core:help~~');
+      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
     });
   });
   it(' can list commands avaiable in a namespace', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~ls help|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~ls help|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~core:help:overview~~');
-      return (0, _chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
+      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~core:help:overview~~');
+      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
     });
   });
   it(' can set a variable', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test hello|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~set test hello|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
-      return (0, _chai.expect)(this.codewave.vars.test).to.eq('hello');
+      (0, chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, chai.expect)(this.codewave.vars.test).to.eq('hello');
     });
   });
   it(' can set a variable from content', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test|~~hello~~/set~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~set test|~~hello~~/set~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
-      return (0, _chai.expect)(this.codewave.vars.test).to.eq('hello');
+      (0, chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, chai.expect)(this.codewave.vars.test).to.eq('hello');
     });
   });
   it(' can set a variable with path', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~set test.test hello|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~set test.test hello|~~");
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
-      return (0, _chai.expect)(this.codewave.vars.test).to.deep.eq({
+      (0, chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, chai.expect)(this.codewave.vars.test).to.deep.eq({
         test: 'hello'
       });
     });
   });
   it(' can get a variable', function () {
     this.codewave.vars.test = "hello";
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq('hello');
     });
   });
   it(' can get a variable with path', function () {
     this.codewave.vars.test = {
       test: 'hello'
     };
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test.test|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~get test.test|~~");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq('hello');
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq('hello');
     });
   });
   it(' can get object variable as json', function () {
@@ -171,9 +171,9 @@ describe('Codewave - Core namespace', function () {
       test: 'hello'
     };
     this.codewave.vars.test = data;
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~get test|~~");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '));
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '));
     });
   });
   it(' can store json in a variable', function () {
@@ -181,10 +181,10 @@ describe('Codewave - Core namespace', function () {
     json = {
       test: 'hello'
     };
-    (0, _test_utils.setEditorContent)(this.codewave.editor, `~~store_json test|~~${JSON.stringify(json)}~~/store_json~~`);
+    (0, test_utils.setEditorContent)(this.codewave.editor, `~~store_json test|~~${JSON.stringify(json)}~~/store_json~~`);
     return this.codewave.onActivationKey().then(() => {
-      (0, _chai.expect)(this.codewave.vars).to.have.property('test');
-      return (0, _chai.expect)(this.codewave.vars.test).to.deep.eq(json);
+      (0, chai.expect)(this.codewave.vars).to.have.property('test');
+      return (0, chai.expect)(this.codewave.vars.test).to.deep.eq(json);
     });
   });
   it(' can render a template', function () {
@@ -193,9 +193,9 @@ describe('Codewave - Core namespace', function () {
       name: 'world'
     };
     this.codewave.vars.test = data;
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get name~~!~~/template~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get name~~!~~/template~~");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!");
     });
   });
   return it(' can render a template for an array', function () {
@@ -203,10 +203,10 @@ describe('Codewave - Core namespace', function () {
     data = ['world', 'CodeWave'];
     this.codewave.vars.test = data;
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get value~~!~~/template~~");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "~~template test|~~Hello, ~~get value~~!~~/template~~");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!\nHello, CodeWave!");
+      return (0, chai.expect)(this.codewave.editor.text()).to.eq("Hello, world!\nHello, CodeWave!");
     });
   });
 });
-//# sourceMappingURL=../maps/cmds/core.js.map
+

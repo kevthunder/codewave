@@ -1,15 +1,10 @@
-"use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.TestMonoEditor = void 0;
 
-var _Pos = require("../../lib/positioning/Pos");
+const Pos = require("../../lib/positioning/Pos");
 
-var _TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser");
 
-var TestMonoEditor = class TestMonoEditor extends _TextParser.TextParser {
+var TestMonoEditor = class TestMonoEditor extends TextParser.TextParser {
   constructor(target) {
     super(target);
     this.changeListeners = [];
@@ -46,4 +41,4 @@ var TestMonoEditor = class TestMonoEditor extends _TextParser.TextParser {
 
 };
 exports.TestMonoEditor = TestMonoEditor;
-//# sourceMappingURL=../maps/testHelpers/TestMonoEditor.js.map
+

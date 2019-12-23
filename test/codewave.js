@@ -1,130 +1,130 @@
 "use strict";
 
-var _chai = require("chai");
+const chai = require("chai");
 
-var _bootstrap = require("../lib/bootstrap");
+const bootstrap = require("../lib/bootstrap");
 
-var _Logger = require("../lib/Logger");
+const Logger = require("../lib/Logger");
 
-var _TextParser = require("../lib/TextParser");
+const TextParser = require("../lib/TextParser");
 
-var _test_utils = require("./testHelpers/test_utils");
+const test_utils = require("./testHelpers/test_utils");
 
-var _StringHelper = require("../lib/helpers/StringHelper");
+const StringHelper = require("../lib/helpers/StringHelper");
 
 describe('Codewave', function () {
   beforeEach(function () {
-    _Logger.Logger.enabled = false;
-    return this.codewave = new _bootstrap.Codewave(new _TextParser.TextParser());
+    Logger.Logger.enabled = false;
+    return this.codewave = new bootstrap.Codewave(new TextParser.TextParser());
   });
   afterEach(function () {
     return delete this.codewave;
   });
   it('should use tilde brakets', function () {
-    return (0, _chai.expect)(this.codewave).property('brakets', '~~');
+    return (0, chai.expect)(this.codewave).property('brakets', '~~');
   });
   it('should create brakets', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, 'lo|rem');
+    (0, test_utils.setEditorContent)(this.codewave.editor, 'lo|rem');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, 'lo~~|~~rem');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'lo~~|~~rem');
     });
   });
   it('should create brakets at begining', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '|lorem');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '|lorem');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~lorem');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~lorem');
     });
   });
   it('should wrap selection with brakets', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/~~');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/~~');
     });
   });
   it('should create brakets at end', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, 'lorem|');
+    (0, test_utils.setEditorContent)(this.codewave.editor, 'lorem|');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, 'lorem~~|~~');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'lorem~~|~~');
     });
   });
   it('should reduce brakets', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, 'lorem~~|~~ipsum');
+    (0, test_utils.setEditorContent)(this.codewave.editor, 'lorem~~|~~ipsum');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, 'lorem|ipsum');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'lorem|ipsum');
     });
   });
   it('should reduce brakets at begining', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~|~~lorem');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~|~~lorem');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '|lorem');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '|lorem');
     });
   });
   it('should expand hello', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~|hello~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~|hello~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('should expand hello (cursor middle)', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~hel|lo~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~hel|lo~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('should expand hello (cursor end)', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~hello|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~hello|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('should expand hello (cursor middle end bracket)', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~|~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~|~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('should expand hello (cursor after)', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~~|');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~~|');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('should expand hello at begining', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~|hello~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~|hello~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, 'Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'Hello, World!|');
     });
   });
   it('should expand on closing tag', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~~ ~~/hello|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~hello~~ ~~/hello|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- Hello, World!|');
     });
   });
   it('non exiting commands should not change', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '- ~~non_exiting_command|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '- ~~non_exiting_command|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '- ~~non_exiting_command|~~');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '- ~~non_exiting_command|~~');
     });
   });
   it('escaped commands should unescape', function () {
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~!hello|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~!hello|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, '~~hello~~|');
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, '~~hello~~|');
     });
   });
   it('should follow alias with name wildcard', function () {
     this.codewave.editor.setLang('html');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, '~~php:outer:f|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~php:outer:f|~~');
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "<?php\n  function |() {\n    \n  }\n?>");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "<?php\n  function |() {\n    \n  }\n?>");
     });
   });
   return it('should replace box on option replaceBox', function () {
     this.codewave.editor.setLang('js');
-    (0, _test_utils.setEditorContent)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~  ~~test:replace_box|~~  ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */");
+    (0, test_utils.setEditorContent)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~  ~~test:replace_box|~~  ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */");
     return this.codewave.onActivationKey().then(() => {
-      return (0, _test_utils.assertEditorResult)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~ */\n/* ~  Lorem ipsum  ~ */\n/* ~~~~~~~~~~~~~~~~~ */|");
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, "/* ~~~~~~~~~~~~~~~~~ */\n/* ~  Lorem ipsum  ~ */\n/* ~~~~~~~~~~~~~~~~~ */|");
     });
   });
 }); //  it 'should replace nested box on option replaceBox', ->
@@ -142,4 +142,4 @@ describe('Codewave', function () {
 //         /* ~  /* ~  Lorem ipsum  ~ */  ~ */
 //         /* ~  /* ~~~~~~~~~~~~~~~~~ */  ~ */
 //         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */|"""
-//# sourceMappingURL=maps/codewave.js.map
+

@@ -1,28 +1,23 @@
-"use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.removeTextArea = exports.createTextArea = exports.extractSelections = exports.setEditorContent = exports.assertEditorResult = void 0;
 
-var _chai = require("chai");
+const chai = require("chai");
 
-var _Pos = require("../../lib/positioning/Pos");
+const Pos = require("../../lib/positioning/Pos");
 
 var assertEditorResult = function (editor, res) {
   var realText, sels;
   [realText, sels] = extractSelections(res);
-  (0, _chai.expect)(editor.text()).to.eql(realText);
+  (0, chai.expect)(editor.text()).to.eql(realText);
 
   if (sels.length) {
     if (editor.allowMultiSelection()) {
-      return (0, _chai.expect)(editor.getMultiSel().map(function (s) {
+      return (0, chai.expect)(editor.getMultiSel().map(function (s) {
         return s.raw();
       })).to.eql(sels.map(function (s) {
         return s.raw();
       }));
     } else {
-      return (0, _chai.expect)(editor.getCursorPos().raw()).to.eql(sels[0].raw());
+      return (0, chai.expect)(editor.getCursorPos().raw()).to.eql(sels[0].raw());
     }
   }
 };
@@ -53,10 +48,10 @@ var extractSelections = function (text) {
 
   while (true) {
     if (match = finalText.match(/\|\[(.*)\]/)) {
-      sels.push(new _Pos.Pos(match.index, match.index + match[1].length));
+      sels.push(new Pos.Pos(match.index, match.index + match[1].length));
       finalText = finalText.replace(/\|\[(.*)\]/, '$1');
     } else if ((pos = finalText.indexOf('|')) > -1) {
-      sels.push(new _Pos.Pos(pos));
+      sels.push(new Pos.Pos(pos));
       finalText = finalText.replace('|', '');
     } else {
       break;
@@ -84,4 +79,4 @@ var removeTextArea = function (id) {
 };
 
 exports.removeTextArea = removeTextArea;
-//# sourceMappingURL=../maps/testHelpers/test_utils.js.map
+

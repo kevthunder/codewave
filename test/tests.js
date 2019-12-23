@@ -1,10 +1,10 @@
 "use strict";
 
-var _bootstrap = require("../lib/bootstrap");
+const bootstrap = require("../lib/bootstrap");
 
-var _Command = require("../lib/Command");
+const Command = require("../lib/Command");
 
-var _TestCommandProvider = require("./testHelpers/TestCommandProvider");
+const TestCommandProvider = require("./testHelpers/TestCommandProvider");
 
 require("./helpers/stringHelper");
 
@@ -36,5 +36,5 @@ require("./cmds/file");
 
 require("./cmds/php");
 
-_Command.Command.providers.push(new _TestCommandProvider.TestCommandProvider());
-//# sourceMappingURL=maps/tests.js.map
+Command.Command.providers.push(new TestCommandProvider.TestCommandProvider());
+

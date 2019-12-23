@@ -1,10 +1,10 @@
 "use strict";
 
-var _chai = require("chai");
+const chai = require("chai");
 
-var _TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser");
 
-var _Wrapping = require("../../lib/positioning/Wrapping");
+const Wrapping = require("../../lib/positioning/Wrapping");
 
 describe('Wrapping', function () {
   beforeEach(function () {
@@ -16,12 +16,12 @@ describe('Wrapping', function () {
     return delete this.editor;
   });
   return it('editor should be settable', function () {
-    this.editor = new _TextParser.TextParser('lorem Ipsum');
-    this.wrapping = new _Wrapping.Wrapping(0, 5, '(', ')');
-    (0, _chai.expect)(this.wrapping).to.respondTo('withEditor');
-    (0, _chai.expect)(this.wrapping).to.respondTo('editor');
+    this.editor = new TextParser.TextParser('lorem Ipsum');
+    this.wrapping = new Wrapping.Wrapping(0, 5, '(', ')');
+    (0, chai.expect)(this.wrapping).to.respondTo('withEditor');
+    (0, chai.expect)(this.wrapping).to.respondTo('editor');
     this.wrapping.withEditor(this.editor);
-    return (0, _chai.expect)(this.wrapping.editor()).to.eql(this.editor);
+    return (0, chai.expect)(this.wrapping.editor()).to.eql(this.editor);
   });
 });
-//# sourceMappingURL=../maps/positioning/wrapping.js.map
+

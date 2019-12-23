@@ -1,15 +1,10 @@
-"use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.TestMultiEditor = void 0;
 
-var _Pos = require("../../lib/positioning/Pos");
+const Pos = require("../../lib/positioning/Pos");
 
-var _TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser");
 
-var TestMultiEditor = class TestMultiEditor extends _TextParser.TextParser {
+var TestMultiEditor = class TestMultiEditor extends TextParser.TextParser {
   constructor(target) {
     super(target);
     this.selections = [];
@@ -27,7 +22,7 @@ var TestMultiEditor = class TestMultiEditor extends _TextParser.TextParser {
     if (res != null) {
       return res;
     } else {
-      return new _Pos.Pos(0, 0);
+      return new Pos.Pos(0, 0);
     }
   }
 
@@ -42,7 +37,7 @@ var TestMultiEditor = class TestMultiEditor extends _TextParser.TextParser {
 
     if (start !== old.start || end !== old.end) {
       super.setCursorPos(start, end);
-      return this.selections = [new _Pos.Pos(start, end)];
+      return this.selections = [new Pos.Pos(start, end)];
     }
   }
 
@@ -68,7 +63,7 @@ var TestMultiEditor = class TestMultiEditor extends _TextParser.TextParser {
   }
 
   addSel(start, end) {
-    return this.selections.push(new _Pos.Pos(start, end));
+    return this.selections.push(new Pos.Pos(start, end));
   }
 
   resetSel(start, end) {
@@ -106,4 +101,4 @@ var TestMultiEditor = class TestMultiEditor extends _TextParser.TextParser {
 
 };
 exports.TestMultiEditor = TestMultiEditor;
-//# sourceMappingURL=../maps/testHelpers/TestMultiEditor.js.map
+
