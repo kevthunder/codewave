@@ -4,18 +4,18 @@ const chai = require("chai");
 
 const bootstrap = require("../../lib/bootstrap");
 
-const Logger = require("../../lib/Logger");
+const Logger = require("../../lib/Logger").Logger;
 
-const TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser").TextParser;
 
 const test_utils = require("../testHelpers/test_utils");
 
-const StringHelper = require("../../lib/helpers/StringHelper");
+const StringHelper = require("../../lib/helpers/StringHelper").StringHelper;
 
 describe('Codewave - Core namespace', function () {
   beforeEach(function () {
-    Logger.Logger.enabled = false;
-    return this.codewave = new bootstrap.Codewave(new TextParser.TextParser());
+    Logger.enabled = false;
+    return this.codewave = new bootstrap.Codewave(new TextParser());
   });
   afterEach(function () {
     return delete this.codewave;
@@ -51,7 +51,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.editor.setLang('html');
     (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.match(RegExp('^' + StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '\\s*') + '$'));
+      return (0, chai.expect)(this.codewave.editor.text()).to.match(RegExp('^' + StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '\\s*') + '$'));
     });
   });
   it('closed nested box should be aligned', function () {
@@ -59,7 +59,7 @@ describe('Codewave - Core namespace', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, "<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->");
     return this.codewave.onActivationKey().then(() => {
       var match, matchExp;
-      matchExp = RegExp('^' + StringHelper.StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '(\\s*)') + '$');
+      matchExp = RegExp('^' + StringHelper.escapeRegExp("<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->").replace('##spaces##', '(\\s*)') + '$');
       (0, chai.expect)(this.codewave.editor.text()).to.match(matchExp);
       match = this.codewave.editor.text().match(matchExp);
       (0, chai.expect)(match[1]).property('length', 36);

@@ -2,7 +2,7 @@
 
 const chai = require("chai");
 
-const Pos = require("../../lib/positioning/Pos");
+const Pos = require("../../lib/positioning/Pos").Pos;
 
 var assertEditorResult = function (editor, res) {
   var realText, sels;
@@ -48,10 +48,10 @@ var extractSelections = function (text) {
 
   while (true) {
     if (match = finalText.match(/\|\[(.*)\]/)) {
-      sels.push(new Pos.Pos(match.index, match.index + match[1].length));
+      sels.push(new Pos(match.index, match.index + match[1].length));
       finalText = finalText.replace(/\|\[(.*)\]/, '$1');
     } else if ((pos = finalText.indexOf('|')) > -1) {
-      sels.push(new Pos.Pos(pos));
+      sels.push(new Pos(pos));
       finalText = finalText.replace('|', '');
     } else {
       break;

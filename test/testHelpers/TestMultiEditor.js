@@ -1,10 +1,10 @@
 
 
-const Pos = require("../../lib/positioning/Pos");
+const Pos = require("../../lib/positioning/Pos").Pos;
 
-const TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser").TextParser;
 
-var TestMultiEditor = class TestMultiEditor extends TextParser.TextParser {
+var TestMultiEditor = class TestMultiEditor extends TextParser {
   constructor(target) {
     super(target);
     this.selections = [];
@@ -22,7 +22,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser.TextParser {
     if (res != null) {
       return res;
     } else {
-      return new Pos.Pos(0, 0);
+      return new Pos(0, 0);
     }
   }
 
@@ -37,7 +37,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser.TextParser {
 
     if (start !== old.start || end !== old.end) {
       super.setCursorPos(start, end);
-      return this.selections = [new Pos.Pos(start, end)];
+      return this.selections = [new Pos(start, end)];
     }
   }
 
@@ -63,7 +63,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser.TextParser {
   }
 
   addSel(start, end) {
-    return this.selections.push(new Pos.Pos(start, end));
+    return this.selections.push(new Pos(start, end));
   }
 
   resetSel(start, end) {

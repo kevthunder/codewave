@@ -2,9 +2,9 @@
 
 const chai = require("chai");
 
-const TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser").TextParser;
 
-const Wrapping = require("../../lib/positioning/Wrapping");
+const Wrapping = require("../../lib/positioning/Wrapping").Wrapping;
 
 describe('Wrapping', function () {
   beforeEach(function () {
@@ -16,8 +16,8 @@ describe('Wrapping', function () {
     return delete this.editor;
   });
   return it('editor should be settable', function () {
-    this.editor = new TextParser.TextParser('lorem Ipsum');
-    this.wrapping = new Wrapping.Wrapping(0, 5, '(', ')');
+    this.editor = new TextParser('lorem Ipsum');
+    this.wrapping = new Wrapping(0, 5, '(', ')');
     (0, chai.expect)(this.wrapping).to.respondTo('withEditor');
     (0, chai.expect)(this.wrapping).to.respondTo('editor');
     this.wrapping.withEditor(this.editor);

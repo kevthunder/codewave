@@ -1,6 +1,6 @@
 "use strict";
 
-const LocalFiles = require("../../lib/fileSystem/LocalFiles");
+const LocalFiles = require("../../lib/fileSystem/LocalFiles").LocalFiles;
 
 const chai = require("chai");
 
@@ -13,7 +13,7 @@ const fs = require("fs");
 describe('LocalFiles', function () {
   beforeEach(function () {
     this.root = (0, path.resolve)("./test/tmp/");
-    return this.storage = new LocalFiles.LocalFiles(this.root);
+    return this.storage = new LocalFiles(this.root);
   });
   afterEach(function () {
     delete this.storage;

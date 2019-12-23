@@ -4,13 +4,13 @@ const chai = require("chai");
 
 const bootstrap = require("../../lib/bootstrap");
 
-const Logger = require("../../lib/Logger");
+const Logger = require("../../lib/Logger").Logger;
 
-const TextParser = require("../../lib/TextParser");
+const TextParser = require("../../lib/TextParser").TextParser;
 
 const test_utils = require("../testHelpers/test_utils");
 
-const StringHelper = require("../../lib/helpers/StringHelper");
+const StringHelper = require("../../lib/helpers/StringHelper").StringHelper;
 
 const path = require("path");
 
@@ -18,14 +18,14 @@ const util = require("util");
 
 const fs = require("fs");
 
-const LocalFiles = require("../../lib/fileSystem/LocalFiles");
+const LocalFiles = require("../../lib/fileSystem/LocalFiles").LocalFiles;
 
 describe('Codewave - file namespace', function () {
   beforeEach(function () {
-    Logger.Logger.enabled = false;
+    Logger.enabled = false;
     this.root = (0, path.resolve)("./test/tmp/");
-    this.storage = new LocalFiles.LocalFiles(this.root);
-    this.editor = new TextParser.TextParser();
+    this.storage = new LocalFiles(this.root);
+    this.editor = new TextParser();
     this.editor.fileSystem = this.storage;
     return this.codewave = new bootstrap.Codewave(this.editor);
   });

@@ -1,6 +1,6 @@
 "use strict";
 
-const FileStorageEngine = require("../../lib/storageEngines/FileStorageEngine");
+const FileStorageEngine = require("../../lib/storageEngines/FileStorageEngine").FileStorageEngine;
 
 const chai = require("chai");
 
@@ -13,7 +13,7 @@ const fs = require("fs");
 describe('FileStorageEngine', function () {
   beforeEach(function () {
     this.file = (0, path.resolve)("./test/tmp/test.json");
-    return this.storage = new FileStorageEngine.FileStorageEngine(this.file);
+    return this.storage = new FileStorageEngine(this.file);
   });
   afterEach(function () {
     delete this.storage;
@@ -26,7 +26,7 @@ describe('FileStorageEngine', function () {
       (0, chai.expect)(res).to.not.exist;
       return this.storage.save('foo', "bar");
     }).then(() => {
-      this.storage = new FileStorageEngine.FileStorageEngine(this.file);
+      this.storage = new FileStorageEngine(this.file);
       return this.storage.load('foo');
     }).then(res => {
       (0, chai.expect)(res).to.eql("bar");

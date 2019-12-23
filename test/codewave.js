@@ -4,18 +4,18 @@ const chai = require("chai");
 
 const bootstrap = require("../lib/bootstrap");
 
-const Logger = require("../lib/Logger");
+const Logger = require("../lib/Logger").Logger;
 
-const TextParser = require("../lib/TextParser");
+const TextParser = require("../lib/TextParser").TextParser;
 
 const test_utils = require("./testHelpers/test_utils");
 
-const StringHelper = require("../lib/helpers/StringHelper");
+const StringHelper = require("../lib/helpers/StringHelper").StringHelper;
 
 describe('Codewave', function () {
   beforeEach(function () {
-    Logger.Logger.enabled = false;
-    return this.codewave = new bootstrap.Codewave(new TextParser.TextParser());
+    Logger.enabled = false;
+    return this.codewave = new bootstrap.Codewave(new TextParser());
   });
   afterEach(function () {
     return delete this.codewave;

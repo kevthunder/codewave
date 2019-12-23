@@ -4,7 +4,7 @@ const chai = require("chai");
 
 const bootstrap = require("../lib/bootstrap");
 
-const Logger = require("../lib/Logger");
+const Logger = require("../lib/Logger").Logger;
 
 const TestMultiEditor = require("./testHelpers/TestMultiEditor");
 
@@ -14,7 +14,7 @@ const test_utils = require("./testHelpers/test_utils");
 
 describe('ClosingPromp', function () {
   beforeEach(function () {
-    Logger.Logger.enabled = false;
+    Logger.enabled = false;
     return this.codewave = new bootstrap.Codewave(new TestMultiEditor.TestMultiEditor());
   });
   afterEach(function () {
@@ -140,7 +140,7 @@ describe('ClosingPromp', function () {
 });
 describe('SimulatedClosingPromp', function () {
   beforeEach(function () {
-    Logger.Logger.enabled = false;
+    Logger.enabled = false;
     return this.codewave = new bootstrap.Codewave(new TestMonoEditor.TestMonoEditor());
   });
   afterEach(function () {
