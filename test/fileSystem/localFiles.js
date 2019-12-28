@@ -1,28 +1,28 @@
-"use strict";
+'use strict'
 
-const LocalFiles = require("../../lib/fileSystem/LocalFiles").LocalFiles;
+const LocalFiles = require('../../lib/fileSystem/LocalFiles').LocalFiles
 
-const chai = require("chai");
+const chai = require('chai')
 
-const path = require("path");
+const path = require('path')
 
-const util = require("util");
+const util = require('util')
 
-const fs = require("fs");
+const fs = require('fs')
+
+let storage
 
 describe('LocalFiles', function () {
   beforeEach(function () {
-    this.root = (0, path.resolve)("./test/tmp/");
-    return this.storage = new LocalFiles(this.root);
-  });
+    this.root = (0, path.resolve)('./test/tmp/')
+    storage = new LocalFiles(this.root)
+  })
   afterEach(function () {
-    delete this.storage;
-    return (0, util.promisify)(fs.unlink)(this.file).catch(() => {
-      return null;
-    });
-  });
-  return it('does not allow to use a path ousite the root folder', function () {
-    return (0, chai.expect)(this.storage.realpath('../')).to.eq(this.root + '/');
-  });
-});
-
+    util.promisify(fs.unlink)(this.file).catch(() => {
+      return null
+    })
+  })
+  it('does not allow to use a path ousite the root folder', function () {
+    chai.expect(storage.realpath('../')).to.eq(this.root + path.sep)
+  })
+})

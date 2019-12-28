@@ -1,40 +1,39 @@
-"use strict";
+'use strict'
 
-const bootstrap = require("../lib/bootstrap");
+const bootstrap = require('../lib/bootstrap')
 
-const Command = require("../lib/Command").Command;
+const Command = require('../lib/Command').Command
 
-const TestCommandProvider = require("./testHelpers/TestCommandProvider");
+const TestCommandProvider = require('./testHelpers/TestCommandProvider')
 
-require("./helpers/stringHelper");
+require('./helpers/stringHelper')
 
-require("./helpers/pathHelper");
+require('./helpers/pathHelper')
 
-require("./positioning/pair");
+require('./positioning/pair')
 
-require("./positioning/wrapping");
+require('./positioning/wrapping')
 
-require("./positioning/replacement");
+require('./positioning/replacement')
 
-require("./fileSystem/localFiles");
+require('./fileSystem/localFiles')
 
-require("./storageEngines/fileStorageEngine");
+require('./storageEngines/fileStorageEngine')
 
-require("./stringParsers/paramParser");
+require('./stringParsers/paramParser')
 
-require("./box_helper");
+require('./box_helper')
 
-require("./codewave");
+require('./codewave')
 
-require("./cmds/core");
+require('./cmds/core')
 
-require("./cmds/string");
+require('./cmds/string')
 
-require("./cmds/cmd_authoring");
+require('./cmds/cmd_authoring')
 
-require("./cmds/file");
+require('./cmds/file')
 
-require("./cmds/php");
+require('./cmds/php')
 
-Command.providers.push(new TestCommandProvider.TestCommandProvider());
-
+Command.providers.push(new TestCommandProvider.TestCommandProvider())

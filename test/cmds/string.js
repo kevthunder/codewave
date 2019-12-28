@@ -1,34 +1,33 @@
-"use strict";
+'use strict'
 
-const chai = require("chai");
+const chai = require('chai')
 
-const bootstrap = require("../../lib/bootstrap");
+const bootstrap = require('../../lib/bootstrap')
 
-const Logger = require("../../lib/Logger").Logger;
+const Logger = require('../../lib/Logger').Logger
 
-const TextParser = require("../../lib/TextParser").TextParser;
+const TextParser = require('../../lib/TextParser').TextParser
 
-const test_utils = require("../testHelpers/test_utils");
+const test_utils = require('../testHelpers/test_utils')
 
 describe('Codewave - string namespace', function () {
   beforeEach(function () {
-    Logger.enabled = false;
-    return this.codewave = new bootstrap.Codewave(new TextParser());
-  });
+    Logger.enabled = false
+    return this.codewave = new bootstrap.Codewave(new TextParser())
+  })
   afterEach(function () {
-    return delete this.codewave;
-  });
+    return delete this.codewave
+  })
   it('can transforms a String from underscore to camelcase', function () {
-    (0, test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world|~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, test_utils.assertEditorResult)(this.codewave.editor, "HelloWorld");
-    });
-  });
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'HelloWorld')
+    })
+  })
   return it('can camelize without first letter', function () {
-    (0, test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world first:no|~~');
+    (0, test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world first:no|~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, test_utils.assertEditorResult)(this.codewave.editor, "helloWorld");
-    });
-  });
-});
-
+      return (0, test_utils.assertEditorResult)(this.codewave.editor, 'helloWorld')
+    })
+  })
+})
