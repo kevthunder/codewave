@@ -44,7 +44,7 @@ describe('Codewave - file namespace', function () {
       return (0, chai.expect)(this.codewave.editor.text()).to.eq('Hello, world!')
     })
   })
-  return it('write a file', function () {
+  it('write a file', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~file:write hello Hello|~~')
     return this.codewave.onActivationKey().then(() => {
       return this.storage.readFile('hello')

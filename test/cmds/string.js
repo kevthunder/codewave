@@ -24,7 +24,7 @@ describe('Codewave - string namespace', function () {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, 'HelloWorld')
     })
   })
-  return it('can camelize without first letter', function () {
+  it('can camelize without first letter', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~camelize hello_world first:no|~~')
     return this.codewave.onActivationKey().then(() => {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, 'helloWorld')

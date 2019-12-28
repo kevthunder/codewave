@@ -13,7 +13,7 @@ describe('StringHelper', function () {
   it('should repeat string to length', function () {
     return (0, chai.expect)(StringHelper.repeatToLength('+-', 3)).to.eql('+-+')
   })
-  return it('should reverse string', function () {
+  it('should reverse string', function () {
     return (0, chai.expect)(StringHelper.reverseStr('abcd')).to.eql('dcba')
   })
 })

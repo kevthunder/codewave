@@ -39,7 +39,7 @@ describe('BoxHelper', function () {
     this.boxHelper.getOptFromLine('<!-- ~  123456789  ~ -->', false)
     return (0, chai.expect)(this.boxHelper).property('width', 9)
   })
-  return it('should detect nested box outer width', function () {
+  it('should detect nested box outer width', function () {
     this.codewave = new bootstrap.Codewave(new TextParser(''))
     this.boxHelper = new BoxHelper(this.codewave.context)
     this.boxHelper.getOptFromLine('<!-- ~  <!-- ~  123456789  ~ -->  ~ -->', false)

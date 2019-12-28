@@ -125,7 +125,7 @@ describe('ClosingPromp', function () {
       return (0, chai.expect)(closingPromp).property('started', false)
     })
   })
-  return it('should remove space after stop', function () {
+  it('should remove space after stop', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
       var closingPromp
@@ -175,7 +175,7 @@ describe('SimulatedClosingPromp', function () {
     })
     return null
   })
-  return it('should stop after space', function (done) {
+  it('should stop after space', function (done) {
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     this.codewave.onActivationKey().then(() => {
       var closingPromp

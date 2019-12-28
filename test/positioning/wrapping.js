@@ -15,7 +15,7 @@ describe('Wrapping', function () {
     delete this.wrapping
     return delete this.editor
   })
-  return it('editor should be settable', function () {
+  it('editor should be settable', function () {
     this.editor = new TextParser('lorem Ipsum')
     this.wrapping = new Wrapping(0, 5, '(', ')');
     (0, chai.expect)(this.wrapping).to.respondTo('withEditor');

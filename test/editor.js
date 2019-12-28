@@ -11,11 +11,11 @@
       delete this.codewave
       return removeTextArea('Editor')
     })
-    return it('should set cursor pos', function () {
+    it('should set cursor pos', function () {
       this.codewave.editor.text('lorem')
       this.codewave.editor.setCursorPos(2)
       expect(this.codewave.editor.getCursorPos()).to.respondTo('raw')
       return expect(this.codewave.editor.getCursorPos().raw()).to.eql([2, 2])
     })
   })
-}).call(void 0)
+}).call(null)

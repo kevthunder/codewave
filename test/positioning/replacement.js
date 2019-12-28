@@ -23,7 +23,7 @@ describe('Replacement', function () {
     this.replacement.withEditor(this.editor)
     return (0, chai.expect)(this.replacement.editor()).to.eql(this.editor)
   })
-  return it('should take prefix option', function () {
+  it('should take prefix option', function () {
     this.editor = new TextParser('lorem Ipsum')
     this.replacement = new Replacement(1, 2, 'a', {
       prefix: 'test'

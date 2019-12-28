@@ -10,7 +10,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BoxHelper = void 0;
+exports.BoxHelper = null;
 
 var _StringHelper = require("./helpers/StringHelper");
 
@@ -277,7 +277,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -294,7 +294,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SimulatedClosingPromp = exports.ClosingPromp = void 0;
+exports.SimulatedClosingPromp = exports.ClosingPromp = null;
 
 var _PosCollection = require("./positioning/PosCollection");
 
@@ -642,7 +642,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CmdFinder = void 0;
+exports.CmdFinder = null;
 
 var _Context = require("./Context");
 
@@ -862,7 +862,7 @@ function () {
       this.root.init();
       posibilities = [];
 
-      if (((ref = this.codewave) != null ? (ref1 = ref.inInstance) != null ? ref1.cmd : void 0 : void 0) === this.root) {
+      if (((ref = this.codewave) != null ? (ref1 = ref.inInstance) != null ? ref1.cmd : null : null) === this.root) {
         posibilities = posibilities.concat(this.getPosibilitiesFromCommand('in_instance'));
       }
 
@@ -963,7 +963,7 @@ function () {
     value: function ancestors() {
       var ref;
 
-      if (((ref = this.codewave) != null ? ref.inInstance : void 0) != null) {
+      if (((ref = this.codewave) != null ? ref.inInstance : null) != null) {
         return this.codewave.inInstance.ancestorCmdsAndSelf();
       }
 
@@ -1036,7 +1036,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CmdInstance = void 0;
+exports.CmdInstance = null;
 
 var _Context = require("./Context");
 
@@ -1286,7 +1286,7 @@ function () {
     value: function ancestorCmds() {
       var ref;
 
-      if (((ref = this.context.codewave) != null ? ref.inInstance : void 0) != null) {
+      if (((ref = this.context.codewave) != null ? ref.inInstance : null) != null) {
         return this.context.codewave.inInstance.ancestorCmdsAndSelf();
       }
 
@@ -1409,7 +1409,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Codewave = void 0;
+exports.Codewave = null;
 
 var _Process = require("./Process");
 
@@ -1820,7 +1820,7 @@ var Codewave = function () {
   ;
   Codewave.inited = false;
   return Codewave;
-}.call(void 0);
+}.call(null);
 
 exports.Codewave = Codewave;
 
@@ -1844,7 +1844,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BaseCommand = exports.Command = void 0;
+exports.BaseCommand = exports.Command = null;
 
 var _Context = require("./Context");
 
@@ -2043,7 +2043,7 @@ var Command = function () {
           if (key in this.defaultOptions) {
             results.push(this.options[key] = val);
           } else {
-            results.push(void 0);
+            results.push(null);
           }
         }
 
@@ -2192,7 +2192,7 @@ var Command = function () {
         name = _NamespaceHelper$Name2[1];
 
         if (space != null) {
-          return (ref = this.getCmd(space)) != null ? ref.getCmd(name) : void 0;
+          return (ref = this.getCmd(space)) != null ? ref.getCmd(name) : null;
         }
 
         ref1 = this.cmds;
@@ -2308,7 +2308,7 @@ var Command = function () {
 
         base.execute = function (instance) {
           var p, val;
-          val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+          val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : null;
 
           if (val != null) {
             return instance.codewave.vars[name] = val;
@@ -2324,7 +2324,7 @@ var Command = function () {
 
         base.execute = function (instance) {
           var p, val;
-          val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+          val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : null;
 
           if (!(val != null && (val === '0' || val === 'false' || val === 'no'))) {
             return instance.codewave.vars[name] = true;
@@ -2342,7 +2342,7 @@ var Command = function () {
   Command.providers = [];
   Command.storage = new _Storage.Storage();
   return Command;
-}.call(void 0);
+}.call(null);
 
 exports.Command = Command;
 
@@ -2392,7 +2392,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Context = void 0;
+exports.Context = null;
 
 var _CmdFinder = require("./CmdFinder");
 
@@ -2579,7 +2579,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -2596,7 +2596,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PairDetector = exports.LangDetector = exports.Detector = void 0;
+exports.PairDetector = exports.LangDetector = exports.Detector = null;
 
 var _Pair = require("./positioning/Pair");
 
@@ -2705,7 +2705,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
 
@@ -2726,7 +2726,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.EditCmdProp = void 0;
+exports.EditCmdProp = null;
 
 var _Command = require("./Command");
 
@@ -2960,7 +2960,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Editor = void 0;
+exports.Editor = null;
 
 var _Pos = require("./positioning/Pos");
 
@@ -3187,7 +3187,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Logger = void 0;
+exports.Logger = null;
 
 var Logger = function () {
   var Logger =
@@ -3220,7 +3220,7 @@ var Logger = function () {
     }, {
       key: "isEnabled",
       value: function isEnabled() {
-        return (typeof console !== "undefined" && console !== null ? console.log : void 0) != null && this.enabled && Logger.enabled;
+        return (typeof console !== "undefined" && console !== null ? console.log : null) != null && this.enabled && Logger.enabled;
       }
     }, {
       key: "runtime",
@@ -3282,7 +3282,7 @@ var Logger = function () {
   Logger.prototype.enabled = true;
   Logger.prototype.monitorData = {};
   return Logger;
-}.call(void 0);
+}.call(null);
 
 exports.Logger = Logger;
 
@@ -3298,7 +3298,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.OptionObject = void 0;
+exports.OptionObject = null;
 
 var OptionObject =
 /*#__PURE__*/
@@ -3332,7 +3332,7 @@ function () {
     value: function setOpt(key, val) {
       var ref;
 
-      if (((ref = this[key]) != null ? ref.call : void 0) != null) {
+      if (((ref = this[key]) != null ? ref.call : null) != null) {
         return this[key](val);
       } else {
         return this[key] = val;
@@ -3343,7 +3343,7 @@ function () {
     value: function getOpt(key) {
       var ref;
 
-      if (((ref = this[key]) != null ? ref.call : void 0) != null) {
+      if (((ref = this[key]) != null ? ref.call : null) != null) {
         return this[key]();
       } else {
         return this[key];
@@ -3391,7 +3391,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
 
@@ -3406,7 +3406,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PositionedCmdInstance = void 0;
+exports.PositionedCmdInstance = null;
 
 var _CmdInstance = require("./CmdInstance");
 
@@ -3624,7 +3624,7 @@ function (_CmdInstance$CmdInsta) {
     key: "_getParentCmds",
     value: function _getParentCmds() {
       var ref;
-      return this.parent = (ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? ref.init() : void 0;
+      return this.parent = (ref = this.codewave.getEnclosingCmd(this.getEndPos())) != null ? ref.init() : null;
     }
   }, {
     key: "setMultiPos",
@@ -3909,7 +3909,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Process = void 0;
+exports.Process = null;
 
 var Process = function Process() {
   _classCallCheck(this, Process);
@@ -3929,7 +3929,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Storage = void 0;
+exports.Storage = null;
 
 var _Logger = require("./Logger");
 
@@ -3986,7 +3986,7 @@ exports.Storage = Storage;
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
 
@@ -4009,7 +4009,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TextAreaEditor = exports.DomKeyListener = void 0;
+exports.TextAreaEditor = exports.DomKeyListener = null;
 
 var _TextParser = require("./TextParser");
 
@@ -4372,7 +4372,7 @@ var TextAreaEditor = function () {
   ;
   TextAreaEditor.prototype.startListening = DomKeyListener.prototype.startListening;
   return TextAreaEditor;
-}.call(void 0);
+}.call(null);
 
 exports.TextAreaEditor = TextAreaEditor;
 
@@ -4389,7 +4389,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -4400,7 +4400,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TextParser = void 0;
+exports.TextParser = null;
 
 var _Editor = require("./Editor");
 
@@ -4522,7 +4522,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -4539,7 +4539,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CoreCommandProvider = void 0;
+exports.CoreCommandProvider = null;
 
 var _Command = require("../Command");
 
@@ -4914,7 +4914,7 @@ getCommand = function getCommand(instance) {
 
 setCommand = function setCommand(instance) {
   var p, val;
-  val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : void 0;
+  val = (p = instance.getParam(0)) != null ? p : instance.content ? instance.content : null;
 
   if (val != null) {
     return instance.codewave.vars[name] = val;
@@ -5273,11 +5273,11 @@ function (_Command$BaseCommand5) {
       emmet = function () {
         var ref, ref1;
 
-        if ((typeof window !== "undefined" && window !== null ? window.emmet : void 0) != null) {
+        if ((typeof window !== "undefined" && window !== null ? window.emmet : null) != null) {
           return window.emmet;
-        } else if ((typeof window !== "undefined" && window !== null ? (ref = window.self) != null ? ref.emmet : void 0 : void 0) != null) {
+        } else if ((typeof window !== "undefined" && window !== null ? (ref = window.self) != null ? ref.emmet : null : null) != null) {
           return window.self.emmet;
-        } else if ((typeof window !== "undefined" && window !== null ? (ref1 = window.global) != null ? ref1.emmet : void 0 : void 0) != null) {
+        } else if ((typeof window !== "undefined" && window !== null ? (ref1 = window.global) != null ? ref1.emmet : null : null) != null) {
           return window.global.emmet;
         } else if (typeof require !== "undefined" && require !== null) {
           try {
@@ -5313,7 +5313,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.HtmlCommandProvider = void 0;
+exports.HtmlCommandProvider = null;
 
 var _Command = require("../Command");
 
@@ -5368,7 +5368,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.JsCommandProvider = void 0;
+exports.JsCommandProvider = null;
 
 var _Command = require("../Command");
 
@@ -5434,7 +5434,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PhpCommandProvider = void 0;
+exports.PhpCommandProvider = null;
 
 var _StringHelper = require("../helpers/StringHelper");
 
@@ -5608,7 +5608,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ArrayHelper = void 0;
+exports.ArrayHelper = null;
 
 var ArrayHelper =
 /*#__PURE__*/
@@ -5669,7 +5669,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CommonHelper = void 0;
+exports.CommonHelper = null;
 
 var CommonHelper =
 /*#__PURE__*/
@@ -5685,7 +5685,7 @@ function () {
         xs[_key] = arguments[_key];
       }
 
-      if ((xs != null ? xs.length : void 0) > 0) {
+      if ((xs != null ? xs.length : null) > 0) {
         return this.tap({}, function (m) {
           var i, k, len, results, v, x;
           results = [];
@@ -5743,7 +5743,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.NamespaceHelper = void 0;
+exports.NamespaceHelper = null;
 
 var NamespaceHelper =
 /*#__PURE__*/
@@ -5797,7 +5797,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.optionalPromise = exports.OptionalPromise = void 0;
+exports.optionalPromise = exports.OptionalPromise = null;
 
 var OptionalPromise =
 /*#__PURE__*/
@@ -5851,7 +5851,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.StringHelper = void 0;
+exports.StringHelper = null;
 
 var _Size = require("../positioning/Size");
 
@@ -5985,7 +5985,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Pair = void 0;
+exports.Pair = null;
 
 var _Pos = require("./Pos");
 
@@ -6171,7 +6171,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PairMatch = void 0;
+exports.PairMatch = null;
 
 var PairMatch =
 /*#__PURE__*/
@@ -6249,7 +6249,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Pos = void 0;
+exports.Pos = null;
 
 var Pos =
 /*#__PURE__*/
@@ -6396,7 +6396,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PosCollection = void 0;
+exports.PosCollection = null;
 
 var _Wrapping = require("./Wrapping");
 
@@ -6461,7 +6461,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -6472,7 +6472,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Replacement = void 0;
+exports.Replacement = null;
 
 var _Pos = require("./Pos");
 
@@ -6618,7 +6618,7 @@ var Replacement = function () {
   _CommonHelper.CommonHelper.applyMixins(Replacement.prototype, [_OptionObject.OptionObject]);
 
   return Replacement;
-}.call(void 0);
+}.call(null);
 
 exports.Replacement = Replacement;
 
@@ -6630,7 +6630,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Size = void 0;
+exports.Size = null;
 
 var Size = function Size(width, height) {
   _classCallCheck(this, Size);
@@ -6653,7 +6653,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.StrPos = void 0;
+exports.StrPos = null;
 
 var StrPos =
 /*#__PURE__*/
@@ -6690,7 +6690,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -6701,7 +6701,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.WrappedPos = void 0;
+exports.WrappedPos = null;
 
 var _Pos = require("./Pos");
 
@@ -6776,7 +6776,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _assertThisInitialized(self) { if (self === null) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
 function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
 
@@ -6791,7 +6791,7 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Wrapping = void 0;
+exports.Wrapping = null;
 
 var _Replacement = require("./Replacement");
 
@@ -6846,7 +6846,7 @@ function (_Replacement$Replacem) {
         if (sel.end >= this.start + this.prefix.length) {
           results.push(sel.end += offset);
         } else {
-          results.push(void 0);
+          results.push(null);
         }
       }
 
@@ -6899,7 +6899,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.LocalStorageEngine = void 0;
+exports.LocalStorageEngine = null;
 
 var LocalStorageEngine =
 /*#__PURE__*/

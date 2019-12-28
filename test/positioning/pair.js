@@ -107,7 +107,7 @@ describe('Pair', function () {
     (0, chai.expect)(res).to.exist
     return (0, chai.expect)(res.raw()).to.eql([4, 14])
   })
-  return it('should allow match validation', function () {
+  it('should allow match validation', function () {
     var res, text
     this.pair = new Pair(/#+-+/, /-+#+/, {
       validMatch: function (match) {

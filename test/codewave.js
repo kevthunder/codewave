@@ -120,7 +120,7 @@ describe('Codewave', function () {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, '<?php\n  function |() {\n    \n  }\n?>')
     })
   })
-  return it('should replace box on option replaceBox', function () {
+  it('should replace box on option replaceBox', function () {
     this.codewave.editor.setLang('js');
     (0, test_utils.setEditorContent)(this.codewave.editor, '/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~  ~~test:replace_box|~~  ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~ */')
     return this.codewave.onActivationKey().then(() => {

@@ -53,7 +53,7 @@ describe('Codewave for PHP', function () {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, '<?php\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~   Lorem Ipsum ~~close~~   ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n?>|')
     })
   })
-  return it('should remove php tag when closing box', function () {
+  it('should remove php tag when closing box', function () {
     this.codewave.editor.setLang('php');
     (0, test_utils.setEditorContent)(this.codewave.editor, '<?php\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n/* ~   Lorem Ipsum ~~close|~~   ~ */\n/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */\n?>')
     return this.codewave.onActivationKey().then(() => {

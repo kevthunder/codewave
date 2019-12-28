@@ -47,7 +47,7 @@ describe('Codewave - Command Authoring', function () {
       return (0, test_utils.assertEditorResult)(this.codewave.editor, 'Lorem ipsum|')
     })
   })
-  return it('should allow command alias', function () {
+  it('should allow command alias', function () {
     this.codewave.editor.setLang('js');
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~alias hello hello2|~~')
     return this.codewave.onActivationKey().then(() => {

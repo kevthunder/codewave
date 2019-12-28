@@ -94,7 +94,7 @@ describe('ParamParser', function () {
     (0, chai.expect)(parser.params).to.deep.eq(['hello', 'beautiful world'])
     return (0, chai.expect)(parser.named).to.deep.eq({})
   })
-  return it('can use empty variable placeholder', function () {
+  it('can use empty variable placeholder', function () {
     var parser
     parser = new ParamParser('hello "#{quality} world"', {
       vars: {}

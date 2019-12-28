@@ -25,7 +25,7 @@ describe('PathHelper', function () {
     res = PathHelper.getPath(obj, 'test.test')
     return (0, chai.expect)(res).to.eq('hello')
   })
-  return it('can get a value at a path that does not exists', function () {
+  it('can get a value at a path that does not exists', function () {
     var obj, res
     obj = {}
     res = PathHelper.getPath(obj, 'test.test')
