@@ -36,7 +36,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser {
 
     if (start !== old.start || end !== old.end) {
       super.setCursorPos(start, end)
-      return this.selections = [new Pos(start, end)]
+      this.selections = [new Pos(start, end)]
     }
   }
 
@@ -45,7 +45,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser {
       this.setCursorPos(selections[0].start, selections[0].end)
     }
 
-    return this.selections = selections.map(function (s) {
+    this.selections = selections.map(function (s) {
       return s.copy()
     })
   }
@@ -66,7 +66,7 @@ var TestMultiEditor = class TestMultiEditor extends TextParser {
   }
 
   resetSel (start, end) {
-    return this.selections = [this.getCursorPos()]
+    this.selections = [this.getCursorPos()]
   }
 
   canListenToChange () {

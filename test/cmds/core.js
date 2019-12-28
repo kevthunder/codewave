@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const bootstrap = require('../../lib/bootstrap')
 
@@ -51,7 +51,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.editor.setLang('html');
     (0, test_utils.setEditorContent)(this.codewave.editor, '<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.match(RegExp('^' + StringHelper.escapeRegExp('<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->').replace('##spaces##', '\\s*') + '$'))
+      return expect(this.codewave.editor.text()).to.match(RegExp('^' + StringHelper.escapeRegExp('<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces## ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->').replace('##spaces##', '\\s*') + '$'))
     })
   })
   it('closed nested box should be aligned', function () {
@@ -59,10 +59,10 @@ describe('Codewave - Core namespace', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  <!-- ~  sit amet, consectetur  ~ -->  ~ -->\n<!-- ~  <!-- ~  ~~close|~~              ~ -->  ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->')
     return this.codewave.onActivationKey().then(() => {
       var match, matchExp
-      matchExp = RegExp('^' + StringHelper.escapeRegExp('<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->').replace('##spaces##', '(\\s*)') + '$');
-      (0, chai.expect)(this.codewave.editor.text()).to.match(matchExp)
-      match = this.codewave.editor.text().match(matchExp);
-      (0, chai.expect)(match[1]).property('length', 36)
+      matchExp = RegExp('^' + StringHelper.escapeRegExp('<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  ##spaces##  ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->').replace('##spaces##', '(\\s*)') + '$')
+      expect(this.codewave.editor.text()).to.match(matchExp)
+      match = this.codewave.editor.text().match(matchExp)
+      expect(match[1]).property('length', 36)
       return (0, test_utils.assertEditorResult)(this.codewave.editor, '<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  Lorem ipsum dolor                     ~ -->\n<!-- ~  |                                      ~ -->\n<!-- ~  adipiscing elit.                      ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->')
     })
   })
@@ -86,65 +86,65 @@ describe('Codewave - Core namespace', function () {
     this.codewave.editor.setLang('html');
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~help|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('Codewave');
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/') // slice from the ascii logo
+      expect(this.codewave.editor.text()).to.contain('~~~~~~~~~~')
+      expect(this.codewave.editor.text()).to.contain('Codewave')
+      expect(this.codewave.editor.text()).to.contain('/ /__/ _ \\/ _` / -_\\ \\/\\/ / _` \\ V / -_/') // slice from the ascii logo
 
-      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~')
+      return expect(this.codewave.editor.text()).to.contain('~~close~~')
     })
   })
   it('help demo should expend editing intro', function () {
     this.codewave.editor.setLang('html');
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~help:demo|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~~~~~~~~~');
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~');
-      (0, chai.expect)(this.codewave.editor.text()).to.not.contain('~~help:editing:intro~~')
-      return (0, chai.expect)(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands')
+      expect(this.codewave.editor.text()).to.contain('~~~~~~~~~~')
+      expect(this.codewave.editor.text()).to.contain('~~close~~')
+      expect(this.codewave.editor.text()).to.not.contain('~~help:editing:intro~~')
+      return expect(this.codewave.editor.text()).to.contain('Codewave allows you to make your own commands')
     })
   })
   it('can get help for the edit command', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~help edit|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~')
-      return (0, chai.expect)(this.codewave.editor.text()).to.contain('Allows to edit a command')
+      expect(this.codewave.editor.text()).to.contain('~~close~~')
+      return expect(this.codewave.editor.text()).to.contain('Allows to edit a command')
     })
   })
   it('can list all available commands', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~ls|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~hello~~');
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~ls core~~');
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~core:help~~')
-      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~')
+      expect(this.codewave.editor.text()).to.contain('~~hello~~')
+      expect(this.codewave.editor.text()).to.contain('~~ls core~~')
+      expect(this.codewave.editor.text()).to.contain('~~core:help~~')
+      return expect(this.codewave.editor.text()).to.contain('~~close~~')
     })
   })
   it('can list commands avaiable in a namespace', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~ls help|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.text()).to.contain('~~core:help:overview~~')
-      return (0, chai.expect)(this.codewave.editor.text()).to.contain('~~close~~')
+      expect(this.codewave.editor.text()).to.contain('~~core:help:overview~~')
+      return expect(this.codewave.editor.text()).to.contain('~~close~~')
     })
   })
   it('can set a variable', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~set test hello|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.vars).to.have.property('test')
-      return (0, chai.expect)(this.codewave.vars.test).to.eq('hello')
+      expect(this.codewave.vars).to.have.property('test')
+      return expect(this.codewave.vars.test).to.eq('hello')
     })
   })
   it('can set a variable from content', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~set test|~~hello~~/set~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.vars).to.have.property('test')
-      return (0, chai.expect)(this.codewave.vars.test).to.eq('hello')
+      expect(this.codewave.vars).to.have.property('test')
+      return expect(this.codewave.vars.test).to.eq('hello')
     })
   })
   it('can set a variable with path', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~set test.test hello|~~')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.vars).to.have.property('test')
-      return (0, chai.expect)(this.codewave.vars.test).to.deep.eq({
+      expect(this.codewave.vars).to.have.property('test')
+      return expect(this.codewave.vars.test).to.deep.eq({
         test: 'hello'
       })
     })
@@ -153,7 +153,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.vars.test = 'hello';
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~get test|~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq('hello')
+      return expect(this.codewave.editor.text()).to.eq('hello')
     })
   })
   it('can get a variable with path', function () {
@@ -162,7 +162,7 @@ describe('Codewave - Core namespace', function () {
     };
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~get test.test|~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq('hello')
+      return expect(this.codewave.editor.text()).to.eq('hello')
     })
   })
   it('can get object variable as json', function () {
@@ -173,7 +173,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.vars.test = data;
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~get test|~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '))
+      return expect(this.codewave.editor.text()).to.eq(JSON.stringify(data, null, '  '))
     })
   })
   it('can store json in a variable', function () {
@@ -183,8 +183,8 @@ describe('Codewave - Core namespace', function () {
     };
     (0, test_utils.setEditorContent)(this.codewave.editor, `~~store_json test|~~${JSON.stringify(json)}~~/store_json~~`)
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.vars).to.have.property('test')
-      return (0, chai.expect)(this.codewave.vars.test).to.deep.eq(json)
+      expect(this.codewave.vars).to.have.property('test')
+      return expect(this.codewave.vars.test).to.deep.eq(json)
     })
   })
   it('can render a template', function () {
@@ -195,7 +195,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.vars.test = data;
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~template test|~~Hello, ~~get name~~!~~/template~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq('Hello, world!')
+      return expect(this.codewave.editor.text()).to.eq('Hello, world!')
     })
   })
   it('can render a template for an array', function () {
@@ -205,7 +205,7 @@ describe('Codewave - Core namespace', function () {
     this.codewave.editor.setLang('html');
     (0, test_utils.setEditorContent)(this.codewave.editor, '~~template test|~~Hello, ~~get value~~!~~/template~~')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq('Hello, world!\nHello, CodeWave!')
+      return expect(this.codewave.editor.text()).to.eq('Hello, world!\nHello, CodeWave!')
     })
   })
 })

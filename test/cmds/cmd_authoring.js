@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const bootstrap = require('../../lib/bootstrap')
 
@@ -29,11 +29,11 @@ describe('Codewave - Command Authoring', function () {
     })
   })
   it('should save new command', function () {
-    (0, chai.expect)(this.codewave.context.getCmd('new_cmd')).to.not.exist
+    expect(this.codewave.context.getCmd('new_cmd')).to.not.exist
     this.codewave.editor.setLang('js');
     (0, test_utils.setEditorContent)(this.codewave.editor, '/* ~~core:edit new_cmd~~~~~ */\n/* ~  ~~help~~            ~ */\n/* ~                      ~ */\n/* ~  ~~/help~~           ~ */\n/* ~  ~~source~~          ~ */\n/* ~  Lorem ipsum         ~ */\n/* ~  ~~/source~~         ~ */\n/* ~  ~~|save~~ ~~close~~  ~ */\n/* ~~/core:edit~~~~~~~~~~~~ */')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.context.getCmd('new_cmd')).to.exist
+      expect(this.codewave.context.getCmd('new_cmd')).to.exist
       return (0, test_utils.assertEditorResult)(this.codewave.editor, '|')
     })
   })

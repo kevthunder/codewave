@@ -2,7 +2,7 @@
 
 const LocalFiles = require('../../lib/fileSystem/LocalFiles').LocalFiles
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const path = require('path')
 
@@ -23,6 +23,6 @@ describe('LocalFiles', function () {
     })
   })
   it('does not allow to use a path ousite the root folder', function () {
-    chai.expect(storage.realpath('../')).to.eq(this.root + path.sep)
+    expect(storage.realpath('../')).to.eq(this.root + path.sep)
   })
 })

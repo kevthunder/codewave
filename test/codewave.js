@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const bootstrap = require('../lib/bootstrap')
 
@@ -21,7 +21,7 @@ describe('Codewave', function () {
     return delete this.codewave
   })
   it('should use tilde brakets', function () {
-    return (0, chai.expect)(this.codewave).property('brakets', '~~')
+    return expect(this.codewave).property('brakets', '~~')
   })
   it('should create brakets', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, 'lo|rem')

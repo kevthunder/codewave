@@ -1,7 +1,6 @@
 var gulp = require('gulp')
 var browserify = require('browserify')
 var babelify = require('babelify')
-var babel = require('gulp-babel')
 var source = require('vinyl-source-stream')
 var rename = require('gulp-rename')
 var uglify = require('gulp-uglify-es').default
@@ -13,18 +12,6 @@ var clean = require('gulp-clean')
 function swallowError (error) {
   console.log(error.toString())
   this.emit('end')
-}
-
-const babelPreset = function () {
-  return babel({
-    presets: [
-      ['@babel/preset-env', {
-        targets: {
-          node: true
-        }
-      }]
-    ]
-  })
 }
 
 gulp.task('concat', function () {

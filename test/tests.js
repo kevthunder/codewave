@@ -1,6 +1,4 @@
-'use strict'
-
-const bootstrap = require('../lib/bootstrap')
+require('../lib/bootstrap')
 
 const Command = require('../lib/Command').Command
 

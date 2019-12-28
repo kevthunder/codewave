@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const bootstrap = require('../lib/bootstrap')
 
@@ -21,35 +21,35 @@ describe('ClosingPromp', function () {
     return delete this.codewave
   })
   it('should add listener', function () {
-    (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 0);
+    expect(this.codewave.editor.changeListeners).property('length', 0);
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 1)
+      return expect(this.codewave.editor.changeListeners).property('length', 1)
     })
   })
   it('should create ref in Codewave obj', function () {
-    (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 0);
+    expect(this.codewave.editor.changeListeners).property('length', 0);
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
-      return (0, chai.expect)(this.codewave.closingPromp).to.exist
+      return expect(this.codewave.closingPromp).to.exist
     })
   })
   it('should remove ref when stopping', function () {
-    (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 0);
+    expect(this.codewave.editor.changeListeners).property('length', 0);
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.closingPromp).to.exist
+      expect(this.codewave.closingPromp).to.exist
       this.codewave.closingPromp.stop()
-      return (0, chai.expect)(this.codewave.closingPromp).to.not.exist
+      return expect(this.codewave.closingPromp).to.not.exist
     })
   })
   it('should remove listener when stopping', function () {
-    (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 0);
+    expect(this.codewave.editor.changeListeners).property('length', 0);
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
-      (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 1)
+      expect(this.codewave.editor.changeListeners).property('length', 1)
       this.codewave.closingPromp.stop()
-      return (0, chai.expect)(this.codewave.editor.changeListeners).property('length', 0)
+      return expect(this.codewave.editor.changeListeners).property('length', 0)
     })
   })
   it('should create 2 selections', function () {
@@ -71,24 +71,24 @@ describe('ClosingPromp', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
       var closingPromp
-      closingPromp = this.codewave.closingPromp;
-      (0, chai.expect)(closingPromp).property('nbChanges', 0);
+      closingPromp = this.codewave.closingPromp
+      expect(closingPromp).property('nbChanges', 0);
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~e|~~\nlorem ipsum\n~~/e|~~')
       this.codewave.editor.onAnyChange()
-      return (0, chai.expect)(this.codewave.closingPromp).to.eql(closingPromp)
+      return expect(this.codewave.closingPromp).to.eql(closingPromp)
     })
   })
   it('should react to change', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
       var closingPromp
-      closingPromp = this.codewave.closingPromp;
-      (0, chai.expect)(closingPromp).property('nbChanges', 0);
+      closingPromp = this.codewave.closingPromp
+      expect(closingPromp).property('nbChanges', 0);
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~e|~~\nlorem ipsum\n~~/e|~~')
       this.codewave.editor.onAnyChange()
-      return (0, chai.expect)(closingPromp).property('nbChanges', 1)
+      return expect(closingPromp).property('nbChanges', 1)
     })
   })
   it('should keep going after one letter', function () {
@@ -99,7 +99,7 @@ describe('ClosingPromp', function () {
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~e|~~\nlorem ipsum\n~~/e|~~')
       this.codewave.editor.onAnyChange()
-      return (0, chai.expect)(closingPromp).to.exist
+      return expect(closingPromp).to.exist
     })
   })
   it('should detect typed text', function () {
@@ -110,7 +110,7 @@ describe('ClosingPromp', function () {
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/test|~~')
       this.codewave.editor.onAnyChange()
-      return (0, chai.expect)(closingPromp.typed()).to.eql('test')
+      return expect(closingPromp.typed()).to.eql('test')
     })
   })
   it('should stop after space', function () {
@@ -120,9 +120,9 @@ describe('ClosingPromp', function () {
       closingPromp = this.codewave.closingPromp;
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test |~~')
-      this.codewave.editor.onAnyChange();
-      (0, chai.expect)(closingPromp.shouldStop()).to.eql(true)
-      return (0, chai.expect)(closingPromp).property('started', false)
+      this.codewave.editor.onAnyChange()
+      expect(closingPromp.shouldStop()).to.eql(true)
+      return expect(closingPromp).property('started', false)
     })
   })
   it('should remove space after stop', function () {
@@ -132,8 +132,8 @@ describe('ClosingPromp', function () {
       closingPromp = this.codewave.closingPromp;
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test |~~')
-      this.codewave.editor.onAnyChange();
-      (0, chai.expect)(closingPromp).property('started', false)
+      this.codewave.editor.onAnyChange()
+      expect(closingPromp).property('started', false)
       return (0, test_utils.assertEditorResult)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~')
     })
   })
@@ -150,12 +150,12 @@ describe('SimulatedClosingPromp', function () {
     (0, test_utils.setEditorContent)(this.codewave.editor, '|[lorem ipsum]')
     return this.codewave.onActivationKey().then(() => {
       var closingPromp
-      closingPromp = this.codewave.closingPromp;
-      (0, chai.expect)(closingPromp).property('nbChanges', 0);
+      closingPromp = this.codewave.closingPromp
+      expect(closingPromp).property('nbChanges', 0);
       (0, test_utils.assertEditorResult)(this.codewave.editor, '~~|~~\nlorem ipsum\n~~/|~~');
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~e|~~\nlorem ipsum\n~~/~~')
       this.codewave.editor.onAnyChange()
-      return (0, chai.expect)(closingPromp).property('nbChanges', 1)
+      return expect(closingPromp).property('nbChanges', 1)
     })
   })
   it('should replicate changes', function (done) {
@@ -184,11 +184,11 @@ describe('SimulatedClosingPromp', function () {
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/~~')
 
       closingPromp.onTypeSimulated = () => {
-        (0, chai.expect)(closingPromp).property('started', true);
+        expect(closingPromp).property('started', true);
         (0, test_utils.assertEditorResult)(this.codewave.editor, '~~test|~~\nlorem ipsum\n~~/test~~');
         (0, test_utils.setEditorContent)(this.codewave.editor, '~~test |~~\nlorem ipsum\n~~/test~~')
-        this.codewave.editor.onAnyChange();
-        (0, chai.expect)(closingPromp).property('started', false)
+        this.codewave.editor.onAnyChange()
+        expect(closingPromp).property('started', false)
         return done()
       }
 

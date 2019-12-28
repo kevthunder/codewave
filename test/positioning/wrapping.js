@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const TextParser = require('../../lib/TextParser').TextParser
 
@@ -17,10 +17,10 @@ describe('Wrapping', function () {
   })
   it('editor should be settable', function () {
     this.editor = new TextParser('lorem Ipsum')
-    this.wrapping = new Wrapping(0, 5, '(', ')');
-    (0, chai.expect)(this.wrapping).to.respondTo('withEditor');
-    (0, chai.expect)(this.wrapping).to.respondTo('editor')
+    this.wrapping = new Wrapping(0, 5, '(', ')')
+    expect(this.wrapping).to.respondTo('withEditor')
+    expect(this.wrapping).to.respondTo('editor')
     this.wrapping.withEditor(this.editor)
-    return (0, chai.expect)(this.wrapping.editor()).to.eql(this.editor)
+    return expect(this.wrapping.editor()).to.eql(this.editor)
   })
 })

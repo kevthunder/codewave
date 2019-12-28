@@ -1,6 +1,6 @@
 'use strict'
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const bootstrap = require('../../lib/bootstrap')
 
@@ -41,7 +41,7 @@ describe('Codewave - file namespace', function () {
       (0, test_utils.setEditorContent)(this.codewave.editor, '~~file:read hello|~~')
       return this.codewave.onActivationKey()
     }).then(() => {
-      return (0, chai.expect)(this.codewave.editor.text()).to.eq('Hello, world!')
+      return expect(this.codewave.editor.text()).to.eq('Hello, world!')
     })
   })
   it('write a file', function () {
@@ -49,7 +49,7 @@ describe('Codewave - file namespace', function () {
     return this.codewave.onActivationKey().then(() => {
       return this.storage.readFile('hello')
     }).then(content => {
-      return (0, chai.expect)(content).to.eq('Hello')
+      return expect(content).to.eq('Hello')
     })
   })
 })

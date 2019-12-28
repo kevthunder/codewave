@@ -1,6 +1,3 @@
-
-const Pos = require('../../lib/positioning/Pos').Pos
-
 const TextParser = require('../../lib/TextParser').TextParser
 
 var TestMonoEditor = class TestMonoEditor extends TextParser {

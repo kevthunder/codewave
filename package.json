@@ -9,7 +9,7 @@
     "build-debug": "node --inspect-brk ./node_modules/gulp/bin/gulp build",
     "test-debug": "gulp test-debug",
     "lint": "eslint '**/*.js'",
-    "lint-fix": "eslint --fix '**/*.js'"
+    "lint-fix": "eslint --fix \"**/*.js\""
   },
   "main": "lib/bootstrap.js",
   "author": "kevthunder",

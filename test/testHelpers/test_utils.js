@@ -1,22 +1,22 @@
 
-const chai = require('chai')
+const expect = require('chai').expect
 
 const Pos = require('../../lib/positioning/Pos').Pos
 
 var assertEditorResult = function (editor, res) {
   var realText, sels;
-  [realText, sels] = extractSelections(res);
-  (0, chai.expect)(editor.text()).to.eql(realText)
+  [realText, sels] = extractSelections(res)
+  expect(editor.text()).to.eql(realText)
 
   if (sels.length) {
     if (editor.allowMultiSelection()) {
-      return (0, chai.expect)(editor.getMultiSel().map(function (s) {
+      return expect(editor.getMultiSel().map(function (s) {
         return s.raw()
       })).to.eql(sels.map(function (s) {
         return s.raw()
       }))
     } else {
-      return (0, chai.expect)(editor.getCursorPos().raw()).to.eql(sels[0].raw())
+      return expect(editor.getCursorPos().raw()).to.eql(sels[0].raw())
     }
   }
 }
