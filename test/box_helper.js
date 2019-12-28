@@ -2,7 +2,7 @@
 
 const expect = require('chai').expect
 
-const test_utils = require('./testHelpers/test_utils')
+const testUtils = require('./testHelpers/testUtils')
 
 const TextParser = require('../lib/TextParser').TextParser
 
@@ -13,22 +13,22 @@ const bootstrap = require('../lib/bootstrap')
 describe('BoxHelper', function () {
   beforeEach(function () {
     this.boxHelper = null
-    return this.codewave = null
+    this.codewave = null
   })
   afterEach(function () {
     delete this.boxHelper
-    return delete this.codewave
+    delete this.codewave
   })
   it('should detect box position', function () {
     var sels, text;
-    [text, sels] = (0, test_utils.extractSelections)('Lorem ipsum dolor\n|<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  |Lorem ipsum dolor                     ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|\nLorem ipsum dolor')
+    [text, sels] = testUtils.extractSelections('Lorem ipsum dolor\n|<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  |Lorem ipsum dolor                     ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->|\nLorem ipsum dolor')
     this.codewave = new bootstrap.Codewave(new TextParser(text))
     this.boxHelper = new BoxHelper(this.codewave.context)
     return expect(this.boxHelper.getBoxForPos(sels[1]).raw()).to.eql([sels[0].start, sels[2].start])
   })
   it('should detect box position when nested', function () {
     var sels, text;
-    [text, sels] = (0, test_utils.extractSelections)('Lorem ipsum dolor\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  |<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~ -->    ~ -->\n<!-- ~  <!-- ~  |Lorem ipsum dolor    ~ -->    ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~ -->|    ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\nLorem ipsum dolor')
+    [text, sels] = testUtils.extractSelections('Lorem ipsum dolor\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\n<!-- ~  |<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~ -->    ~ -->\n<!-- ~  <!-- ~  |Lorem ipsum dolor    ~ -->    ~ -->\n<!-- ~  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~ -->|    ~ -->\n<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->\nLorem ipsum dolor')
     this.codewave = new bootstrap.Codewave(new TextParser(text))
     this.boxHelper = new BoxHelper(this.codewave.context)
     return expect(this.boxHelper.getBoxForPos(sels[1]).raw()).to.eql([sels[0].start, sels[2].start])

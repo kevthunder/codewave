@@ -1,5 +1,3 @@
-'use strict'
-
 const expect = require('chai').expect
 
 const bootstrap = require('../../lib/bootstrap')
@@ -8,9 +6,7 @@ const Logger = require('../../lib/Logger').Logger
 
 const TextParser = require('../../lib/TextParser').TextParser
 
-const test_utils = require('../testHelpers/test_utils')
-
-const StringHelper = require('../../lib/helpers/StringHelper').StringHelper
+const testUtils = require('../testHelpers/testUtils')
 
 const path = require('path')
 
@@ -27,25 +23,25 @@ describe('Codewave - file namespace', function () {
     this.storage = new LocalFiles(this.root)
     this.editor = new TextParser()
     this.editor.fileSystem = this.storage
-    return this.codewave = new bootstrap.Codewave(this.editor)
+    this.codewave = new bootstrap.Codewave(this.editor)
   })
   afterEach(function () {
     delete this.codewave
     delete this.storage
-    return (0, util.promisify)(fs.unlink)(this.file).catch(() => {
+    util.promisify(fs.unlink)(this.file).catch(() => {
       return null
     })
   })
   it('read a file', function () {
     return this.storage.writeFile('hello', 'Hello, world!').then(() => {
-      (0, test_utils.setEditorContent)(this.codewave.editor, '~~file:read hello|~~')
+      testUtils.setEditorContent(this.codewave.editor, '~~file:read hello|~~')
       return this.codewave.onActivationKey()
     }).then(() => {
       return expect(this.codewave.editor.text()).to.eq('Hello, world!')
     })
   })
   it('write a file', function () {
-    (0, test_utils.setEditorContent)(this.codewave.editor, '~~file:write hello Hello|~~')
+    testUtils.setEditorContent(this.codewave.editor, '~~file:write hello Hello|~~')
     return this.codewave.onActivationKey().then(() => {
       return this.storage.readFile('hello')
     }).then(content => {

@@ -9,11 +9,11 @@ const Replacement = require('../../lib/positioning/Replacement').Replacement
 describe('Replacement', function () {
   beforeEach(function () {
     this.replacement = null
-    return this.editor = null
+    this.editor = null
   })
   afterEach(function () {
     delete this.replacement
-    return delete this.editor
+    delete this.editor
   })
   it('editor should be settable', function () {
     this.editor = new TextParser('lorem Ipsum')

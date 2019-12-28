@@ -4,9 +4,14 @@ const FileStorageEngine = require('../../lib/storageEngines/FileStorageEngine').
 
 const expect = require('chai').expect
 
+var chai = require('chai')
+var chaiAsPromised = require('chai-as-promised')
+
+chai.use(chaiAsPromised)
+
 const path = require('path')
 
-const util = require('util')
+const promisify = require('util').promisify
 
 const fs = require('fs')
 
@@ -17,7 +22,7 @@ describe('FileStorageEngine', function () {
   })
   afterEach(function () {
     delete this.storage
-    return (0, util.promisify)(fs.unlink)(this.file).catch(() => {
+    return promisify(fs.unlink)(this.file).catch(() => {
       return null
     })
   })
@@ -30,9 +35,7 @@ describe('FileStorageEngine', function () {
       return this.storage.load('foo')
     }).then(res => {
       expect(res).to.eql('bar')
-      return (0, util.promisify)(fs.exists)(this.file)
-    }).then(exists => {
-      return expect(exists).to.be.true
+      return expect(promisify(fs.stat)(this.file)).to.not.be.rejected
     })
   })
   it('can delete everything stored', function () {
@@ -48,9 +51,7 @@ describe('FileStorageEngine', function () {
       return this.storage.load('foo')
     }).then(res => {
       expect(res).to.not.exist
-      return (0, util.promisify)(fs.exists)(this.file)
-    }).then(exists => {
-      return expect(exists).to.be.false
+      return expect(promisify(fs.stat)(this.file)).to.be.rejectedWith('no such file or directory')
     })
   })
   it('can save in a given path', function () {

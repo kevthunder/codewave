@@ -6,10 +6,9 @@ const expect = require('chai').expect
 
 describe('PathHelper', function () {
   it('can set a value at a path', function () {
-    var obj, res
-    obj = {}
-    res = PathHelper.setPath(obj, 'test.test', 'hello')
-    return expect(obj).to.deep.eq({
+    const obj = {}
+    PathHelper.setPath(obj, 'test.test', 'hello')
+    expect(obj).to.deep.eq({
       test: {
         test: 'hello'
       }

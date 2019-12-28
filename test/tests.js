@@ -22,6 +22,8 @@ require('./stringParsers/paramParser')
 
 require('./box_helper')
 
+require('./editor')
+
 require('./codewave')
 
 require('./cmds/core')

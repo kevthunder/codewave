@@ -9,11 +9,11 @@ const Wrapping = require('../../lib/positioning/Wrapping').Wrapping
 describe('Wrapping', function () {
   beforeEach(function () {
     this.wrapping = null
-    return this.editor = null
+    this.editor = null
   })
   afterEach(function () {
     delete this.wrapping
-    return delete this.editor
+    delete this.editor
   })
   it('editor should be settable', function () {
     this.editor = new TextParser('lorem Ipsum')
