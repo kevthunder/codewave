@@ -4,11 +4,12 @@
   "description": "Codewave : The text editor helper.",
   "scripts": {
     "start": "gulp demo",
-    "test": "gulp test",
+    "test": "npm run build && nyc --reporter=lcov --reporter=text mocha test/tests.js",
     "build": "gulp build",
     "build-debug": "node --inspect-brk ./node_modules/gulp/bin/gulp build",
     "test-debug": "gulp test-debug",
-    "lint": "eslint '**/*.js'",
+    "cover": "npm run lint && npm run test && nyc check-coverage --statements 80 --branches 65 --functions 75 --lines 80",
+    "lint": "eslint \"**/*.js\"",
     "lint-fix": "eslint --fix \"**/*.js\""
   },
   "main": "lib/bootstrap.js",
@@ -42,10 +43,16 @@
     "gulp-rename": "^1.4.0",
     "gulp-uglify-es": "^1.0.4",
     "mocha": "^5.2.0",
+    "nyc": "^15.0.0",
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "emmet": "^1.6.3",
     "inflection": "^1.12.0"
+  },
+  "nyc": {
+    "include": [
+      "lib"
+    ]
   }
 }

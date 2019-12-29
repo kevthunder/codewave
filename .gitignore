@@ -8,3 +8,5 @@ _pawa_tmp/
 /coverage
 /test/tmp
 .vscode
+/.nyc_output
+/coverage
